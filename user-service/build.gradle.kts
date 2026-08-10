@@ -49,6 +49,10 @@ dependencies {
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.grpc:grpc-testing")
+
+    // spring-boot-starter-test doesn't pull this in on its own; without it,
+    // Gradle's useJUnitPlatform() has nothing to actually launch tests with.
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 dependencyManagement {

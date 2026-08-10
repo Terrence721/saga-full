@@ -29,6 +29,18 @@ dependencies {
     // JDK 11. compileOnly is enough: the annotation has source retention, so it's
     // never needed at runtime.
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
+
+    // Pinned to 5.11.4 to match the JUnit Jupiter version Spring Boot 3.4.1's
+    // BOM manages for user-service, rather than adopting JUnit 6.1.3 (three
+    // days old at time of writing) here and splitting the repo across two
+    // JUnit major versions.
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
+    testImplementation("org.assertj:assertj-core:3.26.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 protobuf {

@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 10, 2026 (`user-service` core implementation)
+**Last Updated:** August 10, 2026 (`user-contract` test suite passing)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -19,8 +19,17 @@ A phase-by-phase log of what's been done on this repo and what's still open. Thi
 | CI: quality + CodeQL | `quality.yml` (build/test jobs) and `codeql.yml` (java-kotlin) added; first real run failed (`gradlew` committed without its executable bit from Windows), fixed and confirmed green on a second real run; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 5 |
 | `user-service` core | Entry point, config, `User` entity (UUID id), `UserRepository`, exception types, `JwtTokenProvider`, and `UserGrpcServiceImpl` (`Login` + `ValidateToken`) written; hit and fixed a real Lombok/JDK 25 incompatibility along the way; `./gradlew :user-service:compileJava` verified green; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 7 |
 | CI fix: `resolveMainClassName` | First real CI run of `quality.yml` against `user-service` failed (`Unsupported class file major version 69` — Spring Boot Gradle plugin's bundled ASM can't read JDK 25 bytecode). Fixed with an explicit `springBoot { mainClass.set(...) }`, skipping the auto-detection scan entirely; reproduced the failure locally and confirmed both `./gradlew assemble` and `./gradlew test` green before pushing; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 8 |
+| `user-contract` tests | JUnit 5.11.4 + AssertJ 3.26.3 added (pinned to match what Spring Boot manages for `user-service`, not the new JUnit 6.1.3); 6 serialization round-trip tests written since there's no hand-written Java to unit test in a proto-only module; verified genuinely green with a real `./gradlew :user-contract:test` run, and verified the suite actually catches a wrong value by deliberately breaking one assertion and re-running before reverting; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 9 |
 
 **Actually still open, right now:** `user-service` tests, remaining service modules, and `portfolio.html`. See the **Still to do** table below.
+
+## 🧪 Test Coverage Ledger
+
+Every test suite added to this repo, and its last confirmed real run. Updated as suites are added or re-run — this table only reflects an actual `./gradlew :<module>:test` run, never an assumed result.
+
+| Module | Test class | Tests | Result | Phase | Date |
+| - | - | - | - | - | - |
+| `user-contract` | `UserContractSerializationTest` | 6 | ✅ passing | Phase 9 | 2026-08-10 |
 
 ## ✅ Done
 
