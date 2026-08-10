@@ -17,8 +17,8 @@
         <body>
         <h1>saga-full - Aggregated Test Report</h1>
         <div class="summary">
-            <span><strong>Total:</strong> 13</span>
-            <span style="color:#1a7f37"><strong>Passed:</strong> 13</span>
+            <span><strong>Total:</strong> 17</span>
+            <span style="color:#1a7f37"><strong>Passed:</strong> 17</span>
             <span style="color:#cf222e"><strong>Failed:</strong> 0</span>
             <span style="color:#9a6700"><strong>Skipped:</strong> 0</span>
         </div>
@@ -77,10 +77,42 @@
 </tr>
 <tr>
     <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
+    <td>loginFailsWithNotFoundWhenUserMissing()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.01s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
+    <td>loginFailsWithPermissionDeniedWhenUserInactive()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.005s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
+    <td>loginFailsWithUnauthenticatedWhenPasswordWrong()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>2.03s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
+    <td>validateTokenReturnsInvalidWhenTokenVerificationFails()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.026s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
     <td>loginSucceedsAndReturnsAccessToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.021s</td>
+    <td>0.022s</td>
     <td></td>
 </tr>
 <tr>
@@ -88,7 +120,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
     <td>validateTokenReturnsValidWhenTokenVerifies()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>2.096s</td>
+    <td>0.161s</td>
     <td></td>
 </tr>
 <tr>
@@ -96,7 +128,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>createdTokenVerifiesSuccessfullyWithMatchingClaims()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -104,7 +136,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForExpiredToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.017s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -112,7 +144,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForMalformedToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -120,7 +152,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForTamperedSignature()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.671s</td>
+    <td>1.142s</td>
     <td></td>
 </tr>
 <tr>
@@ -128,7 +160,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForWrongIssuer()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
             </tbody>

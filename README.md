@@ -5,13 +5,13 @@
 
 **[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)**
 
-Last updated: August 10, 2026 (`user-service` gRPC service tests + a real runtime bug found)
+Last updated: August 10, 2026 (`user-service` error-path tests)
 
 This repository is a from-scratch demonstration of the Distributed Saga pattern for coordinating long-running business transactions across independent microservices — order placement, payment settlement, and fulfillment, each owned by its own service, coordinated without a shared database transaction.
 
 This is an original implementation, not a fork of any existing project. The module boundaries and general shape of the problem (order → payment → fulfillment, with compensation on failure) are common territory for this class of system; the code, design decisions, and tradeoffs recorded here are this repo's own.
 
-**At a glance:** 13/13 tests passing across `user-contract` + `user-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
+**At a glance:** 17/17 tests passing across `user-contract` + `user-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
 
 ## 🧭 Start Here
 

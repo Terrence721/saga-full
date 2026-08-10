@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 10, 2026 (`user-service` gRPC service tests + a real runtime bug found)
+Last updated: August 10, 2026 (`user-service` error-path tests)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -300,3 +300,23 @@ Pinned `org.mockito:mockito-core`/`mockito-junit-jupiter` to `5.23.0` directly. 
 
 - A pattern is now visible across three separate incidents (Lombok, Spring Boot's `resolveMainClassName`, Mockito/ByteBuddy): tools that read or generate JVM bytecode via bundled ASM/ByteBuddy consistently lag JDK 25 support, and Spring Boot 3.4.1's dependency management consistently pins the pre-JDK-25 version of each. Any *new* bytecode-touching tool added to this repo (code coverage, additional static analysis, etc.) should be assumed to need the same treatment until proven otherwise.
 - Bumping a BOM-managed library's version is not always enough on its own — its own transitive dependencies (like ByteBuddy here) may need pinning too, since the BOM's constraint can outrank what the newly-bumped library itself declares it needs.
+
+## Consolidated test report visibility: a committed static file kept current by CI, not a Pages-deployment pipeline
+
+**Status:** Done — README test-status visibility, Phase 13.
+
+### Context: making test status visible from the README
+
+`aggregateTestReport` (Phase 10) produces a real merged report, but only into the gitignored `build/` directory — nothing a reader browsing the repo or its portfolio page could click into. `platform-main`'s README pointed at the actual precedent: a full-suite HTML test report deployed live to GitHub Pages, kept current automatically on every push, with a dedicated `pages.yml` workflow (`actions/upload-pages-artifact` + `actions/deploy-pages`) building it fresh on each deploy.
+
+That mechanism was tried directly: a `pages.yml` workflow was added, and this repo's GitHub Pages source was switched from its existing legacy branch-build (which auto-renders `README.md` as the site's Jekyll homepage) to the Actions-based build type needed for `deploy-pages`. Both steps worked. It was then deliberately reverted: the actual requirement was a plain, single committed HTML file the README could link to directly — not a live-rendered site replacing the README-based homepage, and not a report regenerated fresh by a workflow at deploy time.
+
+### Decision: making test status visible from the README
+
+`quality.yml`'s `Test` job gained one more step: after generating the aggregate report, it's copied to `test-report.html` at the repo root and committed back to `main` automatically — but only on an actual `push` to `main` (not `pull_request` or manual `workflow_dispatch` runs), only when the file's content actually changed (`git diff --quiet` guard, avoiding empty commits), and with `[skip ci]` in the commit message so the auto-commit doesn't re-trigger `quality.yml`/`codeql.yml` against itself. GitHub Pages was switched back to the legacy branch build, so `test-report.html` is served as a plain static file at `https://terrence721.github.io/saga-full/test-report.html` alongside the README-rendered homepage, not in place of it. The README's "At a glance" line and "What's Here So Far" section both link directly to that URL.
+
+### Consequences: making test status visible from the README
+
+- The file is real, committed, and reviewable in normal `git log`/PR diffs like any other tracked file — not an artifact that only exists inside a CI run's ephemeral storage or a separately-deployed site with its own history.
+- Verifying the guard conditions took an actual `workflow_dispatch` run: it confirmed the new step correctly shows as `skipped` (`github.event_name != 'push'`), proving the condition works as written rather than assuming it from the YAML alone. A genuine `push`-triggered run is still the real end-to-end proof of the commit-back path itself.
+- A real anomaly, noted but not chased further: the `git push --force-with-lease` used to fold this work into an already-pushed commit did not trigger `quality.yml`/`codeql.yml` automatically (only GitHub's own internal Pages rebuild fired) — `gh workflow run` was used to verify the workflow directly instead. Force-pushes are expected to trigger `on: push` workflows normally; this looked like a one-off GitHub webhook gap rather than an Actions permissions or configuration problem (`actions/permissions` confirmed Actions fully enabled), but is worth watching for if it recurs.

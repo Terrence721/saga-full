@@ -31,6 +31,10 @@ class RecordingStreamObserver<T> implements StreamObserver<T> {
         return values.get(0);
     }
 
+    T firstValueOrNull() {
+        return values.isEmpty() ? null : values.get(0);
+    }
+
     Throwable error() {
         return error;
     }
