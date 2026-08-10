@@ -31,6 +31,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | Module | Test class | Tests | Result | Phase | Date |
 | - | - | - | - | - | - |
 | `user-contract` | `UserContractSerializationTest` | 6 | ✅ passing | Phase 9 | 2026-08-10 |
+| `user-service` | `JwtTokenProviderTest` | 5 | ✅ passing | Phase 11 | 2026-08-10 |
 
 ## ✅ Done
 
