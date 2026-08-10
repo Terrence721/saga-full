@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package saga.user.v1;
+
+option java_multiple_files = true;
+option java_package = "io.github.terrence721.saga.user.grpc";
+option java_outer_classname = "UserProto";
+
+// Identity and access surface for the platform: issuing tokens at login,
+// and letting other services validate a token without each one owning
+// its own auth logic.
+service UserIdentityService {
+  rpc Login (LoginRequest) returns (LoginResponse);
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string user_id = 1;
+  string access_token = 2;
+  string token_type = 3;
+  int64 expires_in_seconds = 4;
+}
+
+message ValidateTokenRequest {
+  string access_token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+}
