@@ -59,6 +59,11 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.grpc:grpc-testing")
 
+    // grpc-testing's own POM declares grpc-inprocess at runtime scope only,
+    // so InProcessServerBuilder/InProcessChannelBuilder resolve at test
+    // runtime but aren't visible to testCompileClasspath without this.
+    testImplementation("io.grpc:grpc-inprocess:1.70.0")
+
     // Pinned above Spring Boot 3.4.1's managed 5.14.2 (ByteBuddy 1.15.11):
     // that ByteBuddy only officially supports up to Java 23 and fails
     // mocking on JDK 25 with IllegalArgumentException in OpenedClassReader.

@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 10, 2026 (`user-service` error-path tests)
+Last updated: August 10, 2026 (`user-service` gRPC integration test)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -319,4 +319,24 @@ That mechanism was tried directly: a `pages.yml` workflow was added, and this re
 
 - The file is real, committed, and reviewable in normal `git log`/PR diffs like any other tracked file — not an artifact that only exists inside a CI run's ephemeral storage or a separately-deployed site with its own history.
 - Verifying the guard conditions took an actual `workflow_dispatch` run: it confirmed the new step correctly shows as `skipped` (`github.event_name != 'push'`), proving the condition works as written rather than assuming it from the YAML alone. A genuine `push`-triggered run is still the real end-to-end proof of the commit-back path itself.
-- A real anomaly, noted but not chased further: the `git push --force-with-lease` used to fold this work into an already-pushed commit did not trigger `quality.yml`/`codeql.yml` automatically (only GitHub's own internal Pages rebuild fired) — `gh workflow run` was used to verify the workflow directly instead. Force-pushes are expected to trigger `on: push` workflows normally; this looked like a one-off GitHub webhook gap rather than an Actions permissions or configuration problem (`actions/permissions` confirmed Actions fully enabled), but is worth watching for if it recurs.
+- A real anomaly, noted but not chased further: the `git push --force-with-lease` used to fold this work into an already-pushed commit did not trigger `quality.yml`/`codeql.yml` automatically (only GitHub's own internal Pages rebuild fired) — `gh workflow run` was used to verify the workflow directly instead. Force-pushes are expected to trigger `on: push` workflows normally; this looked like a one-off GitHub webhook gap rather than an Actions permissions or configuration problem (`actions/permissions` confirmed Actions fully enabled). Confirmed one-off, not a persistent issue: the next genuine (non-force) push triggered `Quality`/`CodeQL` normally and produced a real `chore: update consolidated test report [skip ci]` auto-commit, the actual end-to-end proof this mechanism works.
+
+## `user-service` gRPC integration test: `InProcessServerBuilder`/`InProcessChannelBuilder`, and a compile-vs-runtime dependency-scope gap
+
+**Status:** Done — `user-service` gRPC integration test, Phase 15.
+
+### Context: proving the real wire contract, not just internal Java calls
+
+`UserGrpcServiceImplTest`/`UserGrpcServiceImplErrorTest` (Phases 11-12, 14) call `UserGrpcServiceImpl.login`/`.validateToken` as plain Java method calls — real coverage of the business logic, but they never actually serialize a message or send a `Status` code across any transport. One thing only an end-to-end call proves: that the generated client stub, the real gRPC server registration, and `Status` codes all survive an actual (if in-process) network round trip.
+
+Writing `UserGrpcServiceIntegrationTest` hit a real, if minor, dependency-resolution gap: `io.grpc.inprocess.InProcessServerBuilder`/`InProcessChannelBuilder` come from a separate artifact, `grpc-inprocess`, already present on `user-service`'s `testRuntimeClasspath` (pulled in transitively by `grpc-testing`, Phase 7) but absent from `testCompileClasspath` — confirmed by checking both configurations directly via `./gradlew :user-service:dependencies`, not assumed from the "it's already a dependency" intuition. `grpc-testing`'s own POM declares `grpc-inprocess` at Maven's `runtime` scope, which Gradle's `testRuntimeClasspath` inherits but `testCompileClasspath` correctly does not, since nothing at compile time needs a runtime-only dependency — until this test tried to import its types directly.
+
+### Decision: proving the real wire contract, not just internal Java calls
+
+`UserGrpcServiceIntegrationTest` starts a real `Server`/`ManagedChannel` pair per test (`@BeforeEach`/`@AfterEach`), both built with `.directExecutor()` — grpc-java's own recommended pattern for tests, making every call synchronous within the test thread so no latch/timeout handling is needed — registers the real `UserGrpcServiceImpl` (still with the same three collaborators mocked, keeping this test independent of a real database), and talks to it through the actual generated `UserIdentityServiceGrpc.UserIdentityServiceBlockingStub`, not a captured `StreamObserver`. Three tests: `login` succeeding over the wire, `login` propagating a real `NOT_FOUND` `StatusRuntimeException` for an unknown user (asserted via `Status.fromThrowable`-equivalent extraction on the thrown exception, proving the status code itself survives serialization, not just the Java exception type), and `validateToken` returning `valid: true` over the wire. `grpc-inprocess` was added as an explicit `testImplementation`, matching the `1.70.0` already resolved elsewhere on this module's classpath.
+
+### Consequences: proving the real wire contract, not just internal Java calls
+
+- This is now the one test in the repo that would catch a real wire-level regression the other two suites structurally cannot — e.g. a proto field number collision or a `Status` code that gets lost in a serialization round trip.
+- The `testRuntimeClasspath`-vs-`testCompileClasspath` distinction is a useful general lesson for this repo: "the JAR is already being pulled in" isn't the same question as "is the *class* available where I'm trying to use it," and the two can silently diverge based on how an upstream POM scopes its own transitive dependencies.
+- With this test in place, all three planned `user-service` test suites (unit, error-path, integration) are complete — see [todo.md](../todo.md)'s Test Coverage Ledger.
