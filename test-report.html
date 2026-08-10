@@ -32,7 +32,7 @@
     <td>io.github.terrence721.saga.order.OrderServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.427s</td>
+    <td>0.386s</td>
     <td></td>
 </tr>
 <tr>
@@ -40,7 +40,7 @@
     <td>io.github.terrence721.saga.order.repository.OrderRepositoryTest</td>
     <td>existsByIdAndStatus_returnsFalse_whenIdDoesNotExist()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -48,7 +48,7 @@
     <td>io.github.terrence721.saga.order.repository.OrderRepositoryTest</td>
     <td>existsByIdAndStatus_returnsFalse_whenStatusDoesNotMatch()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -56,7 +56,7 @@
     <td>io.github.terrence721.saga.order.repository.OrderRepositoryTest</td>
     <td>existsByIdAndStatus_returnsTrue_whenStatusMatches()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.199s</td>
+    <td>0.218s</td>
     <td></td>
 </tr>
 <tr>
@@ -72,7 +72,7 @@
     <td>io.github.terrence721.saga.order.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsOldestFirst_upToPageSize()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.042s</td>
+    <td>0.044s</td>
     <td></td>
 </tr>
 <tr>
@@ -80,7 +80,7 @@
     <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
     <td>loginRequestRoundTripsThroughSerialization()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -88,7 +88,7 @@
     <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
     <td>loginResponseRoundTripsAtInt64Boundary()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.078s</td>
+    <td>0.075s</td>
     <td></td>
 </tr>
 <tr>
@@ -112,7 +112,7 @@
     <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
     <td>validateTokenResponseRoundTripsWhenInvalid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -128,7 +128,7 @@
     <td>io.github.terrence721.saga.user.UserServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.402s</td>
+    <td>0.408s</td>
     <td></td>
 </tr>
 <tr>
@@ -152,7 +152,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>loginFailsWithUnauthenticatedWhenPasswordWrong()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.355s</td>
+    <td>0.372s</td>
     <td></td>
 </tr>
 <tr>
@@ -160,7 +160,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>validateTokenReturnsInvalidWhenTokenVerificationFails()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.012s</td>
+    <td>0.011s</td>
     <td></td>
 </tr>
 <tr>
@@ -176,7 +176,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
     <td>validateTokenReturnsValidWhenTokenVerifies()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.113s</td>
+    <td>0.116s</td>
     <td></td>
 </tr>
 <tr>
@@ -184,7 +184,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceIntegrationTest</td>
     <td>loginOverGrpcPropagatesNotFoundStatus()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.01s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -192,7 +192,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceIntegrationTest</td>
     <td>loginOverGrpcReturnsAccessToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.112s</td>
+    <td>0.111s</td>
     <td></td>
 </tr>
 <tr>
@@ -216,7 +216,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForExpiredToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -232,7 +232,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForTamperedSignature()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.13s</td>
+    <td>0.131s</td>
     <td></td>
 </tr>
 <tr>
@@ -240,7 +240,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForWrongIssuer()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
             </tbody>
