@@ -1,6 +1,6 @@
 # 🔀 Distributed Saga Microservice Platform
 
-**[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)** · [More of my work ↗](https://terrence721.github.io/)
+**[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)**
 
 Last updated: August 10, 2026 (`user-service` core implementation)
 
@@ -11,6 +11,7 @@ This is an original implementation, not a fork of any existing project. The modu
 ## 🧭 Start Here
 
 - **[`todo.md`](todo.md)** — the phase-by-phase log of everything done and everything still open. This is the source of truth for progress.
+- **[GitHub Project board](https://github.com/users/Terrence721/projects/3)** — a Scrum-style Backlog/Planned/In Progress/Verification & QA/Done view of the same work, for a quick at-a-glance status without reading the full log. Kept in sync with [`todo.md`](todo.md).
 - **[`docs/architecture.md`](docs/architecture.md)** — the reasoning behind this repo's architectural decisions (context, alternatives, what each one actually cost), not just what changed.
 - **[`docs/case-study.md`](docs/case-study.md)** — problem, constraints, tradeoffs, and results, for anyone scanning this repo as a portfolio piece rather than reading it as documentation.
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** — development setup, testing commands, commit conventions.
