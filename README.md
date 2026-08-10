@@ -1,12 +1,17 @@
 # 🔀 Distributed Saga Microservice Platform
 
+[![Quality](https://github.com/Terrence721/saga-full/actions/workflows/quality.yml/badge.svg)](https://github.com/Terrence721/saga-full/actions/workflows/quality.yml)
+[![CodeQL](https://github.com/Terrence721/saga-full/actions/workflows/codeql.yml/badge.svg)](https://github.com/Terrence721/saga-full/actions/workflows/codeql.yml)
+
 **[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)**
 
-Last updated: August 10, 2026 (`user-service` core implementation)
+Last updated: August 10, 2026 (`user-service` gRPC service tests + a real runtime bug found)
 
 This repository is a from-scratch demonstration of the Distributed Saga pattern for coordinating long-running business transactions across independent microservices — order placement, payment settlement, and fulfillment, each owned by its own service, coordinated without a shared database transaction.
 
 This is an original implementation, not a fork of any existing project. The module boundaries and general shape of the problem (order → payment → fulfillment, with compensation on failure) are common territory for this class of system; the code, design decisions, and tradeoffs recorded here are this repo's own.
+
+**At a glance:** 13/13 tests passing across `user-contract` + `user-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
 
 ## 🧭 Start Here
 
@@ -22,7 +27,7 @@ Saga orchestration is a common interview-whiteboard topic and an uncommon thing 
 
 ## 🏗 What's Here So Far
 
-`user-contract` (shared gRPC contract) and the core of `user-service` (identity + auth: login, token issuance, token validation) are implemented. No tests yet — see `todo.md` for the build-out plan.
+`user-contract` (shared gRPC contract) and the core of `user-service` (identity + auth: login, token issuance, token validation) are implemented, both with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). See `todo.md` for the full build-out plan.
 
 ```text
 (planned, mirrors the shape of the problem — not final)

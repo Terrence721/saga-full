@@ -1,0 +1,137 @@
+        <!doctype html>
+        <html>
+        <head>
+        <meta charset="utf-8">
+        <title>saga-full - Aggregated Test Report</title>
+        <style>
+            body { font-family: -apple-system, "Segoe UI", sans-serif; margin: 2rem; color: #1f2328; }
+            h1 { margin-bottom: 0.25rem; }
+            .summary { margin-bottom: 1.5rem; font-size: 1.05rem; }
+            .summary span { margin-right: 1.5rem; }
+            table { border-collapse: collapse; width: 100%; }
+            th, td { border: 1px solid #d0d7de; padding: 6px 10px; text-align: left; font-size: 0.9rem; }
+            th { background: #f6f8fa; }
+            tr:nth-child(even) { background: #fafbfc; }
+        </style>
+        </head>
+        <body>
+        <h1>saga-full - Aggregated Test Report</h1>
+        <div class="summary">
+            <span><strong>Total:</strong> 13</span>
+            <span style="color:#1a7f37"><strong>Passed:</strong> 13</span>
+            <span style="color:#cf222e"><strong>Failed:</strong> 0</span>
+            <span style="color:#9a6700"><strong>Skipped:</strong> 0</span>
+        </div>
+        <table>
+            <thead>
+                <tr><th>Module</th><th>Class</th><th>Test</th><th>Status</th><th>Time</th><th>Message</th></tr>
+            </thead>
+            <tbody>
+            <tr>
+    <td>user-contract</td>
+    <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
+    <td>loginRequestRoundTripsThroughSerialization()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.016s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
+    <td>loginResponseRoundTripsAtInt64Boundary()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.171s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
+    <td>loginResponseRoundTripsThroughSerialization()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.0s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
+    <td>validateTokenRequestRoundTripsThroughSerialization()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.006s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
+    <td>validateTokenResponseRoundTripsWhenInvalid()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.004s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
+    <td>validateTokenResponseRoundTripsWhenValid()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.001s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
+    <td>loginSucceedsAndReturnsAccessToken()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.021s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
+    <td>validateTokenReturnsValidWhenTokenVerifies()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>2.096s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
+    <td>createdTokenVerifiesSuccessfullyWithMatchingClaims()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.004s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
+    <td>verifyTokenReturnsEmptyForExpiredToken()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.017s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
+    <td>verifyTokenReturnsEmptyForMalformedToken()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.0s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
+    <td>verifyTokenReturnsEmptyForTamperedSignature()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.671s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
+    <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
+    <td>verifyTokenReturnsEmptyForWrongIssuer()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.003s</td>
+    <td></td>
+</tr>
+            </tbody>
+        </table>
+        </body>
+        </html>
