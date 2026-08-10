@@ -19,6 +19,17 @@
 ./gradlew :<module-name>:test
 ```
 
+### Consolidated test report (all modules, one file)
+
+Each module's own HTML report lives at `<module>/build/reports/tests/test/index.html`. To see every module's results merged into a single file instead:
+
+```shell
+./gradlew test --continue
+./gradlew aggregateTestReport
+```
+
+Output: `build/reports/tests/aggregate/index.html`. Run as two separate commands, not one — `--continue` lets every module's tests run independently of one another, but if `aggregateTestReport` depended on the `test` tasks directly, a single failing module would block it from running at all (a failed dependency always prevents a dependent task from executing). Running it standalone means it always reflects whatever's currently on disk, pass or fail.
+
 ## Submitting pull requests
 
 Please follow these steps to simplify review:

@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 10, 2026 (`user-contract` test suite)
+Last updated: August 10, 2026 (consolidated test report)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -221,4 +221,27 @@ Verified as real, not just "written and assumed to pass": a genuine `./gradlew :
 
 - No test exists for `UserIdentityServiceGrpc` itself — it's a pure stub/service-base class with no data or logic of its own to assert against; its behavior is exercised indirectly once `user-service`'s own tests call through it.
 - Every result in [todo.md](../todo.md)'s Test Coverage Ledger reflects an actual test run, not an assumption — that ledger is the source of truth for "is this actually tested," updated only after a real `./gradlew :<module>:test` execution.
-- This is also just good practice for a multi-module build independent of the JDK 25 issue: explicit `mainClass` avoids the auto-detection task failing ambiguously if a module ever ends up with more than one class containing a `main` method (e.g. a test fixture).
+
+## Consolidated test report: a custom root task, not Gradle's `test-report-aggregation` plugin
+
+**Status:** Done — consolidated test report, Phase 10.
+
+### Context: consolidated test report
+
+With more modules and test suites planned across this repo, checking each module's own `build/reports/tests/test/index.html` separately doesn't scale. Gradle ships a built-in `test-report-aggregation` plugin for exactly this, applied at the root project with `testReportAggregation(project(...))` dependencies pointing at each subproject.
+
+In practice, that plugin's resolution needs each subproject's *full* dependency graph resolvable from the root, not just its already-written JUnit XML. Root-level resolution failed twice: first with "no repositories are defined" (fixed by declaring `mavenCentral()` at the root), then with unresolved Spring-managed dependency versions (`spring-boot-starter-actuator:.`, etc.) — because `user-service`'s versions come from Spring Boot's Gradle plugin auto-importing its BOM, which isn't applied at the root. Making that work would mean the root project also applying Spring Boot's plugin and BOM (and later, whatever `order-service`/`payment-service`/etc. add) — an ongoing duplication burden that grows every time any module's dependencies change, not a one-time setup cost.
+
+### Decision: consolidated test report
+
+A custom `aggregateTestReport` task in the new root `build.gradle.kts` reads the JUnit XML each module's `test` task already writes (`<module>/build/test-results/test/*.xml`) using the JDK's own `javax.xml.parsers.DocumentBuilderFactory` — no third-party dependency, no dependency-graph resolution of any kind — and merges every `<testcase>` into one self-contained HTML file at `build/reports/tests/aggregate/index.html`, with a pass/fail/skipped summary at the top.
+
+It deliberately does **not** `dependsOn` the subprojects' `test` tasks. A real test failure was used to verify this: with a dependency in place, `:user-contract:test` failing blocked `aggregateTestReport` from running at all, even with `--continue` (a failed dependency always prevents a dependent task from executing — `--continue` only lets *other, independent* tasks keep going). The documented workflow ([CONTRIBUTING.md](../CONTRIBUTING.md)) is therefore two separate commands: `./gradlew test --continue` (every module's tests run regardless of one another failing), then `./gradlew aggregateTestReport` (merges whatever's on disk, pass or fail).
+
+A second real bug was caught the same way: the task's first version declared `outputs.file(...)` but no inputs, so after one run Gradle marked it `UP-TO-DATE` on every later invocation and silently kept serving a stale report — it still showed a test that had since been fixed as failing. Fixed by declaring each subproject's `test-results/test` directory as a task input (only once it actually exists on disk, since a module with no tests yet never creates one, and Gradle's directory-input validation requires existence).
+
+### Consequences: consolidated test report
+
+- Every module added to this repo (`order-service`, `payment-service`, `restaurant-service`, `api-gateway-service`) is picked up automatically the moment it's added to `settings.gradle.kts`, since the task iterates `subprojects` rather than naming modules individually — no edit to this file needed as the repo grows.
+- The two-step `test --continue` / `aggregateTestReport` workflow is the only way to get an always-current merged report; running `aggregateTestReport` alone just reflects whatever the last `test` run produced, and running it as part of a single failing `./gradlew test` invocation without `--continue` would skip modules after the first failure.
+- Verified end-to-end with real runs, not assumed: confirmed 6/6 passing, then deliberately broke a `user-contract` assertion and confirmed the report showed `Failed: 1` with the real failure message, then confirmed reverting it flipped the report back to 6/6 (catching the staleness bug in the process), all before trusting the task.
