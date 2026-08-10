@@ -360,3 +360,36 @@ Verified empirically, not assumed from a changelog: bumping `order-service/build
 - Every future Spring Boot module in this repo (`payment-service`, `restaurant-service`, `api-gateway-service`) should start on `3.5.16`, not `3.4.1` — the version this repo's earlier phases pinned is now known to be fundamentally incompatible with actually running under this repo's JDK 25 toolchain, not just a source of isolated tool-specific workarounds like the earlier Lombok/Mockito/ASM findings.
 - This is the second real "nothing before this test exercised the actual failing code path" bug found in this repo (after the Phase 12 `protobuf-java` BOM downgrade) — both reinforce the same lesson already recorded in [todo.md](../todo.md)'s Test Coverage Ledger: a module isn't proven to work until a test exists that would actually fail if it didn't, and `compileJava`/`assemble`/`bootJar` succeeding is not that proof for anything involving Spring's component scan.
 - A minimal `@SpringBootTest` `contextLoads()` test is now the first test written for every future service module in this repo, before any business logic — it's the cheapest possible check that actually exercises real context startup, and it's what caught this.
+
+## `order-service` domain model: `BigDecimal` for money, not the source's `double`
+
+**Status:** Done — `order-service` domain model, Phase 18.
+
+### Context: representing `Order.totalAmount`
+
+The source's `Order` entity stores `totalAmount` as a primitive `double`. Binary floating-point types can't exactly represent most decimal fractions (`0.1` has no exact `double` representation, for instance) — a well-known, real source of rounding drift in money arithmetic that compounds the more a value gets added to, multiplied, or compared across a system, not a theoretical concern specific to this repo.
+
+### Decision: `BigDecimal` for `Order.totalAmount`
+
+`Order.totalAmount` is a `java.math.BigDecimal`, mapped with explicit JPA `precision = 19, scale = 2` (19 total digits, 2 after the decimal point — enough range for real currency amounts with exact cent precision, the same shape Hibernate itself defaults to for `BigDecimal` columns when left unspecified, made explicit here rather than relied on implicitly). Also carried over from `user-service`'s Phase 7 precedent rather than re-litigated: `Order.id` and the new `customerId` field both use `UUID` (`@GeneratedValue(strategy = GenerationType.UUID)` for `id`), not the source's un-generated `String id` / loosely-typed `String customerId` — `customerId` specifically should reference `user-service`'s `User.id`, itself a `UUID`.
+
+### Consequences: `BigDecimal` for `Order.totalAmount`
+
+- Equality/comparison on `totalAmount` must use `compareTo`/`equals` semantics correctly (`BigDecimal.equals` is scale-sensitive — `new BigDecimal("1.0").equals(new BigDecimal("1.00"))` is `false` — a real gotcha to keep in mind once tests are written against this field), not `==`, which isn't available for object types anyway but is an easy habit to carry over incorrectly from primitive `double` code.
+- Any future service that also handles money (`payment-service` is the obvious one) should follow the identical `BigDecimal` convention for the same reason.
+
+## `order-service` `OutboxRecord`: `traceId`/`spanId` columns deferred, not carried over from the source
+
+**Status:** Done — `order-service` domain model, Phase 18.
+
+### Context: trace-context columns with no tracer to populate them
+
+The source's `OutboxRecord` includes `traceId`/`spanId` columns, populated from OpenTelemetry's active span context at the point an outbox row is written, so a downstream consumer can continue the same distributed trace. This repo already deliberately deferred OTel export wiring for `order-service` (Phase 16) — no collector exists yet to send traces to.
+
+### Decision: leave `traceId`/`spanId` out of `OutboxRecord` for now
+
+Adding non-nullable trace-context columns with no active tracer to populate them would mean either forcing placeholder values into every row or making the columns nullable purely to accommodate infrastructure that doesn't exist yet — both worse than not having the columns at all until they'd carry real data.
+
+### Consequences: deferring `traceId`/`spanId`
+
+- When OTel export wiring actually gets added to this repo, `OutboxRecord` (here and in every other module with an outbox table) needs these two columns added at that point, as a real schema change, not something to backfill quietly.

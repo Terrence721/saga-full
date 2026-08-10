@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 10, 2026 (`order-service` scaffold started; repo-wide Spring Boot 3.5.16 bump)
+**Last Updated:** August 10, 2026 (`order-service` domain model: `Order`, `OrderStatus`, `OutboxRecord`)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -94,6 +94,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | - | - | - |
 | 16 | 2026-08-10 | `settings.gradle.kts` updated to include `order-service`; `build.gradle.kts` written (actuator, validation, web, data-jpa, H2/Postgres runtime drivers, Lombok pinned to 1.18.42 matching `user-service`). Deliberately used `spring-kafka` directly instead of the source's Spring Cloud Stream Kafka binder — this project only ever targets Kafka, never needs broker-swappability, so the extra abstraction wasn't worth the added functional-binding config. OTel export and a Kubernetes-specific datasource profile were both deliberately deferred: the source's config points at infrastructure (an OTLP collector, a Minikube-hosted Postgres) this repo doesn't have yet. `OrderServiceApplication` entry point (with `@EnableScheduling`, needed later for outbox polling). `./gradlew :order-service:compileJava` verified green. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 | 17 | 2026-08-10 | `OrderServiceApplicationTests.contextLoads()` written as the module's first test — and it immediately failed for real: Spring Boot 3.4.1's Spring Framework can't parse JDK 25 class files during component scanning at all (`Unsupported class file major version 69`), a deeper issue than Phase 8's Gradle-plugin-scoped one. Checking `user-service` showed it had the identical latent risk, undetected because no test there had ever booted a real `ApplicationContext`. Fixed by bumping **both** modules' Spring Boot plugin version from 3.4.1 to 3.5.16 — verified with `order-service`'s test passing (real JPA/Hikari boot) and a new `UserServiceApplicationTests.contextLoads()` added to `user-service` and passing (real gRPC server + JPA/Hikari boot, the first proof that module starts at all under JDK 25). Full reasoning in [docs/architecture.md](docs/architecture.md) |
+| 18 | 2026-08-10 | `order-service` domain model written: `OrderStatus` (`PENDING`/`CANCELLED`/`SUCCESS`, unchanged from the source), `Order` (`UUID id`/`customerId` per `user-service`'s Phase 7 precedent, `BigDecimal totalAmount` instead of the source's `double` — floating point can't exactly represent decimal fractions, a real correctness concern for money), and `OutboxRecord` (matches the source, minus its `traceId`/`spanId` columns — deferred along with OTel export wiring itself, per Phase 16, rather than adding trace-context columns with no tracer to populate them). `./gradlew :order-service:compileJava` and the full 22-test suite both verified green with no regression. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 
 ## 🔧 Still to do
 
