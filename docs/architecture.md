@@ -162,3 +162,20 @@ The first real `./gradlew :user-service:compileJava` run — the first time any 
 ### Consequences: Lombok/JDK 25 incompatibility
 
 - Every future module using Lombok on this repo's JDK 25 toolchain (`order-service`, `payment-service`, `restaurant-service`, `api-gateway-service`) will hit this same failure and needs the identical explicit version pin until Spring Boot's own managed dependencies catch up to a JDK-25-compatible Lombok release.
+
+## Real build issue found and fixed: `resolveMainClassName` can't read JDK 25 class files
+
+**Status:** Done — `user-service` CI fix, Phase 8.
+
+### Context: `resolveMainClassName` failure
+
+The first real CI run of `quality.yml`'s `build` job (`./gradlew assemble`) against `user-service` failed at `:user-service:resolveMainClassName` with `Unsupported class file major version 69` (major version 69 = Java 25). That task, added by the Spring Boot Gradle plugin, auto-detects a module's main class by scanning its compiled `.class` files with a bundled ASM `ClassReader` when `springBoot.mainClass` isn't set explicitly. Spring Boot 3.4.1's Gradle plugin predates JDK 25's GA (September 2025), so its bundled ASM doesn't recognize a class file compiled to major version 69 — this is independent of which JDK actually runs Gradle itself (already JDK 25, per Phase 5/6's CI setup), since the scan uses the plugin's own bundled bytecode reader, not the running JVM's.
+
+### Decision: `resolveMainClassName` failure
+
+`user-service/build.gradle.kts` sets `springBoot { mainClass.set("io.github.terrence721.saga.user.UserServiceApplication") }`, which tells the plugin the answer instead of asking it to derive one by reading bytecode — this skips the ASM scan entirely rather than working around a bug inside it. Confirmed locally by reproducing the exact CI failure with `./gradlew assemble` before the fix, then a second run succeeding (through `resolveMainClassName` → `bootJar` → `assemble`) after it.
+
+### Consequences: `resolveMainClassName` failure
+
+- Every future Spring Boot module in this repo (`order-service`, `payment-service`, `restaurant-service`, `api-gateway-service`) needs the same explicit `mainClass` declaration for the identical reason, until the Spring Boot Gradle plugin ships a release built against a JDK-25-aware ASM.
+- This is also just good practice for a multi-module build independent of the JDK 25 issue: explicit `mainClass` avoids the auto-detection task failing ambiguously if a module ever ends up with more than one class containing a `main` method (e.g. a test fixture).

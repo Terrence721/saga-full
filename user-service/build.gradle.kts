@@ -7,6 +7,10 @@ plugins {
 group = "io.github.terrence721.saga"
 version = "1.0.0"
 
+springBoot {
+    mainClass.set("io.github.terrence721.saga.user.UserServiceApplication")
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
