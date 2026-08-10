@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 10, 2026
+Last updated: August 10, 2026 (`user-service` core implementation)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -95,3 +95,70 @@ Both workflows were pushed and their first real run confirmed — not assumed to
 - The first real run of both workflows failed immediately: `./gradlew: Permission denied`, exit code 126. `gradlew` was committed from Windows, which doesn't track Unix executable permissions, so git stored it as file mode `100644` instead of `100755` — the Linux CI runner couldn't execute it at all. Fixed with `git update-index --chmod=+x gradlew`, confirmed by a second real run that both workflows pass.
 - This is a real risk for every future module and every future contributor committing from Windows: a script added without its executable bit will build fine locally (Windows doesn't enforce the bit) and fail silently in CI until someone actually runs it there.
 - Hand-written service code follows the same root, e.g. `io.github.terrence721.saga.<module>`.
+
+## `user-service`: password hashing via Spring Security Crypto, not the source's `jbcrypt`
+
+**Status:** Done — `user-service` core implementation, Phase 7.
+
+### Context: password hashing library
+
+The structural-reference source hashes passwords with the standalone `org.mindrot:jbcrypt` library. That project has had no release in years and isn't part of any actively maintained ecosystem — a real concern for anything touching credential storage, where an unpatched library is a standing liability rather than a one-time inconvenience.
+
+### Decision: password hashing library
+
+`user-service` uses `spring-security-crypto`'s `BCryptPasswordEncoder` instead — same BCrypt algorithm underneath, but shipped and security-audited as part of the actively maintained Spring Security project, and already pulled in transitively by nothing else here, so it's an explicit, deliberate dependency, not an accident.
+
+### Consequences: password hashing library
+
+- `user-service/build.gradle.kts` depends on `org.springframework.security:spring-security-crypto` directly, without pulling in all of `spring-boot-starter-security` (no request-level security filter chain exists or is needed here — this service exposes gRPC only).
+- A `PasswordEncoder` bean (`SecurityConfig`) is required where the reference had none, since Spring Security's encoder is dependency-injected rather than called as a static utility method.
+
+## `user-service`: UUID primary keys, not the source's un-generated `Long`
+
+**Status:** Done — `user-service` core implementation, Phase 7.
+
+### Context: `User` primary key
+
+The reference `User` entity declares `@Id private Long id` with no `@GeneratedValue` strategy at all — every insert would need the ID assigned by hand, which only works there because rows are seeded via `data.sql`, not created through normal application code.
+
+### Decision: `User` primary key
+
+`user-service`'s `User` entity uses `UUID id` with `@GeneratedValue(strategy = GenerationType.UUID)`, Hibernate's native UUID generation (available since Hibernate 6, bundled with Spring Boot 3.4). A UUID is also what actually crosses the gRPC boundary — `LoginResponse.user_id` in `user.proto` is a `string`, so an opaque UUID converted with `.toString()` fits that contract more naturally than a sequential integer would, and doesn't leak how many users have signed up.
+
+### Consequences: `User` primary key
+
+- `UserRepository extends JpaRepository<User, UUID>`, not `<User, Long>`.
+- No `data.sql` seed file is used for `user-service`; rows are created through normal application code, which is what the generated-ID strategy is for.
+
+## `user-service`: `ValidateToken` returns `valid: false`, never a gRPC error
+
+**Status:** Done — `user-service` core implementation, Phase 7.
+
+### Context: token validation failure handling
+
+The reference source never actually implements a token-validation RPC — only login/token-issuance. This repo's `user.proto` (Phase 4) deliberately added `ValidateToken` as a second RPC, so its failure-handling behavior had to be decided from scratch. The naive approach mirrors `Login`: throw a domain exception and let it become a gRPC error status (`UNAUTHENTICATED`, etc.).
+
+### Decision: token validation failure handling
+
+An expired, malformed, or forged token is a normal answer for a validation endpoint to give, not a failure of the endpoint itself — the same reasoning behind OAuth2 token-introspection (`RFC 7662`) returning `active: false` rather than an HTTP error for an invalid token. `JwtTokenProvider.verifyToken` returns `Optional<DecodedJWT>`, empty on any verification failure, and `UserGrpcServiceImpl.validateToken` maps that directly to `ValidateTokenResponse{ valid: false }` — it never throws, so it never goes through `GrpcExecutor`'s exception-to-`Status` mapping at all.
+
+### Consequences: token validation failure handling
+
+- Callers of `ValidateToken` (eventually `api-gateway-service`, checking a caller's bearer token) get a normal, successful gRPC response either way and branch on the `valid` field — they don't need gRPC-status error handling just to check a token.
+- `Login`, by contrast, still throws through `GrpcExecutor`: a wrong password or unknown email during an explicit login attempt is treated as a genuine client error worth a gRPC status (`UNAUTHENTICATED`/`NOT_FOUND`/`PERMISSION_DENIED`), since the caller is actively asking "let me in," not "is this thing still valid."
+
+## Real build issue found and fixed: Lombok 1.18.36 incompatible with JDK 25's javac internals
+
+**Status:** Done — `user-service` core implementation, Phase 7.
+
+### Context: Lombok/JDK 25 incompatibility
+
+The first real `./gradlew :user-service:compileJava` run — the first time any class in this repo actually used a Lombok annotation (`@Getter`/`@Setter`/`@Builder`/`@Slf4j`) — failed with `java.lang.ExceptionInInitializerError` → `NoSuchFieldException: com.sun.tools.javac.code.TypeTag :: UNKNOWN`. Lombok hooks into `javac`'s internal, undocumented classes to rewrite the AST at compile time; Spring Boot 3.4.1's dependency management pins Lombok to 1.18.36, which predates JDK 25 (GA September 2025) and doesn't know about that JDK build's internal layout.
+
+### Decision: Lombok/JDK 25 incompatibility
+
+`user-service/build.gradle.kts` pins `org.projectlombok:lombok:1.18.42` explicitly on both `compileOnly` and `annotationProcessor`, overriding Spring Boot's managed version. 1.18.40 added JDK 25 support; 1.18.42 fixed a Javadoc-parsing regression from that release. Confirmed by an actual second `./gradlew :user-service:compileJava` run succeeding, not inferred from the changelog alone.
+
+### Consequences: Lombok/JDK 25 incompatibility
+
+- Every future module using Lombok on this repo's JDK 25 toolchain (`order-service`, `payment-service`, `restaurant-service`, `api-gateway-service`) will hit this same failure and needs the identical explicit version pin until Spring Boot's own managed dependencies catch up to a JDK-25-compatible Lombok release.

@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 10, 2026 (CI green: quality + CodeQL workflows both passing)
+**Last Updated:** August 10, 2026 (`user-service` core implementation)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -17,8 +17,9 @@ A phase-by-phase log of what's been done on this repo and what's still open. Thi
 | Root namespace: `io.github.terrence721.saga` | Anchors the package/group ID to an identity actually owned (this repo's GitHub account) rather than an unowned domain like the first proposal, `com.sagafull.saga`; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 3 |
 | `user-contract` module | `settings.gradle.kts`, `build.gradle.kts`, and an original `user.proto` (gRPC login + token validation contract) written; `./gradlew :user-contract:build` verified green end-to-end, including a real Gradle-version incompatibility and a real missing-symbol compile error found and fixed along the way, not just written on faith; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 4 |
 | CI: quality + CodeQL | `quality.yml` (build/test jobs) and `codeql.yml` (java-kotlin) added; first real run failed (`gradlew` committed without its executable bit from Windows), fixed and confirmed green on a second real run; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 5 |
+| `user-service` core | Entry point, config, `User` entity (UUID id), `UserRepository`, exception types, `JwtTokenProvider`, and `UserGrpcServiceImpl` (`Login` + `ValidateToken`) written; hit and fixed a real Lombok/JDK 25 incompatibility along the way; `./gradlew :user-service:compileJava` verified green; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 7 |
 
-**Actually still open, right now:** every remaining service module and `portfolio.html`. See the **Still to do** table below.
+**Actually still open, right now:** `user-service` tests, remaining service modules, and `portfolio.html`. See the **Still to do** table below.
 
 ## ✅ Done
 
@@ -42,9 +43,16 @@ A phase-by-phase log of what's been done on this repo and what's still open. Thi
 | - | - | - |
 | 5 | 2026-08-10 | `.github/workflows/quality.yml` (parallel `build`/`test` jobs, JDK 25 Temurin, `gradle/actions/setup-gradle`) and `codeql.yml` (java-kotlin, real build before analyze) added. First real push failed both workflows: `./gradlew: Permission denied`, exit 126 — `gradlew` was committed from Windows without its executable bit, so git stored mode `100644` instead of `100755`. Fixed with `git update-index --chmod=+x gradlew`; a second real run confirmed both workflows green. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 
+### `user-service` module
+
+| Phase | Date | What |
+| - | - | - |
+| 7 | 2026-08-10 | `settings.gradle.kts` updated to include `user-service`; `build.gradle.kts` written (actuator, data-jpa, spring-grpc-server, spring-security-crypto instead of the source's unmaintained `jbcrypt`, java-jwt, H2/Postgres runtime drivers). `UserServiceApplication` entry point; `application.yaml` (default H2 / `postgres` profiles, no baked-in JWT secret default); `User` entity with a Hibernate-native `UUID` id instead of the source's un-generated `Long`; `UserRepository`; `UserNotFoundException`/`InvalidCredentialsException`/`UserInactiveException`; `SecurityConfig` exposing a `BCryptPasswordEncoder` bean; `GrpcExecutor` (domain-exception → gRPC `Status` mapping, using `java.util.function.Supplier` instead of the source's Guava dependency); `JwtTokenProvider` (token creation and verification split out into its own component, unlike the source, which never actually implemented token validation); `UserGrpcServiceImpl` implementing both `Login` and `ValidateToken` — the latter returns `valid: false` rather than a gRPC error on a bad token. Hit and fixed a real Lombok 1.18.36/JDK 25 incompatibility (`NoSuchFieldException: TypeTag :: UNKNOWN`), pinned to 1.18.42. `./gradlew :user-service:compileJava` verified green. Full reasoning in [docs/architecture.md](docs/architecture.md) |
+
 ## 🔧 Still to do
 
 | Item | Detail |
 | - | - |
-| Remaining service modules | `user-service`, `order-service`, `payment-service`, `restaurant-service`, `api-gateway-service` — added one file/folder at a time, conferring at each step |
+| `user-service` tests | Unit/integration test coverage for `UserGrpcServiceImpl` and `JwtTokenProvider` — not yet written |
+| Remaining service modules | `order-service`, `payment-service`, `restaurant-service`, `api-gateway-service` — added one file/folder at a time, conferring at each step |
 | `portfolio.html` | Case-study page for the portfolio site, written once there are real results/metrics to show |

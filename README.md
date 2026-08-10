@@ -2,7 +2,7 @@
 
 **[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)** · [More of my work ↗](https://terrence721.github.io/)
 
-Last updated: August 10, 2026
+Last updated: August 10, 2026 (`user-service` core implementation)
 
 This repository is a from-scratch demonstration of the Distributed Saga pattern for coordinating long-running business transactions across independent microservices — order placement, payment settlement, and fulfillment, each owned by its own service, coordinated without a shared database transaction.
 
@@ -21,7 +21,7 @@ Saga orchestration is a common interview-whiteboard topic and an uncommon thing 
 
 ## 🏗 What's Here So Far
 
-Repository bootstrap only — no services added yet. See `todo.md` for the build-out plan.
+`user-contract` (shared gRPC contract) and the core of `user-service` (identity + auth: login, token issuance, token validation) are implemented. No tests yet — see `todo.md` for the build-out plan.
 
 ```text
 (planned, mirrors the shape of the problem — not final)
@@ -29,10 +29,14 @@ Repository bootstrap only — no services added yet. See `todo.md` for the build
   order-service/         saga orchestrator / state machine
   payment-service/       payment ledger + settlement
   restaurant-service/    fulfillment-side processor
-  user-service/          identity + auth
-  user-contract/         shared API contract types
+  user-service/          identity + auth                  ✅ core implementation
+  user-contract/         shared API contract types         ✅ done
 ```
 
 ## 🖥 Getting Started
 
-Not yet runnable — services haven't been added. This section will be filled in as the first service lands.
+```shell
+./gradlew :user-service:compileJava
+```
+
+A full runnable stack needs at least one more service to talk to `user-service` over gRPC — this section will expand as that lands.
