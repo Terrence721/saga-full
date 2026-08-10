@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 10, 2026 (consolidated test report)
+Last updated: August 10, 2026 (`user-service` gRPC service tests + a real runtime bug found)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -246,3 +246,57 @@ A second real bug was caught the same way: the task's first version declared `ou
 - The two-step `test --continue` / `aggregateTestReport` workflow is the only way to get an always-current merged report; running `aggregateTestReport` alone just reflects whatever the last `test` run produced, and running it as part of a single failing `./gradlew test` invocation without `--continue` would skip modules after the first failure.
 - Verified end-to-end with real runs, not assumed: confirmed 6/6 passing, then deliberately broke a `user-contract` assertion and confirmed the report showed `Failed: 1` with the real failure message, then confirmed reverting it flipped the report back to 6/6 (catching the staleness bug in the process), all before trusting the task.
 - Wired into CI: `quality.yml`'s `Test` job runs `./gradlew test --continue`, then `./gradlew aggregateTestReport` and an `actions/upload-artifact@v4` step, both marked `if: always()` so they run even when a test fails, uploading `build/reports/tests/aggregate/` as a downloadable artifact on every CI run — not just something you'd have to reproduce locally to see.
+
+## `user-service` gRPC service tests: a hand-written `StreamObserver`, not `io.grpc.testing.StreamRecorder`
+
+**Status:** Done — `user-service` gRPC service tests, Phase 12.
+
+### Context: capturing a unary gRPC response in a unit test
+
+`UserGrpcServiceImplTest` needs to call `UserGrpcServiceImpl.login`/`.validateToken` directly (with `UserRepository`/`PasswordEncoder`/`JwtTokenProvider` mocked via Mockito) and inspect the response without a real network call. `io.grpc:grpc-testing` (already a `build.gradle.kts` dependency since Phase 7, previously unused) ships `io.grpc.testing.StreamRecorder` for exactly this. The IDE flagged it deprecated; checking upstream confirmed it's deprecated with **no official replacement** — grpc-java's own maintainers describe it as "not for public use," with community guidance to either use blocking stubs against a real (in-process) server or hand-roll the capturing logic.
+
+### Decision: capturing a unary gRPC response in a unit test
+
+A small package-private `RecordingStreamObserver<T>` implements `io.grpc.stub.StreamObserver<T>` directly, capturing the value passed to `onNext` and the error passed to `onError`. No latch or `awaitCompletion()` is needed: `GrpcExecutor` (the shared exception-to-`Status` mapper both RPCs go through) always calls `onNext`/`onError`/`onCompleted` synchronously, in the same thread, before `login`/`validateToken` returns — this isn't a streaming or async call.
+
+### Consequences: capturing a unary gRPC response in a unit test
+
+- `RecordingStreamObserver` is reused by both `UserGrpcServiceImplTest` (happy path) and `UserGrpcServiceImplErrorTest` (error path) rather than duplicated.
+- If a future RPC in this repo is genuinely asynchronous or streaming (unlike `Login`/`ValidateToken`), this pattern doesn't apply as-is — that would need real synchronization, not just a capturing observer.
+
+## Real production bug found and fixed: `spring-grpc`'s BOM silently downgrades `protobuf-java` below what generated code needs
+
+**Status:** Done — `user-service` gRPC service tests, Phase 12.
+
+### Context: protobuf-java version conflict
+
+Running `UserGrpcServiceImplTest` for the first time — the first time anything in `user-service` actually constructed a `LoginRequest`/`ValidateTokenRequest` message at runtime, not just at compile time — failed with `NoClassDefFoundError: com/google/protobuf/RuntimeVersion$RuntimeDomain` the instant the message class's static initializer ran. `com.google.protobuf.RuntimeVersion$RuntimeDomain` is a class protobuf-java only added in 4.27+, referenced by code `protoc` 4.28.2 generates (used in `user-contract`) as part of its own runtime-version validation.
+
+`./gradlew :user-service:dependencyInsight --dependency protobuf-java --configuration testRuntimeClasspath` showed the actual cause: `org.springframework.grpc:spring-grpc-dependencies` (the BOM imported in Phase 7 for `spring-grpc-server-spring-boot-starter`) forces `protobuf-java` down to `3.25.6` — overriding not just Gradle's normal "highest version wins" resolution, but overriding it *downward*, even below `user-contract`'s own direct `4.28.2` requirement. Checking `runtimeClasspath` (not just `testRuntimeClasspath`) confirmed this wasn't a test-only artifact: **the actual production application had the identical broken dependency graph** since Phase 7. It went unnoticed because every verification since then (`compileJava`, `assemble`, `build`, `bootJar`) only compiles code or packages a jar — none of them actually construct a generated protobuf message at runtime, which is the one thing that triggers the class-loading failure. This test is the first thing in the repo that ever did.
+
+### Decision: protobuf-java version conflict
+
+`user-service/build.gradle.kts` adds an explicit `implementation("com.google.protobuf:protobuf-java:4.28.2")` — on the main `implementation` configuration, not `testImplementation`, so it fixes `runtimeClasspath` and `testRuntimeClasspath` identically, the same way the bug affected both identically. An explicit direct dependency declaration outranks a BOM-forced transitive one in Gradle's conflict resolution, the same mechanism that made the Lombok and Mockito pins (below) take effect. Confirmed via `dependencyInsight` that `protobuf-java` now resolves to `4.28.2` on both configurations, then confirmed the actual test (which directly calls `LoginRequest.newBuilder()...build()`, the exact call that crashed) passes — proving the fix at the same point that exposed the bug, not just at the dependency-resolution level.
+
+### Consequences: protobuf-java version conflict
+
+- This was a real, user-facing bug: had `user-service` been deployed and actually received a gRPC call before this was caught, it would have crashed on the first request. No amount of `compileJava`/`assemble`/`bootJar` verification would have caught it — only a test (or a real request) that actually constructs a generated message does.
+- Every future module in this repo that both generates protobuf code (via `user-contract`-style modules) and depends on `spring-grpc-server-spring-boot-starter` needs the identical explicit `protobuf-java` pin, until `spring-grpc-dependencies` ships a BOM that doesn't force protobuf-java below what its own declared grpc-protobuf version needs.
+- This is the strongest argument yet in this repo for writing tests that actually exercise generated code paths, not just ones that compile against them — see [todo.md](../todo.md)'s Test Coverage Ledger.
+
+## `user-service` test tooling: Mockito 5.23.0 + ByteBuddy 1.17.7, pinned for JDK 25
+
+**Status:** Done — `user-service` gRPC service tests, Phase 12.
+
+### Context: Mockito/JDK 25 incompatibility
+
+The first real test run using `@Mock`/`@InjectMocks` (`UserGrpcServiceImplTest`) failed with `MockitoException` → `IllegalStateException` in `InlineBytecodeGenerator` → `IllegalArgumentException` in `OpenedClassReader` — the same *category* of failure as the Lombok/JDK 25 issue from Phase 7 and the `resolveMainClassName`/JDK 25 issue from Phase 8, but in a third tool: Mockito's inline mock maker uses ByteBuddy to generate mock subclasses at runtime, and Spring Boot 3.4.1 manages Mockito at `5.14.2`, which bundles ByteBuddy `1.15.11` — a version that only officially supports class files up to Java 23 (major version 67), not JDK 25's 69.
+
+### Decision: Mockito/JDK 25 incompatibility
+
+Pinned `org.mockito:mockito-core`/`mockito-junit-jupiter` to `5.23.0` directly. That alone wasn't sufficient: `dependencyInsight` showed Spring Boot's BOM still forcing `byte-buddy` back down to `1.15.11` even after the Mockito bump, the identical "BOM overrides the version its own dependency asks for" pattern as the protobuf-java bug above — so `net.bytebuddy:byte-buddy`/`byte-buddy-agent` were also pinned explicitly, to `1.17.7`, the version `mockito-core:5.23.0` itself requests. Confirmed via `dependencyInsight` that both now resolve correctly, then confirmed the actual mocked test passes.
+
+### Consequences: Mockito/JDK 25 incompatibility
+
+- A pattern is now visible across three separate incidents (Lombok, Spring Boot's `resolveMainClassName`, Mockito/ByteBuddy): tools that read or generate JVM bytecode via bundled ASM/ByteBuddy consistently lag JDK 25 support, and Spring Boot 3.4.1's dependency management consistently pins the pre-JDK-25 version of each. Any *new* bytecode-touching tool added to this repo (code coverage, additional static analysis, etc.) should be assumed to need the same treatment until proven otherwise.
+- Bumping a BOM-managed library's version is not always enough on its own — its own transitive dependencies (like ByteBuddy here) may need pinning too, since the BOM's constraint can outrank what the newly-bumped library itself declares it needs.

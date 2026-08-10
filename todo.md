@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 10, 2026 (consolidated test report across modules)
+**Last Updated:** August 10, 2026 (`user-service` gRPC service tests + a real runtime bug found)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -21,8 +21,9 @@ A phase-by-phase log of what's been done on this repo and what's still open. Thi
 | CI fix: `resolveMainClassName` | First real CI run of `quality.yml` against `user-service` failed (`Unsupported class file major version 69` — Spring Boot Gradle plugin's bundled ASM can't read JDK 25 bytecode). Fixed with an explicit `springBoot { mainClass.set(...) }`, skipping the auto-detection scan entirely; reproduced the failure locally and confirmed both `./gradlew assemble` and `./gradlew test` green before pushing; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 8 |
 | `user-contract` tests | JUnit 5.11.4 + AssertJ 3.26.3 added (pinned to match what Spring Boot manages for `user-service`, not the new JUnit 6.1.3); 6 serialization round-trip tests written since there's no hand-written Java to unit test in a proto-only module; verified genuinely green with a real `./gradlew :user-contract:test` run, and verified the suite actually catches a wrong value by deliberately breaking one assertion and re-running before reverting; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 9 |
 | Consolidated test report | Custom root `aggregateTestReport` task merges every module's JUnit XML into one HTML file (`build/reports/tests/aggregate/index.html`), auto-picking up future modules with no edits needed. Gradle's built-in `test-report-aggregation` plugin was tried first and abandoned — it needs every module's full dependency graph (Spring Boot's BOM, etc.) resolvable from the root, an ongoing maintenance burden. Caught and fixed two real bugs along the way: a failing test silently blocking the report from generating at all, and a stale-report bug (no declared task inputs, so Gradle skipped regenerating it). Wired into CI: `quality.yml`'s `Test` job now runs it and uploads the merged report as a downloadable GitHub Actions artifact on every run. Reasoning in [docs/architecture.md](docs/architecture.md), usage in [CONTRIBUTING.md](CONTRIBUTING.md) | Phase 10 |
+| `user-service` tests (in progress) | `JwtTokenProviderTest` (5 tests, no Spring context needed) and `UserGrpcServiceImplTest` (2 tests, Mockito-mocked collaborators) written and passing. Found and fixed a real Mockito/JDK 25 incompatibility, and — far more significant — a **real production bug**: `spring-grpc`'s BOM was silently downgrading `protobuf-java` below what `user-contract`'s generated code needs, on `user-service`'s actual runtime classpath, since Phase 7. It went undetected because nothing before this test ever actually constructed a generated message at runtime. Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 11-12 |
 
-**Actually still open, right now:** `user-service` tests, remaining service modules, and `portfolio.html`. See the **Still to do** table below.
+**Actually still open, right now:** `UserGrpcServiceImplErrorTest` (error-path coverage), the in-process gRPC integration test, remaining service modules, and `portfolio.html`. See the **Still to do** table below.
 
 ## 🧪 Test Coverage Ledger
 
@@ -32,6 +33,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | - | - | - | - | - | - |
 | `user-contract` | `UserContractSerializationTest` | 6 | ✅ passing | Phase 9 | 2026-08-10 |
 | `user-service` | `JwtTokenProviderTest` | 5 | ✅ passing | Phase 11 | 2026-08-10 |
+| `user-service` | `UserGrpcServiceImplTest` | 2 | ✅ passing | Phase 12 | 2026-08-10 |
 
 ## ✅ Done
 
@@ -62,6 +64,8 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | - | - | - |
 | 7 | 2026-08-10 | `settings.gradle.kts` updated to include `user-service`; `build.gradle.kts` written (actuator, data-jpa, spring-grpc-server, spring-security-crypto instead of the source's unmaintained `jbcrypt`, java-jwt, H2/Postgres runtime drivers). `UserServiceApplication` entry point; `application.yaml` (default H2 / `postgres` profiles, no baked-in JWT secret default); `User` entity with a Hibernate-native `UUID` id instead of the source's un-generated `Long`; `UserRepository`; `UserNotFoundException`/`InvalidCredentialsException`/`UserInactiveException`; `SecurityConfig` exposing a `BCryptPasswordEncoder` bean; `GrpcExecutor` (domain-exception → gRPC `Status` mapping, using `java.util.function.Supplier` instead of the source's Guava dependency); `JwtTokenProvider` (token creation and verification split out into its own component, unlike the source, which never actually implemented token validation); `UserGrpcServiceImpl` implementing both `Login` and `ValidateToken` — the latter returns `valid: false` rather than a gRPC error on a bad token. Hit and fixed a real Lombok 1.18.36/JDK 25 incompatibility (`NoSuchFieldException: TypeTag :: UNKNOWN`), pinned to 1.18.42. `./gradlew :user-service:compileJava` verified green. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 | 8 | 2026-08-10 | First real CI run against `user-service` failed at `:user-service:resolveMainClassName` (`Unsupported class file major version 69`) — Spring Boot 3.4.1's Gradle plugin bundles an ASM that predates JDK 25 and can't read its bytecode when auto-detecting the main class. Fixed with an explicit `springBoot { mainClass.set(...) }` in `user-service/build.gradle.kts`, skipping the scan. Reproduced the exact failure locally with `./gradlew assemble`, confirmed the fix with a second real run, and confirmed `./gradlew test` also passes clean with no tests yet. Full reasoning in [docs/architecture.md](docs/architecture.md) |
+| 11 | 2026-08-10 | `JwtTokenProviderTest` written: 5 tests, no Spring context needed since `JwtTokenProvider` takes plain constructor args. Covers a created token verifying successfully with matching claims, and `verifyToken` returning empty for a tampered signature, wrong issuer, expired token, and malformed input. Verified with a real `./gradlew :user-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately breaking one assertion and re-running before reverting it. |
+| 12 | 2026-08-10 | `UserGrpcServiceImplTest` written (happy-path: `login` succeeds and returns an access token, `validateToken` returns `valid: true` for a verifying token), using a hand-written `RecordingStreamObserver` instead of the deprecated `io.grpc.testing.StreamRecorder` (no official replacement upstream). Hit and fixed two real issues along the way: Mockito 5.14.2's bundled ByteBuddy 1.15.11 can't mock on JDK 25 (pinned mockito-core/mockito-junit-jupiter to 5.23.0 and byte-buddy to 1.17.7, since Spring's BOM kept forcing byte-buddy back down even after the mockito bump); and a **real production bug** — `spring-grpc`'s BOM was silently downgrading `protobuf-java` to 3.25.6 on `user-service`'s actual runtime classpath (not just tests) since Phase 7, below what `user-contract`'s generated code needs, undetected until now because nothing before this test ever constructed a generated message at runtime. Fixed with an explicit `implementation("com.google.protobuf:protobuf-java:4.28.2")`. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 
 ### Consolidated test reporting
 
@@ -73,6 +77,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 
 | Item | Detail |
 | - | - |
-| `user-service` tests | Unit/integration test coverage for `UserGrpcServiceImpl` and `JwtTokenProvider` — not yet written |
+| `user-service` error-path tests | `UserGrpcServiceImplErrorTest` — unknown email, inactive user, wrong password for `login`; invalid/expired token for `validateToken` returning `valid: false` |
+| `user-service` gRPC integration test | One in-process test (`InProcessServerBuilder`/`InProcessChannelBuilder`, via the `grpc-testing` dependency) exercising the real wire contract end to end, not just internal Java calls |
 | Remaining service modules | `order-service`, `payment-service`, `restaurant-service`, `api-gateway-service` — added one file/folder at a time, conferring at each step |
 | `portfolio.html` | Case-study page for the portfolio site, written once there are real results/metrics to show |
