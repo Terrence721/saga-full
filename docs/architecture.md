@@ -412,3 +412,20 @@ Verified as real, not just written and assumed: both suites pass against actual 
 
 - A future concurrency test for the `SKIP LOCKED` guarantee itself remains open if it's ever worth the complexity — not attempted here, consistent with the source's own scope.
 - `OrderRepository`/`OutboxRepository` both extend `JpaRepository<_, UUID>`, matching the Phase 18 domain model's UUID ids throughout — `OrderRepository` diverges from the source's `JpaRepository<Order, String>` for the same reason.
+
+## `order-service` DTOs: UUID/BigDecimal typing carried through, one dead enum dropped
+
+**Status:** Done — `order-service` DTOs, Phase 20.
+
+### Context: request/event record typing, and an unreferenced enum
+
+`CreateOrderRequest`, `OrderCreatedEvent`, `RestaurantApprovedEvent`, and `RestaurantRejectedEvent` are the first Java records in this repo. The source types their id fields as raw `String` and money as `double`. Separately, the source's `order-service` also defines a `RestaurantTicketStatus` enum (`PREPARING`/`REJECTED`) in the same `dto` package — grepping `order-service/src` there confirms it's referenced by nothing else in that module at all, only defined. The same enum also exists standalone in the source's `restaurant-service` and `payment-service` `dto` packages, which suggests the whole `dto` package gets copy-pasted across services without pruning what each one actually uses.
+
+### Decision: extend existing typing conventions, drop the unreferenced enum
+
+`CreateOrderRequest.customerId`, and the `orderId`/`customerId`/`ticketId` fields across `OrderCreatedEvent`/`RestaurantApprovedEvent`/`RestaurantRejectedEvent`, are all `UUID`, matching `Order`'s Phase 18 typing rather than the source's `String`. `OrderCreatedEvent.totalAmount` is `BigDecimal`, matching `Order.totalAmount`'s Phase 18 decision. `CreateOrderRequest` validates with `@NotNull` on the `UUID`/`BigDecimal` fields (plus `@Positive` on `totalAmount`, since Bean Validation constraints other than `@NotNull` silently pass on a `null` value rather than failing) and `@NotBlank` on `itemCode`. `RestaurantTicketStatus` is not carried over into `order-service` — nothing there would reference it, so adding it would just be reintroducing the same dead code found in the source.
+
+### Consequences: `order-service` DTOs
+
+- No dedicated tests were written for these — they're plain records with no behavior of their own, the same reasoning already applied to not testing `Order`/`OutboxRecord`/`OrderStatus` directly (Phase 18). Their shape gets exercised indirectly once `OrderController`/`OrderService`/`OutboxPublisherService` actually use them.
+- Any future module in this repo that copies from the source's `dto` packages should check for the same kind of cross-service copy-paste leftovers before carrying a type over, not assume everything in a `dto` folder is actually load-bearing.
