@@ -393,3 +393,22 @@ Adding non-nullable trace-context columns with no active tracer to populate them
 ### Consequences: deferring `traceId`/`spanId`
 
 - When OTel export wiring actually gets added to this repo, `OutboxRecord` (here and in every other module with an outbox table) needs these two columns added at that point, as a real schema change, not something to backfill quietly.
+
+## `order-service` repositories: `OutboxRepository`'s `SKIP LOCKED` query carried over as-is, tested for ordering only
+
+**Status:** Done — `order-service` repositories, Phase 19.
+
+### Context: safe concurrent outbox polling
+
+`OutboxRepository.findByOrderByCreatedTimeAsc` carries over the source's `@Lock(PESSIMISTIC_WRITE)` + `@QueryHints({@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2")})` combination unchanged — Hibernate's documented signal to append `FOR UPDATE SKIP LOCKED` to the generated query. This is the standard mechanism for safely running multiple instances of the same service polling one outbox table: each instance's poll skips rows another instance already has locked instead of blocking on them, so the same event never gets published twice by two instances racing on the same row. (This is also why `order_db`'s H2 connection URL, once `application.yaml` is written, needs `MODE=PostgreSQL` — plain H2 doesn't parse `SKIP LOCKED` without it.)
+
+### Decision: carry the query over, test ordering/pagination directly, don't attempt to reprove the locking guarantee itself
+
+`OrderRepositoryTest` (3 tests: `existsByIdAndStatus` true/false/not-found) and `OutboxRepositoryTest` (2 tests: empty result, oldest-10-first ordering) are both `@DataJpaTest`s against a real embedded H2 database — not mocked repositories, so the actual generated SQL and Hibernate mapping are what's under test. What they deliberately don't attempt is proving the `SKIP LOCKED` semantic itself under real concurrent transactions (two threads, one holding a lock while another polls and confirms it skips rather than blocks) — that would need manual transaction management outside `@DataJpaTest`'s default single-transaction-per-test wrapping, and the source's own equivalent test (`restaurant-service`'s `OutboxRepositoryTest`) doesn't attempt this either. The locking behavior is trusted as documented Hibernate/PostgreSQL-dialect behavior, the same way a library's own contract is trusted rather than re-verified from scratch.
+
+Verified as real, not just written and assumed: both suites pass against actual Hibernate DDL (`customer_orders`/`outbox_record` tables genuinely created and dropped per test, visible in the run output), and `OutboxRepositoryTest`'s ordering assertion was deliberately broken (scrambled the expected order) and re-run to confirm it fails on wrong data, before being reverted.
+
+### Consequences: `order-service` repositories
+
+- A future concurrency test for the `SKIP LOCKED` guarantee itself remains open if it's ever worth the complexity — not attempted here, consistent with the source's own scope.
+- `OrderRepository`/`OutboxRepository` both extend `JpaRepository<_, UUID>`, matching the Phase 18 domain model's UUID ids throughout — `OrderRepository` diverges from the source's `JpaRepository<Order, String>` for the same reason.
