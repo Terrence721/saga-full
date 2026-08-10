@@ -104,6 +104,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 
 | Item | Detail |
 | - | - |
-| `order-service` domain + saga logic | `Order`/`OrderStatus` domain, outbox pattern (`OutboxRecord`, `OutboxPublisherService`), `OrderController`, Kafka consumer for `RestaurantApproved`/`RestaurantRejected` events — added one file/folder at a time, conferring at each step |
+| `order-service` service layer + wiring | `OrderService`, `OutboxPublisherService` (the real outbox-publish call), `OrderController`, `OrderConsumerConfig` (Kafka consumer for `RestaurantApproved`/`RestaurantRejected` events), `application.yaml` — added one file/folder at a time, conferring at each step |
+| Docker (`docker-compose.yml` + per-service `Dockerfile`s) | Not needed yet — `order-service` only depends on `spring-kafka` so far, no producer/consumer code exists to actually need a real broker, and H2 covers JPA-layer tests without a container. Natural trigger point: once `OrderConsumerConfig`/`OutboxPublisherService`'s real publish call are written and need proving against a real Kafka broker instead of H2/mocks — at minimum Postgres + Kafka then, not the full OTel/Prometheus/Loki/Tempo/Grafana stack already deferred (Phase 16). Per-service `Dockerfile`s and any Kubernetes manifests are later still, once there's a complete multi-service stack worth deploying |
 | Remaining service modules | `payment-service`, `restaurant-service`, `api-gateway-service` — same one-file-at-a-time approach, each starting on Spring Boot 3.5.16 per Phase 17 |
 | `portfolio.html` | Case-study page for the portfolio site, written once there are real results/metrics to show |
