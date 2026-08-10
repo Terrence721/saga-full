@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 10, 2026 (`user-service` gRPC integration test)
+Last updated: August 10, 2026 (Spring Boot 3.5.16 bump, repo-wide)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -340,3 +340,23 @@ Writing `UserGrpcServiceIntegrationTest` hit a real, if minor, dependency-resolu
 - This is now the one test in the repo that would catch a real wire-level regression the other two suites structurally cannot — e.g. a proto field number collision or a `Status` code that gets lost in a serialization round trip.
 - The `testRuntimeClasspath`-vs-`testCompileClasspath` distinction is a useful general lesson for this repo: "the JAR is already being pulled in" isn't the same question as "is the *class* available where I'm trying to use it," and the two can silently diverge based on how an upstream POM scopes its own transitive dependencies.
 - With this test in place, all three planned `user-service` test suites (unit, error-path, integration) are complete — see [todo.md](../todo.md)'s Test Coverage Ledger.
+
+## Real production risk found and fixed: Spring Boot 3.4.1 can't boot a JDK 25 application at all — bumped to 3.5.16, repo-wide
+
+**Status:** Done — `order-service` scaffold + `user-service` context-load proof, Phases 16-17.
+
+### Context: a gap none of the earlier tests could have caught
+
+`order-service`'s first test, a minimal `@SpringBootTest` `contextLoads()` smoke test, failed immediately with `BeanDefinitionStoreException` → `ClassFormatException` → `IllegalArgumentException: Unsupported class file major version 69` (major version 69 = Java 25). Unlike the earlier `resolveMainClassName` incompatibility (Phase 8, scoped to the Spring Boot *Gradle plugin's* bundled ASM, sidestepped by declaring `mainClass` explicitly), this failure came from **Spring Framework's own runtime ASM** (`org.springframework.asm.ClassReader`, shaded inside `spring-core:6.2.1`, the version Boot 3.4.1 manages), hit inside `ClassPathScanningCandidateComponentProvider` — the exact machinery every `@SpringBootApplication`'s `@ComponentScan` depends on to read a class file's annotations before deciding whether it's a bean candidate. There is no equivalent "just tell it the answer" escape hatch for this one: any class file compiled to major version 69 anywhere in a scanned package trips it, not just the one class the scan happens to be looking for.
+
+That raised an uncomfortable question about `user-service`: had it ever actually been proven to boot a real `ApplicationContext` under JDK 25? Checking the answer directly (not assuming): no. `JwtTokenProviderTest` needs no Spring context at all. `UserGrpcServiceImplTest`/`UserGrpcServiceImplErrorTest` construct `UserGrpcServiceImpl` by hand with Mockito-mocked collaborators. `UserGrpcServiceIntegrationTest` (Phase 15) starts a real in-process gRPC `Server`/`ManagedChannel` pair, but registers the service instance directly — no `@SpringBootTest`, no component scan, no real context. Every verification step since Phase 7 (`compileJava`, `assemble`, `build`, `bootJar`) only compiles or packages code; none of them execute `SpringApplication.run(...)`'s component-scanning path. `user-service` had a live, previously undiscovered risk of failing to start entirely, identical in shape to the Phase 12 `protobuf-java` BOM bug: a real defect on the actual runtime path, invisible to every check performed so far because none of them exercised the one code path that triggers it.
+
+### Decision: bump both Spring Boot modules from 3.4.1 to 3.5.16
+
+Verified empirically, not assumed from a changelog: bumping `order-service/build.gradle.kts`'s Spring Boot plugin version from `3.4.1` to `3.5.16` (the latest available release on Maven Central at the time) made `contextLoads()` pass outright — a full context boot, JPA `EntityManagerFactory` and the Hikari pool both initializing and shutting down cleanly. The same bump applied to `user-service/build.gradle.kts` compiled and passed its full existing suite unchanged (including against `spring-grpc-dependencies:0.7.0`, confirming that BOM tolerates the newer Boot line), and a new `UserServiceApplicationTests.contextLoads()` — the first test in this repo to actually boot `user-service`'s real `ApplicationContext` — passed with genuine proof in the log output: `Completed gRPC server shutdown`, plus the same JPA/Hikari lifecycle messages. `spring.grpc.server.port=0` and a test-only `app.jwt.secret` override are supplied as inline `@SpringBootTest(properties = ...)` values so the test doesn't depend on a fixed port or the unset `JWT_SECRET` environment variable Kubernetes deployment expects.
+
+### Consequences: bumping to Boot 3.5.16
+
+- Every future Spring Boot module in this repo (`payment-service`, `restaurant-service`, `api-gateway-service`) should start on `3.5.16`, not `3.4.1` — the version this repo's earlier phases pinned is now known to be fundamentally incompatible with actually running under this repo's JDK 25 toolchain, not just a source of isolated tool-specific workarounds like the earlier Lombok/Mockito/ASM findings.
+- This is the second real "nothing before this test exercised the actual failing code path" bug found in this repo (after the Phase 12 `protobuf-java` BOM downgrade) — both reinforce the same lesson already recorded in [todo.md](../todo.md)'s Test Coverage Ledger: a module isn't proven to work until a test exists that would actually fail if it didn't, and `compileJava`/`assemble`/`bootJar` succeeding is not that proof for anything involving Spring's component scan.
+- A minimal `@SpringBootTest` `contextLoads()` test is now the first test written for every future service module in this repo, before any business logic — it's the cheapest possible check that actually exercises real context startup, and it's what caught this.

@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 10, 2026 (`user-service` gRPC integration test — all planned `user-service` test suites complete)
+**Last Updated:** August 10, 2026 (`order-service` scaffold started; repo-wide Spring Boot 3.5.16 bump)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -23,8 +23,10 @@ A phase-by-phase log of what's been done on this repo and what's still open. Thi
 | Consolidated test report | Custom root `aggregateTestReport` task merges every module's JUnit XML into one HTML file (`build/reports/tests/aggregate/index.html`), auto-picking up future modules with no edits needed. Gradle's built-in `test-report-aggregation` plugin was tried first and abandoned — it needs every module's full dependency graph (Spring Boot's BOM, etc.) resolvable from the root, an ongoing maintenance burden. Caught and fixed two real bugs along the way: a failing test silently blocking the report from generating at all, and a stale-report bug (no declared task inputs, so Gradle skipped regenerating it). Wired into CI: `quality.yml`'s `Test` job now runs it and uploads the merged report as a downloadable GitHub Actions artifact on every run. Reasoning in [docs/architecture.md](docs/architecture.md), usage in [CONTRIBUTING.md](CONTRIBUTING.md) | Phase 10 |
 | `user-service` tests (complete) | `JwtTokenProviderTest` (5), `UserGrpcServiceImplTest` (2, happy path), `UserGrpcServiceImplErrorTest` (4, error path), and `UserGrpcServiceIntegrationTest` (3, real in-process gRPC wire calls) — all 14 tests written and passing. Found and fixed a real Mockito/JDK 25 incompatibility, and — far more significant — a **real production bug**: `spring-grpc`'s BOM was silently downgrading `protobuf-java` below what `user-contract`'s generated code needs, on `user-service`'s actual runtime classpath, since Phase 7. It went undetected because nothing before this test ever actually constructed a generated message at runtime. Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 11-12, 14-15 |
 | README test-status visibility | Quality/CodeQL CI badges, an "At a glance" test-count line, and a committed `test-report.html` linked directly from the README — kept current by a new `quality.yml` step that commits it back to `main` after every test run. GitHub Pages briefly switched to Actions-based deployment to try matching `platform-main`'s live-Pages pattern, then deliberately reverted in favor of this simpler committed-file approach. Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 13 |
+| `order-service` scaffold | `settings.gradle.kts` registration, `build.gradle.kts` (spring-kafka direct instead of the source's Spring Cloud Stream binder, per a deliberate deviation), and the `OrderServiceApplication` entry point; `./gradlew :order-service:compileJava` verified green. Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 16 |
+| **Real risk found and fixed:** Spring Boot 3.4.1 can't boot under JDK 25 | `order-service`'s first test (`contextLoads`) failed outright — Spring Framework's own bundled ASM (not just the Gradle plugin's, per Phase 8) can't parse JDK 25 class files at all during component scanning. Checking `user-service` directly showed it had never once booted a real `ApplicationContext` in any test either, an identical-in-shape gap to the Phase 12 protobuf-java bug. Fixed by bumping **both** modules from Boot 3.4.1 to 3.5.16 — verified with a real `contextLoads()` pass in each, `user-service`'s showing an actual gRPC server starting and stopping. Every future Spring Boot module should start on 3.5.16. Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 17 |
 
-**Actually still open, right now:** remaining service modules and `portfolio.html`. See the **Still to do** table below.
+**Actually still open, right now:** the rest of `order-service` (domain model, outbox, controller, consumer), remaining service modules, and `portfolio.html`. See the **Still to do** table below.
 
 ## 🧪 Test Coverage Ledger
 
@@ -37,6 +39,8 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `user-service` | `UserGrpcServiceImplTest` | 2 | ✅ passing | Phase 12 | 2026-08-10 |
 | `user-service` | `UserGrpcServiceImplErrorTest` | 4 | ✅ passing | Phase 14 | 2026-08-10 |
 | `user-service` | `UserGrpcServiceIntegrationTest` | 3 | ✅ passing | Phase 15 | 2026-08-10 |
+| `user-service` | `UserServiceApplicationTests` | 1 | ✅ passing | Phase 17 | 2026-08-10 |
+| `order-service` | `OrderServiceApplicationTests` | 1 | ✅ passing | Phase 16-17 | 2026-08-10 |
 
 ## ✅ Done
 
@@ -84,9 +88,17 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | - | - | - |
 | 10 | 2026-08-10 | Tried Gradle's built-in `test-report-aggregation` plugin at the root project first; abandoned after it required resolving every subproject's full dependency graph from the root (missing repositories, then unresolvable Spring-managed versions) — an ongoing burden that would grow with every future module. Replaced with a custom root `build.gradle.kts` task, `aggregateTestReport`, that reads each module's already-written JUnit XML with the JDK's own XML parser (zero extra dependencies) and merges it into one HTML file. Caught and fixed two real bugs via actual runs: a failing test blocking the report from generating at all (fixed by decoupling `aggregateTestReport` from the `test` tasks — documented two-step workflow in [CONTRIBUTING.md](CONTRIBUTING.md)), and a stale-report bug where the task had no declared inputs and Gradle silently kept serving an outdated report (fixed by declaring each module's `test-results/test` directory as an input once it exists). Full reasoning in [docs/architecture.md](docs/architecture.md) |
 
+### `order-service` module
+
+| Phase | Date | What |
+| - | - | - |
+| 16 | 2026-08-10 | `settings.gradle.kts` updated to include `order-service`; `build.gradle.kts` written (actuator, validation, web, data-jpa, H2/Postgres runtime drivers, Lombok pinned to 1.18.42 matching `user-service`). Deliberately used `spring-kafka` directly instead of the source's Spring Cloud Stream Kafka binder — this project only ever targets Kafka, never needs broker-swappability, so the extra abstraction wasn't worth the added functional-binding config. OTel export and a Kubernetes-specific datasource profile were both deliberately deferred: the source's config points at infrastructure (an OTLP collector, a Minikube-hosted Postgres) this repo doesn't have yet. `OrderServiceApplication` entry point (with `@EnableScheduling`, needed later for outbox polling). `./gradlew :order-service:compileJava` verified green. Full reasoning in [docs/architecture.md](docs/architecture.md) |
+| 17 | 2026-08-10 | `OrderServiceApplicationTests.contextLoads()` written as the module's first test — and it immediately failed for real: Spring Boot 3.4.1's Spring Framework can't parse JDK 25 class files during component scanning at all (`Unsupported class file major version 69`), a deeper issue than Phase 8's Gradle-plugin-scoped one. Checking `user-service` showed it had the identical latent risk, undetected because no test there had ever booted a real `ApplicationContext`. Fixed by bumping **both** modules' Spring Boot plugin version from 3.4.1 to 3.5.16 — verified with `order-service`'s test passing (real JPA/Hikari boot) and a new `UserServiceApplicationTests.contextLoads()` added to `user-service` and passing (real gRPC server + JPA/Hikari boot, the first proof that module starts at all under JDK 25). Full reasoning in [docs/architecture.md](docs/architecture.md) |
+
 ## 🔧 Still to do
 
 | Item | Detail |
 | - | - |
-| Remaining service modules | `order-service`, `payment-service`, `restaurant-service`, `api-gateway-service` — added one file/folder at a time, conferring at each step |
+| `order-service` domain + saga logic | `Order`/`OrderStatus` domain, outbox pattern (`OutboxRecord`, `OutboxPublisherService`), `OrderController`, Kafka consumer for `RestaurantApproved`/`RestaurantRejected` events — added one file/folder at a time, conferring at each step |
+| Remaining service modules | `payment-service`, `restaurant-service`, `api-gateway-service` — same one-file-at-a-time approach, each starting on Spring Boot 3.5.16 per Phase 17 |
 | `portfolio.html` | Case-study page for the portfolio site, written once there are real results/metrics to show |

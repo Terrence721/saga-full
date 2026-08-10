@@ -5,13 +5,13 @@
 
 **[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)**
 
-Last updated: August 10, 2026 (`user-service` gRPC integration test — test suites complete for both modules)
+Last updated: August 10, 2026 (`order-service` scaffold started; repo-wide Spring Boot 3.5.16 bump)
 
 This repository is a from-scratch demonstration of the Distributed Saga pattern for coordinating long-running business transactions across independent microservices — order placement, payment settlement, and fulfillment, each owned by its own service, coordinated without a shared database transaction.
 
 This is an original implementation, not a fork of any existing project. The module boundaries and general shape of the problem (order → payment → fulfillment, with compensation on failure) are common territory for this class of system; the code, design decisions, and tradeoffs recorded here are this repo's own.
 
-**At a glance:** 20/20 tests passing across `user-contract` + `user-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
+**At a glance:** 22/22 tests passing across `user-contract` + `user-service` + `order-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
 
 ## 🧭 Start Here
 
@@ -27,16 +27,16 @@ Saga orchestration is a common interview-whiteboard topic and an uncommon thing 
 
 ## 🏗 What's Here So Far
 
-`user-contract` (shared gRPC contract) and the core of `user-service` (identity + auth: login, token issuance, token validation) are implemented, both with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). See `todo.md` for the full build-out plan.
+`user-contract` (shared gRPC contract) and `user-service` (identity + auth: login, token issuance, token validation) are complete, both with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). `order-service` has its module scaffold and entry point in place, verified to actually boot under this repo's Java 25 toolchain. See `todo.md` for the full build-out plan.
 
 ```text
 (planned, mirrors the shape of the problem — not final)
   api-gateway-service/   inbound edge, routing, auth
-  order-service/         saga orchestrator / state machine
+  order-service/         saga orchestrator / state machine    🚧 scaffold in progress
   payment-service/       payment ledger + settlement
   restaurant-service/    fulfillment-side processor
-  user-service/          identity + auth                  ✅ core implementation
-  user-contract/         shared API contract types         ✅ done
+  user-service/          identity + auth                      ✅ done
+  user-contract/         shared API contract types            ✅ done
 ```
 
 ## 🖥 Getting Started
