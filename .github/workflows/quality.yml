@@ -46,4 +46,15 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Test
-        run: ./gradlew test
+        run: ./gradlew test --continue
+
+      - name: Aggregate test report
+        if: always()
+        run: ./gradlew aggregateTestReport
+
+      - name: Upload aggregated test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: build/reports/tests/aggregate/
