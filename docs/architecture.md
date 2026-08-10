@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 10, 2026 (Spring Boot 3.5.16 bump, repo-wide)
+Last updated: August 10, 2026 (`order-service` DTOs)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 

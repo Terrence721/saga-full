@@ -5,7 +5,7 @@
 
 **[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)**
 
-Last updated: August 10, 2026 (`order-service` domain model + repositories)
+Last updated: August 10, 2026 (`order-service` DTOs; frontend/reservation direction tracked in `todo.md`)
 
 This repository is a from-scratch demonstration of the Distributed Saga pattern for coordinating long-running business transactions across independent microservices — order placement, payment settlement, and fulfillment, each owned by its own service, coordinated without a shared database transaction.
 
@@ -27,7 +27,7 @@ Saga orchestration is a common interview-whiteboard topic and an uncommon thing 
 
 ## 🏗 What's Here So Far
 
-`user-contract` (shared gRPC contract) and `user-service` (identity + auth: login, token issuance, token validation) are complete, both with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). `order-service` has its module scaffold and entry point in place, verified to actually boot under this repo's Java 25 toolchain. See `todo.md` for the full build-out plan.
+`user-contract` (shared gRPC contract) and `user-service` (identity + auth: login, token issuance, token validation) are complete, both with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). `order-service` has its module scaffold, domain model, repositories, and DTOs in place — service layer and Kafka wiring are still open. See `todo.md` for the full build-out plan.
 
 ```text
 (planned, mirrors the shape of the problem — not final)
