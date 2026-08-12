@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`payment-service` domain model)
+Last updated: August 12, 2026 (`payment-service` repositories)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -569,3 +569,20 @@ None of this is a new fork — it's the same typing conventions Phase 18 already
 
 - `./gradlew :payment-service:compileJava` and `contextLoads()` both verified green with no regression — Hibernate now has two real entities to map, not just an empty context.
 - No dedicated tests were written for these — plain entities with no behavior of their own, the same reasoning already applied to `order-service`'s domain model (Phase 18). Their shape gets exercised indirectly once `PaymentRepository`/`OutboxRepository`/`PaymentService` actually use them.
+
+## `payment-service` repositories: same shape as `order-service`'s, re-typed to `UUID`
+
+**Status:** Done — `payment-service` repositories, Phase 29.
+
+### Context: PaymentRepository/OutboxRepository
+
+The source's `PaymentRepository` (`findByOrderId`) and `OutboxRepository` (`findByOrderByCreatedTimeAsc`, with the same `PESSIMISTIC_WRITE` + `SKIP LOCKED` query hint as `order-service`'s) map directly onto this repo's Phase 28 domain model — no new design question here, just the same `String`-vs-`UUID` typing gap Phase 28 already decided to close.
+
+### Decision: PaymentRepository/OutboxRepository
+
+`PaymentRepository extends JpaRepository<Payment, UUID>` with `findByOrderId(UUID orderId)`, and `OutboxRepository` carries over `order-service`'s `SKIP LOCKED` query unchanged, both re-typed to `UUID` matching Phase 28. `PaymentRepositoryTest` (2 tests: found/not-found by `orderId`) and `OutboxRepositoryTest` (2 tests: empty result, oldest-10-first ordering) are both real `@DataJpaTest`s against embedded H2, mirroring `order-service`'s `OrderRepositoryTest`/`OutboxRepositoryTest` (Phase 19) test shape exactly.
+
+### Consequences: PaymentRepository/OutboxRepository
+
+- Verified as real, not just written and assumed: both suites pass against actual Hibernate DDL (`payments`/`outbox_record` tables genuinely created and dropped per test, visible in the run output — `Hibernate: drop table if exists outbox_record cascade` / `payments cascade`), and `OutboxRepositoryTest`'s ordering assertion was deliberately scrambled and re-run to confirm it fails on wrong data, before being reverted — the same verification discipline as Phase 19.
+- Like `order-service`'s Phase 19 decision, the `SKIP LOCKED` locking guarantee itself isn't independently reproven under real concurrent transactions here either — trusted as documented Hibernate/PostgreSQL-dialect behavior, consistent with both the source's own test scope and this repo's prior decision.
