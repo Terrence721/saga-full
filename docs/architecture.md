@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`order-service` `OrderConsumerConfig`)
+Last updated: August 12, 2026 (`order-service` `application.yaml`)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -497,3 +497,21 @@ The source's `OrderConsumerConfig` declares two `@Bean Consumer<Message<T>>` fun
 
 - Unlike the source, which has no dedicated test for this class (relying entirely on its `OrderServiceTest` for the confirm/cancel logic it delegates to), `OrderConsumerConfigTest` (2 tests, new to this repo) was added specifically to prove real JSON deserializes into the right DTO and dispatches to the right `OrderService` method per topic — a wiring mistake (e.g. the wrong DTO type paired with the wrong topic) is exactly what a purely logic-focused test like `OrderServiceTest` structurally can't catch, since it never touches JSON at all. Verified with a real `./gradlew :order-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong `reason` field and re-running before reverting.
 - Confirmed via a real `./gradlew :order-service:test` run (not assumed) that adding two `@KafkaListener` consumers and the `@Scheduled` outbox poller doesn't break `OrderServiceApplicationTests.contextLoads()` even with no live Kafka broker running locally — Spring Kafka's consumer containers just retry joining their consumer group in the background rather than failing application startup, since no `spring.kafka.admin.fail-fast` is configured.
+
+## `order-service/application.yaml`: `default`/`postgres` profiles, plain String Kafka (de)serializers
+
+**Status:** Done — `order-service` service layer, Phase 25.
+
+### Context: wiring config for a module that had none yet
+
+No `application.yaml` existed for `order-service` before this phase — Phase 16 deferred it since nothing needed real config until the service layer and Kafka wiring actually existed. The source's version targets infrastructure this repo doesn't have: `host.minikube.internal` for Kafka, an OTLP collector, and a `k8sdb` profile for a Minikube-hosted Postgres — plus Spring Cloud Stream binder config (`transaction-id-prefix`, `enable.idempotence`, DLQ bindings) that doesn't apply now that `order-service` uses plain `spring-kafka` (Phase 16, 22, 24).
+
+### Decision: wiring config for a module that had none yet
+
+Follows `user-service`'s established `default`/`postgres` profile split (Phase 7) rather than the source's `default`/`k8sdb`, with `order_db`/`order_service_schema` naming mirroring `user_db`/`user_service_schema`. Kafka `bootstrap-servers` defaults to `localhost:9092` (no Minikube infra here), with plain `StringSerializer`/`StringDeserializer` configured on both producer and consumer sides — matching `OutboxPublisherService`/`OrderConsumerConfig`'s raw-JSON-string approach (Phase 22, 24) rather than Spring's typed `JsonSerializer`. The `app.outbox.topic`/`batch-size`/`polling-delay-ms` properties reuse the source's own naming and defaults (`order-created-topic`, `10`, `500`ms), declared explicitly here even though `OutboxPublisherService`'s `@Value` defaults already cover them, for discoverability and env-var overridability without touching code.
+
+### Consequences: wiring config for a module that had none yet
+
+- Confirmed with a real `./gradlew :order-service:test` run that the full module (all 21 tests, including `contextLoads()`) stays green with this config in place and no live Kafka broker or Postgres running — H2 covers the JPA layer, and Kafka's consumer/producer clients tolerate a missing broker at startup by retrying rather than failing fast.
+- This closes out the "`order-service` service layer + Kafka wiring" item tracked in [todo.md](../todo.md) since Phase 17 — `OrderService`, `OutboxPublisherService`, `OrderController`, `OrderConsumerConfig`, and this config file are all in place with real, verified test coverage (Phases 21-25).
+- `payment-service`/`restaurant-service`, once built, should follow this same `default`/`postgres` profile convention and plain-String Kafka (de)serializer choice for consistency, rather than each re-deciding it from the source's Minikube-oriented config.
