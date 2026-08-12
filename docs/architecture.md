@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`docker-compose.yml`: Postgres + Kafka)
+Last updated: August 12, 2026 (`payment-service` scaffold)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -535,3 +535,20 @@ A real, machine-specific conflict surfaced while verifying this: this dev machin
 - Verified for real, not just written and assumed to work: `docker compose up -d` started both containers; `\dn` inside `postgres-db` confirmed both schemas exist; `kafka-topics --list` inside `kafka-broker` confirmed the broker answers client requests. `order-service` was then actually booted (`SPRING_PROFILES_ACTIVE=postgres DATABASE_PORT=5433 ./gradlew :order-service:bootRun`) against both containers: the log showed a real `HikariPool` connection to `PgConnection`, `Started OrderServiceApplication`, and — the strongest proof — both `@KafkaListener` consumer groups (`order-approved-group`/`order-rejected-group`) actually joining their consumer group and getting real partition assignments against the live broker, not the retry-forever behavior seen in every test run so far with no broker present.
 - The port-5432-vs-5433 conflict was caught *before* any container collision happened — the first `docker compose up -d` attempt was stopped mid-image-pull once `docker ps` showed `coolify-db` already on 5432, and the compose file was fixed before any port bind was actually attempted against a running system.
 - No app-service containers or `Dockerfile`s exist yet — `order-service`/`user-service` still run as host JVM processes (`bootRun` or the IDE) connecting into these two containers, not as containers themselves. That's the natural next step once `payment-service`/`restaurant-service` exist and there's a complete stack worth containerizing.
+
+## `payment-service` scaffold: the actual next link in the saga chain, not an arbitrary pick
+
+**Status:** Done — `payment-service` scaffold, Phase 27.
+
+### Context: which service module comes next
+
+`order-service`'s `OrderConsumerConfig` (Phase 24) already consumes `restaurant-approved-topic`/`restaurant-rejected-topic`, which made `restaurant-service` look like the natural next module to build — it's the one `order-service` is already waiting on. Checking the source's actual event wiring (`RestaurantConsumerConfig`/`PaymentConsumerConfig`) showed otherwise: `payment-service` consumes `OrderCreatedEvent` first and publishes `PaymentProcessedEvent`, which is what `restaurant-service` actually consumes to decide approval — `restaurant-service` can't be meaningfully built before `payment-service` exists, since its own consumer depends on an event type only `payment-service` would ever produce. `payment-service` also consumes `RestaurantRejectedEvent` to issue a refund — a genuine compensating transaction, the same pattern `order-service`'s `cancelOrder` already implements on the order side. Right now, `OrderCreatedEvent` is being published into a void: nothing in this repo consumes `order-created-topic` yet.
+
+### Decision: which service module comes next
+
+`payment-service` is built next, mirroring `order-service`'s own Phase 16 scaffold shape: `spring-kafka` direct instead of the source's Cloud Stream binder, Spring Boot 3.5.16 from the start (not 3.4.1, learned the hard way in Phase 17), Java 25 toolchain, Lombok pinned to 1.18.42 (Phase 7's lesson), and an explicit `springBoot { mainClass.set(...) }` (Phase 8's lesson) — so this module starts already avoiding every JDK-25-compatibility issue found the hard way building `user-service`/`order-service`, rather than rediscovering them one at a time. `PaymentServiceApplicationTests.contextLoads()` was written immediately, before any business logic, per the Phase 17 lesson that this is the cheapest real check that actually exercises context startup.
+
+### Consequences: which service module comes next
+
+- `payment-service` has no REST controller in the source at all — it's pure Kafka consumer/producer plus JPA, unlike `order-service`. `actuator` + `web` are still included for the same reason as `order-service`: actuator's HTTP health endpoints need a web server to actually serve them over HTTP, even with no application-level controller. `spring-boot-starter-validation` is deliberately not added yet — there's no request DTO to validate without a controller, unlike `order-service`'s `CreateOrderRequest`.
+- Verified with a real `./gradlew :payment-service:test` run: `contextLoads()` passes with a genuine `HikariPool`/JPA boot in the log, not assumed from the config alone — this module never has the Phase 17-shaped gap (a module compiling/packaging fine while never actually proving `ApplicationContext` boots), since the check exists from its very first commit.

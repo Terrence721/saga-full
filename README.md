@@ -11,7 +11,7 @@ This repository is a from-scratch demonstration of the Distributed Saga pattern 
 
 This is an original implementation, not a fork of any existing project. The module boundaries and general shape of the problem (order → payment → fulfillment, with compensation on failure) are common territory for this class of system; the code, design decisions, and tradeoffs recorded here are this repo's own.
 
-**At a glance:** 42/42 tests passing across `user-contract` + `user-service` + `order-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
+**At a glance:** 43/43 tests passing across `user-contract` + `user-service` + `order-service` + `payment-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
 
 ## 🧭 Start Here
 
@@ -27,7 +27,7 @@ Saga orchestration is a common interview-whiteboard topic and an uncommon thing 
 
 ## 🏗 What's Here So Far
 
-`user-contract` (shared gRPC contract), `user-service` (identity + auth: login, token issuance, token validation), and `order-service` (order creation, transactional outbox, Kafka publish/consume, the saga's create/confirm/cancel lifecycle) are complete, all with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). See `todo.md` for the full build-out plan.
+`user-contract` (shared gRPC contract), `user-service` (identity + auth: login, token issuance, token validation), and `order-service` (order creation, transactional outbox, Kafka publish/consume, the saga's create/confirm/cancel lifecycle) are complete, all with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). `payment-service` has its module scaffold in place — domain, business logic, and Kafka wiring are still open. See `todo.md` for the full build-out plan.
 
 ```text
 (planned, mirrors the shape of the problem — not final)
