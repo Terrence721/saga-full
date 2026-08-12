@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`payment-service` Kafka wiring complete)
+Last updated: August 12, 2026 (`restaurant-service` scaffold)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -637,3 +637,20 @@ All three files are direct structural repeats of `order-service`'s Phase 22/24/2
 - `OutboxPublisherServiceTest` (4 tests) and `PaymentConsumerConfigTest` (2 tests, new to this repo like `order-service`'s Phase 24 equivalent — the source has no dedicated consumer test) mirror `order-service`'s Phase 22/24 suites exactly. Verified with a real `./gradlew :payment-service:test` run (17 tests in this module now), and confirmed both new suites genuinely catch wrong data by deliberately breaking a Kafka key header assertion and a deserialized `reason` field, re-running to confirm failure, then reverting.
 - Verified end-to-end against real infrastructure, not just unit-level mocks: `docker compose up -d` (recreated so the updated `init-schemas.sql` actually ran — the script only executes on a container's first startup, so the already-running containers from Phase 26 didn't pick up the new schema line automatically), confirmed all three schemas present via `\dn`, then booted `payment-service` for real (`SPRING_PROFILES_ACTIVE=postgres DATABASE_PORT=5433 ./gradlew :payment-service:bootRun`) — a genuine `HikariPool`→`PgConnection` against `payment_service_schema`, and both `payment-group`/`payment-compensation-group` consumers actually joining and getting real partition assignments (`order-created-topic-0`/`restaurant-rejected-topic-0`) against the live broker, the same standard of proof Phase 26 established for `order-service`.
 - Both saga participants built so far (`order-service`, `payment-service`) are now fully wired for their half of the compensating-transaction pair: `order-service` creates and reacts to restaurant decisions, `payment-service` charges and refunds. `restaurant-service` is the missing middle link — it consumes `PaymentProcessedEvent` and is what actually produces the `RestaurantApproved`/`RejectedEvent`s both existing services already wait on.
+
+## `restaurant-service` scaffold: third repeat of the same established shape
+
+**Status:** Done — `restaurant-service` scaffold, Phase 32.
+
+### Context: starting the saga's third participant
+
+The source's `restaurant-service` `pom.xml` and entry point are structurally identical to `order-service`'s and `payment-service`'s own source `pom.xml`s — actuator, data-jpa, H2/Postgres, Cloud Stream Kafka, OTel, Lombok — and it also has no REST controller. By this third module, every adaptation decision (`spring-kafka` direct, Boot 3.5.16 from the start, Lombok 1.18.42 pinned, explicit `mainClass`, `actuator`+`web` without a controller, `contextLoads()` written first) is already established precedent from Phases 16/27, not a new judgment call.
+
+### Decision: starting the saga's third participant
+
+`restaurant-service` scaffolded identically to `payment-service`'s Phase 27: `settings.gradle.kts` registration, `build.gradle.kts` matching the same dependency set and JDK-25-compatibility pins, `RestaurantServiceApplication` entry point, and `RestaurantServiceApplicationTests.contextLoads()` written immediately, before any business logic.
+
+### Consequences: starting the saga's third participant
+
+- Verified with a real `./gradlew :restaurant-service:test` run: `contextLoads()` passes with a genuine `HikariPool`/JPA boot in the log, avoiding the Phase 17-shaped gap from its very first commit, same as `payment-service`. Full multi-module suite (60 tests across 5 modules) also verified green with no regressions.
+- With three of four planned service modules now scaffolded (`api-gateway-service` remains unstarted), the pattern established in Phases 16/27/32 — mirror the source's dependency set, apply the same JDK-25 pins, write `contextLoads()` first — should need no further re-litigation for `api-gateway-service` either.
