@@ -4,3 +4,4 @@
 CREATE SCHEMA IF NOT EXISTS user_service_schema;
 CREATE SCHEMA IF NOT EXISTS order_service_schema;
 CREATE SCHEMA IF NOT EXISTS payment_service_schema;
+CREATE SCHEMA IF NOT EXISTS restaurant_service_schema;
