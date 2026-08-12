@@ -1,0 +1,69 @@
+package io.github.terrence721.saga.order.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.terrence721.saga.order.domain.Order;
+import io.github.terrence721.saga.order.domain.OrderStatus;
+import io.github.terrence721.saga.order.dto.CreateOrderRequest;
+import io.github.terrence721.saga.order.service.OrderService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(OrderController.class)
+class OrderControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockitoBean
+    private OrderService orderService;
+
+    @Test
+    void createOrder_returnsCreated_whenRequestIsValid() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        Order savedOrder = Order.builder()
+                .id(orderId)
+                .customerId(customerId)
+                .totalAmount(new BigDecimal("25.50"))
+                .itemCode("BURGER_01")
+                .quantity(2)
+                .status(OrderStatus.PENDING)
+                .build();
+
+        when(orderService.createOrder(any(CreateOrderRequest.class))).thenReturn(savedOrder);
+
+        mockMvc.perform(post("/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new CreateOrderRequest(customerId, new BigDecimal("25.50"), "BURGER_01", 2))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(orderId.toString()))
+                .andExpect(jsonPath("$.customerId").value(customerId.toString()))
+                .andExpect(jsonPath("$.status").value("PENDING"));
+    }
+
+    @Test
+    void createOrder_returnsBadRequest_whenPayloadFailsValidation() throws Exception {
+        mockMvc.perform(post("/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new CreateOrderRequest(null, new BigDecimal("-10.00"), "", 0))))
+                .andExpect(status().isBadRequest());
+    }
+}
