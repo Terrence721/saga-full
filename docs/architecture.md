@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`restaurant-service` domain model)
+Last updated: August 12, 2026 (`restaurant-service` repositories)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -671,3 +671,20 @@ The source's `restaurant-service` `pom.xml` and entry point are structurally ide
 
 - `./gradlew :restaurant-service:compileJava` and `contextLoads()` both verified green with no regression; no dedicated tests written for these plain entities, the same reasoning already applied in Phases 18/28.
 - `RestaurantService`'s own validation logic (deferred to the next phase) includes a `PaymentProcessedEvent.status != APPROVED` check that may turn out to be unreachable given `payment-service`'s actual behavior — `PaymentService` (Phase 30) only ever publishes a `PaymentProcessedEvent` once, immediately after creating a `Payment` with status `APPROVED`, never at `REFUNDED` time — the same shape as the defensive check dropped in Phase 30. Worth re-examining then, not decided here.
+
+## `restaurant-service` repositories: same shape as `order-service`/`payment-service`'s, no new decisions
+
+**Status:** Done — `restaurant-service` repositories, Phase 34.
+
+### Context: InventoryItemRepository/RestaurantTicketRepository/OutboxRepository
+
+The source's three repositories map directly onto Phase 33's domain model. `InventoryItemRepository` needs no custom query at all — `JpaRepository.findById` on the natural-key `itemCode` covers everything `RestaurantInventoryService` needs. `RestaurantTicketRepository.existsByOrderId` is exactly the idempotency-guard shape `order-service`/`payment-service` already established. `OutboxRepository` carries the same `SKIP LOCKED` query as both other modules.
+
+### Decision: InventoryItemRepository/RestaurantTicketRepository/OutboxRepository
+
+All three repositories are direct ports, re-typed to match Phase 33 (`RestaurantTicketRepository extends JpaRepository<RestaurantTicket, UUID>` with `existsByOrderId(UUID orderId)`; `InventoryItemRepository extends JpaRepository<InventoryItem, String>` unchanged, since `itemCode` stayed a natural-key `String`). `InventoryItemRepositoryTest` (2: found/not-found by `itemCode`), `RestaurantTicketRepositoryTest` (2: `existsByOrderId` true/false), and `OutboxRepositoryTest` (2: empty result, oldest-10-first ordering) mirror the test shape already established in Phases 19/29.
+
+### Consequences: InventoryItemRepository/RestaurantTicketRepository/OutboxRepository
+
+- Verified as real, not just written and assumed: all three suites pass against actual Hibernate DDL (`restaurant_inventory`/`restaurant_tickets`/`outbox_record` tables genuinely created and dropped per test), and `OutboxRepositoryTest`'s ordering assertion was deliberately scrambled and re-run to confirm it fails on wrong data, before being reverted. Full multi-module suite (67 tests across 5 modules) also verified green.
+- `RestaurantTicketRepository` deliberately has no `findByOrderId` (unlike `PaymentRepository`, Phase 29) — nothing in `RestaurantService` needs to load and mutate an existing ticket; `restaurant-service` produces the saga's approval/rejection decision, it isn't itself the target of a later compensating action the way `order-service`/`payment-service` are.
