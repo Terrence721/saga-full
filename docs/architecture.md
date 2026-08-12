@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`order-service` `OrderController`)
+Last updated: August 12, 2026 (`order-service` `OrderConsumerConfig`)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -480,3 +480,20 @@ The source's `OrderController` extracts a gateway-injected `X-Perimeter-User-Id`
 
 - The perimeter-header trust boundary is a tracked gap, not a silent omission — it needs to be added once `api-gateway-service` exists to actually inject a verified identity; until then, anything calling this endpoint directly can claim any `customerId`.
 - `OrderControllerTest` (2 tests, `@WebMvcTest`) covers the happy path (asserting the real `201` status and JSON body fields) and a bean-validation failure (`400`). No header/auth-boundary test exists yet, since no such boundary exists yet either. Verified with a real `./gradlew :order-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong `status` field value and re-running before reverting.
+
+## `order-service`: `OrderConsumerConfig` uses `@KafkaListener`, not Cloud Stream's functional `Consumer<Message<T>>` beans
+
+**Status:** Done — `order-service` service layer, Phase 24.
+
+### Context: consuming restaurant approval/rejection events
+
+The source's `OrderConsumerConfig` declares two `@Bean Consumer<Message<T>>` functions, wired through Spring Cloud Stream's functional binding model and wrapped in manual OpenTelemetry span code around each invocation. None of that machinery exists here: this repo chose `spring-kafka` directly over Cloud Stream (Phase 16) and has no tracer to feed (Phase 18). Separately, `OutboxPublisherService` (Phase 22) publishes raw JSON strings with no Spring `JsonSerializer` type headers (`__TypeId__`), so a consumer-side typed `JsonDeserializer` would have nothing to key its type resolution off without extra fixed-default-type configuration per listener.
+
+### Decision: consuming restaurant approval/rejection events
+
+`OrderConsumerConfig` is a plain `@Component` with two `@KafkaListener` methods, one per topic (`restaurant-approved-topic`/`restaurant-rejected-topic`, consumer groups `order-approved-group`/`order-rejected-group` — topic and group names carried over from the source's own config for continuity). Each method takes the raw JSON `String` payload and deserializes it manually via `ObjectMapper.readValue`, symmetric with how `OutboxPublisherService` publishes, before delegating straight to `OrderService.confirmOrder`/`cancelOrder` (Phase 21).
+
+### Consequences: consuming restaurant approval/rejection events
+
+- Unlike the source, which has no dedicated test for this class (relying entirely on its `OrderServiceTest` for the confirm/cancel logic it delegates to), `OrderConsumerConfigTest` (2 tests, new to this repo) was added specifically to prove real JSON deserializes into the right DTO and dispatches to the right `OrderService` method per topic — a wiring mistake (e.g. the wrong DTO type paired with the wrong topic) is exactly what a purely logic-focused test like `OrderServiceTest` structurally can't catch, since it never touches JSON at all. Verified with a real `./gradlew :order-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong `reason` field and re-running before reverting.
+- Confirmed via a real `./gradlew :order-service:test` run (not assumed) that adding two `@KafkaListener` consumers and the `@Scheduled` outbox poller doesn't break `OrderServiceApplicationTests.contextLoads()` even with no live Kafka broker running locally — Spring Kafka's consumer containers just retry joining their consumer group in the background rather than failing application startup, since no `spring.kafka.admin.fail-fast` is configured.
