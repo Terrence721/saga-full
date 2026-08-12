@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`payment-service` scaffold)
+Last updated: August 12, 2026 (`payment-service` domain model)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -552,3 +552,20 @@ A real, machine-specific conflict surfaced while verifying this: this dev machin
 
 - `payment-service` has no REST controller in the source at all — it's pure Kafka consumer/producer plus JPA, unlike `order-service`. `actuator` + `web` are still included for the same reason as `order-service`: actuator's HTTP health endpoints need a web server to actually serve them over HTTP, even with no application-level controller. `spring-boot-starter-validation` is deliberately not added yet — there's no request DTO to validate without a controller, unlike `order-service`'s `CreateOrderRequest`.
 - Verified with a real `./gradlew :payment-service:test` run: `contextLoads()` passes with a genuine `HikariPool`/JPA boot in the log, not assumed from the config alone — this module never has the Phase 17-shaped gap (a module compiling/packaging fine while never actually proving `ApplicationContext` boots), since the check exists from its very first commit.
+
+## `payment-service` domain model: same `UUID`/`BigDecimal` conventions as `order-service`, no new fork
+
+**Status:** Done — `payment-service` domain model, Phase 28.
+
+### Context: Payment/PaymentStatus/OutboxRecord
+
+The source's `Payment` entity declares `@Id private String id` with no `@GeneratedValue` at all — the same un-generated-primary-key pattern already corrected for `User.id` (Phase 7) and `Order.id` (Phase 18); its own service code (`PaymentService.deductFunds`) works around this by manually calling `UUID.randomUUID().toString()` before construction. `Payment.orderId` is also a loose `String`, and `amount` is a boxed `Double` — the same money-as-floating-point concern `Order.totalAmount` already resolved with `BigDecimal` (Phase 18). `OutboxRecord` again carries `traceId`/`spanId` columns, populated from OpenTelemetry, that this repo's `payment-service` (Phase 27) has no tracer to feed — identical to `order-service`'s Phase 18 outbox decision.
+
+### Decision: Payment/PaymentStatus/OutboxRecord
+
+None of this is a new fork — it's the same typing conventions Phase 18 already established, applied to a second module: `Payment.id` uses Hibernate-native `UUID` generation (`@GeneratedValue(strategy = GenerationType.UUID)`), `orderId` is typed `UUID` to match `order-service`'s `Order.id` directly rather than a loosely-typed string copy of it, `amount` is `BigDecimal` (`precision = 19, scale = 2`, matching `Order.totalAmount`'s mapping exactly), and `orderId` keeps the source's `unique = true` constraint — `PaymentService.processPaymentSaga`'s idempotency check (`findByOrderId`) depends on at most one payment ever existing per order, worth enforcing at the schema level, not just in application code. `OutboxRecord` is a direct copy of `order-service`'s Phase 18 version, minus the trace columns. `PaymentStatus` (`APPROVED`/`REFUNDED`/`FAILED`) is unchanged from the source.
+
+### Consequences: Payment/PaymentStatus/OutboxRecord
+
+- `./gradlew :payment-service:compileJava` and `contextLoads()` both verified green with no regression — Hibernate now has two real entities to map, not just an empty context.
+- No dedicated tests were written for these — plain entities with no behavior of their own, the same reasoning already applied to `order-service`'s domain model (Phase 18). Their shape gets exercised indirectly once `PaymentRepository`/`OutboxRepository`/`PaymentService` actually use them.
