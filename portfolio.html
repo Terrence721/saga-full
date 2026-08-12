@@ -1,0 +1,732 @@
+<title>Terrence Daniels — Backend &amp; Distributed Systems Engineer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta
+  name="description"
+  content="An original implementation of the Distributed Saga pattern across five independent Spring Boot / gRPC microservices — order, payment, and restaurant fulfillment, coordinated through Kafka with compensating transactions, verified against real Postgres and Kafka infrastructure."
+/>
+<link rel="canonical" href="https://terrence721.github.io/saga-full/portfolio.html" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Terrence Daniels — Portfolio" />
+<meta property="og:url" content="https://terrence721.github.io/saga-full/portfolio.html" />
+<meta property="og:title" content="saga-full — a distributed saga in five real services, by Terrence Daniels" />
+<meta
+  property="og:description"
+  content="An original implementation of the Distributed Saga pattern across five independent Spring Boot / gRPC microservices, coordinated through Kafka with compensating transactions — verified against real Postgres and Kafka, not mocked. Not a toy demo."
+/>
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="saga-full — a distributed saga in five real services, by Terrence Daniels" />
+<meta
+  name="twitter:description"
+  content="An original implementation of the Distributed Saga pattern across five independent microservices — order, payment, and restaurant fulfillment, coordinated through Kafka, verified against real infrastructure."
+/>
+<style>
+  :root {
+    --paper: #ede9df;
+    --paper-2: #e2ddd0;
+    --ink: #1c2333;
+    --ink-soft: #4b5567;
+    --rule: #c7c0ac;
+    --accent: #a13d2b;
+    --accent-ink: #fff7ef;
+    --accent-2: #2e5266;
+    --font-display:
+      Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+    --font-body:
+      -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+      sans-serif;
+    --font-mono:
+      ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono',
+      monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14181f;
+      --paper-2: #1b212b;
+      --ink: #e8e4d9;
+      --ink-soft: #a3aabb;
+      --rule: #303748;
+      --accent: #dd7a4a;
+      --accent-ink: #1c1006;
+      --accent-2: #7fb2cc;
+    }
+  }
+  :root[data-theme='dark'] {
+    --paper: #14181f;
+    --paper-2: #1b212b;
+    --ink: #e8e4d9;
+    --ink-soft: #a3aabb;
+    --rule: #303748;
+    --accent: #dd7a4a;
+    --accent-ink: #1c1006;
+    --accent-2: #7fb2cc;
+  }
+  :root[data-theme='light'] {
+    --paper: #ede9df;
+    --paper-2: #e2ddd0;
+    --ink: #1c2333;
+    --ink-soft: #4b5567;
+    --rule: #c7c0ac;
+    --accent: #a13d2b;
+    --accent-ink: #fff7ef;
+    --accent-2: #2e5266;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  html {
+    color-scheme: light dark;
+  }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  a {
+    color: var(--accent-2);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  a:hover {
+    color: var(--accent);
+  }
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative;
+    padding: 72px 0 44px;
+    background-image: repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--ink) 4%, transparent) 0 2px,
+      transparent 2px 26px
+    );
+    border-bottom: 1px solid var(--rule);
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+  }
+  .eyebrow::before {
+    content: '◆ ';
+    color: var(--accent);
+  }
+  h1.name {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2.6rem, 6vw, 4.2rem);
+    letter-spacing: -0.01em;
+    line-height: 1.02;
+    margin: 0 0 10px;
+    text-wrap: balance;
+  }
+  .role {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.4vw, 1.4rem);
+    color: var(--accent-2);
+    margin: 0 0 22px;
+  }
+  .thesis {
+    max-width: 62ch;
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    margin: 0 0 34px;
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.03em;
+    padding: 10px 16px;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    text-decoration: none;
+    background: transparent;
+  }
+  .btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .btn.primary:hover {
+    background: var(--accent-2);
+    border-color: var(--accent-2);
+    color: var(--accent-ink);
+  }
+
+  /* stamp badge */
+  .stamp {
+    position: absolute;
+    top: 58px;
+    right: 28px;
+    width: 128px;
+    height: 128px;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(-9deg);
+    opacity: 0.92;
+  }
+  .stamp::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px dashed var(--accent);
+    border-radius: 50%;
+  }
+  .stamp-inner {
+    text-align: center;
+    font-family: var(--font-mono);
+    color: var(--accent);
+  }
+  .stamp-inner .n {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stamp-inner .l {
+    display: block;
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    margin-top: 4px;
+  }
+  @media (max-width: 620px) {
+    .stamp {
+      display: none;
+    }
+  }
+
+  /* ---------- manifest stat strip ---------- */
+  .manifest {
+    background: var(--paper-2);
+    border-bottom: 1px solid var(--rule);
+    overflow-x: auto;
+  }
+  .manifest-row {
+    display: flex;
+    min-width: max-content;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .manifest-cell {
+    padding: 16px 24px;
+    border-right: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  .manifest-cell:last-child {
+    border-right: none;
+  }
+  .manifest-cell .v {
+    font-size: 1.15rem;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .manifest-cell .k {
+    display: block;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ---------- sections ---------- */
+  section {
+    padding: 52px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  section:last-of-type {
+    border-bottom: none;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 1.7rem;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+  .h2-sub {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 22px;
+  }
+  p {
+    max-width: 68ch;
+  }
+  .lede {
+    font-size: 1.02rem;
+    color: var(--ink-soft);
+    max-width: 66ch;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 18px 0 0;
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+  }
+
+  /* ledger line items */
+  .ledger {
+    border-top: 1px solid var(--rule);
+    margin-top: 24px;
+  }
+  .item {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 4px 18px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .item .no {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    font-size: 0.9rem;
+    padding-top: 2px;
+  }
+  .item .file {
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    color: var(--ink);
+  }
+  .item .desc {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    margin: 4px 0 8px;
+  }
+  .item .meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+  }
+  .item .meta .tag {
+    color: var(--accent-2);
+  }
+  .item .meta a {
+    margin-left: 8px;
+  }
+
+  .note {
+    border-left: 2px solid var(--accent-2);
+    padding: 4px 0 4px 16px;
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+    margin: 22px 0 0;
+    max-width: 62ch;
+  }
+  .note strong {
+    color: var(--ink);
+  }
+
+  .twocol {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    margin-top: 20px;
+  }
+  @media (max-width: 640px) {
+    .twocol {
+      grid-template-columns: 1fr;
+    }
+  }
+  .card {
+    border: 1px solid var(--rule);
+    padding: 18px 20px;
+  }
+  .card h3 {
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 8px;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  footer {
+    padding: 44px 0 72px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+  }
+  footer .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    margin-bottom: 22px;
+  }
+  footer .fine {
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    max-width: 62ch;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      transition: none !important;
+    }
+  }
+</style>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Portfolio Manifest — Prepared 2026-08-12</p>
+    <h1 class="name">Terrence&nbsp;Daniels</h1>
+    <p class="role">Backend &amp; Distributed Systems Engineer</p>
+    <p class="thesis">
+      An original implementation of the <strong>Distributed Saga</strong>
+      pattern across five independent Spring Boot / gRPC microservices —
+      order placement, payment settlement, and restaurant fulfillment,
+      coordinated through Kafka with compensating transactions instead of a
+      shared database transaction. Built and verified one service at a time
+      against real Postgres and Kafka infrastructure — not mocked past the
+      point where mocking stops proving anything.
+    </p>
+    <div class="hero-actions">
+      <a class="btn primary" href="https://github.com/Terrence721/saga-full"
+        >View the repository →</a
+      >
+      <a
+        class="btn"
+        href="https://github.com/Terrence721/saga-full/blob/main/docs/architecture.md"
+        >Architecture decisions</a
+      >
+      <a
+        class="btn"
+        href="https://github.com/Terrence721/saga-full/blob/main/todo.md"
+        >Build log</a
+      >
+    </div>
+  </div>
+  <div class="stamp" aria-hidden="true">
+    <div class="stamp-inner">
+      <span class="n">4</span>
+      <span class="l">REAL BUGS<br />FOUND &amp; FIXED</span>
+    </div>
+  </div>
+</div>
+
+<div class="manifest">
+  <div class="wrap">
+    <div class="manifest-row">
+      <div class="manifest-cell">
+        <span class="v">36</span><span class="k">phases shipped</span>
+      </div>
+      <div class="manifest-cell">
+        <span class="v">81/81</span><span class="k">tests passing</span>
+      </div>
+      <div class="manifest-cell">
+        <span class="v">5</span><span class="k">services complete</span>
+      </div>
+      <div class="manifest-cell">
+        <span class="v">3</span><span class="k">saga chain hops</span>
+      </div>
+      <div class="manifest-cell">
+        <span class="v">4</span><span class="k">real bugs found &amp; fixed</span>
+      </div>
+      <div class="manifest-cell">
+        <span class="v">2</span><span class="k">real infra, not mocked</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <section>
+    <h2>Why this project</h2>
+    <p class="h2-sub">A whiteboard topic, built for real</p>
+    <p class="lede">
+      Saga orchestration is a common interview-whiteboard topic and an
+      uncommon thing to actually build end to end: compensating
+      transactions, event ordering, idempotency, and the failure modes that
+      only show up once services genuinely run independently. This isn't a
+      fork of any existing project — the module boundaries and general shape
+      of the problem (order → payment → fulfillment, with compensation on
+      failure) are common territory for this class of system, but the code,
+      design decisions, and tradeoffs recorded here are this repo's own,
+      built one service at a time with the reasoning written down as it
+      happened.
+    </p>
+    <div class="chips">
+      <span class="chip">Spring Boot</span>
+      <span class="chip">gRPC</span>
+      <span class="chip">Kafka</span>
+      <span class="chip">PostgreSQL</span>
+      <span class="chip">Gradle (Kotlin DSL)</span>
+      <span class="chip">JUnit 5</span>
+      <span class="chip">Docker Compose</span>
+      <span class="chip">GitHub Actions</span>
+      <span class="chip">CodeQL</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Five services, one saga chain</h2>
+    <p class="h2-sub">
+      Outbox pattern, compensating transactions, wired end-to-end
+    </p>
+    <p class="lede">
+      <code>order-service</code> creates an order and stages an outbox
+      record in the same transaction; a poller ships it to Kafka.
+      <code>payment-service</code> consumes it, settles payment, and
+      publishes its own event. <code>restaurant-service</code> consumes
+      that, allocates inventory, and makes the saga's real decision —
+      approve or reject — publishing back to both
+      <code>order-service</code> and <code>payment-service</code> so a
+      rejection compensates the payment and cancels the order. No shared
+      database transaction anywhere in the chain.
+    </p>
+    <div class="twocol">
+      <div class="card">
+        <h3>Deliberate deviations, not defaults</h3>
+        <p>
+          <code>spring-kafka</code> directly instead of a Spring Cloud
+          Stream binder — this project only ever targets Kafka, so the
+          broker-swappability abstraction wasn't worth the config overhead.
+          <code>UUID</code> ids and <code>BigDecimal</code> money instead of
+          raw strings and doubles — floating point can't exactly represent
+          decimal fractions, a real correctness concern once money's
+          involved. Reasoning for both recorded in
+          <a
+            href="https://github.com/Terrence721/saga-full/blob/main/docs/architecture.md"
+            >docs/architecture.md</a
+          >.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Idempotency guards, not TODOs</h3>
+        <p>
+          Every state-changing method follows the same cheap-check-before-load
+          pattern: an <code>existsBy…</code> query first, then a status
+          re-check after load, so a duplicate Kafka delivery — the normal
+          case for at-least-once delivery, not an edge case — can't double-
+          apply an order confirmation, a payment, or a compensation.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Real bugs, not just features</h2>
+    <p class="h2-sub">
+      Found via actually running the thing, not reading the source twice
+    </p>
+    <p class="lede">
+      Every entry below was caught by a real, failing run — a test, a CI
+      job, or a live boot against real infrastructure — not by static
+      reading, and every fix was re-verified with another real run before
+      being called done.
+    </p>
+    <div class="ledger">
+      <div class="item">
+        <div class="no">01</div>
+        <div>
+          <div class="file">user-service — protobuf-java silently downgraded</div>
+          <div class="desc">
+            <code>spring-grpc</code>'s BOM was silently pulling
+            <code>protobuf-java</code> below what <code>user-contract</code>'s
+            generated code needs, on <code>user-service</code>'s actual
+            runtime classpath — not just tests — since the module's first
+            phase. Undetected until a test finally constructed a generated
+            message at runtime. Fixed with an explicit version pin.
+          </div>
+          <div class="meta">
+            <span class="tag">high · production</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">02</div>
+        <div>
+          <div class="file">order-service — Spring Boot 3.4.1 can't boot under JDK 25</div>
+          <div class="desc">
+            The module's first test (<code>contextLoads</code>) failed
+            outright — Spring Framework's own bundled ASM can't parse JDK 25
+            class files during component scanning at all, deeper than an
+            earlier Gradle-plugin-only version of the same issue. Checking
+            <code>user-service</code> showed it had the identical latent
+            risk, never caught because no test there had ever booted a real
+            <code>ApplicationContext</code>. Fixed by bumping both modules to
+            Boot 3.5.16.
+          </div>
+          <div class="meta">
+            <span class="tag">high · infra</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">03</div>
+        <div>
+          <div class="file">Consolidated test report — two report bugs</div>
+          <div class="desc">
+            The custom root task merging every module's JUnit XML into one
+            HTML file had two real bugs: a failing test silently blocked the
+            report from generating at all, and — separately — the task had
+            no declared inputs, so Gradle kept serving a stale report instead
+            of regenerating it. Both fixed; the report is now a genuine CI
+            artifact on every run.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · tooling</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">04</div>
+        <div>
+          <div class="file">CI — gradlew committed without its executable bit</div>
+          <div class="desc">
+            The first real CI run failed outright (<code>Permission
+            denied</code>, exit 126) — <code>gradlew</code> had been
+            committed from Windows without its executable bit, so git stored
+            mode <code>100644</code> instead of <code>100755</code>. Fixed
+            with <code>git update-index --chmod=+x</code>, confirmed on a
+            second real run.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · CI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Verifying it actually works</h2>
+    <p class="h2-sub">
+      Real Postgres, real Kafka, real partition assignments — not assumed
+    </p>
+    <p class="lede">
+      Every Kafka-wired service was booted for real against Docker Compose's
+      Postgres and Kafka containers, not just unit-tested in isolation: a
+      genuine <code>HikariPool</code>→<code>PgConnection</code> connection,
+      and each service's consumer groups actually joining and getting real
+      partition assignments against the live broker — the thing every prior
+      test run under a mocked or absent broker couldn't prove.
+    </p>
+    <div class="twocol">
+      <div class="card">
+        <h3>81/81 tests, real infra behind them</h3>
+        <p>
+          Repository tests run against embedded H2 with real Hibernate DDL,
+          not mocks; Kafka/Postgres wiring is separately verified against
+          the actual Docker containers before being called done.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Live, committed test report</h3>
+        <p>
+          A consolidated <a
+            href="https://terrence721.github.io/saga-full/test-report.html"
+            >test report</a
+          >, regenerated and committed back to <code>main</code> by CI after
+          every real test run — checkable against the live repository, not
+          a static screenshot.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Judgment calls</h2>
+    <p class="h2-sub">Where the interesting decisions actually happened</p>
+    <p class="lede">
+      GitHub Pages was briefly switched to an Actions-based deployment to
+      try matching this portfolio's own live-rendered-site pattern, then
+      deliberately reverted back to a simpler committed-static-file
+      approach once it became clear the fancier setup would replace the
+      README-rendered repo homepage for no real benefit at this stage —
+      matching a pattern isn't a reason to add complexity a project doesn't
+      need yet. Separately, building out <code>payment-service</code> before
+      <code>restaurant-service</code> wasn't the obvious reading of the
+      original four-service plan — it came from actually checking which
+      service consumes which event, not from the plan's stated order.
+      <code>restaurant-service</code> depends on <code>payment-service</code>'s
+      output, not the reverse, so building it first would have meant
+      building against nothing. Both calls, and the reasoning behind them,
+      are recorded in
+      <a
+        href="https://github.com/Terrence721/saga-full/blob/main/todo.md"
+        >todo.md</a
+      >
+      as they happened, not reconstructed afterward.
+    </p>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="https://github.com/Terrence721/saga-full">Repository</a>
+      <a
+        href="https://github.com/Terrence721/saga-full/blob/main/docs/architecture.md"
+        >Architecture decisions</a
+      >
+      <a href="https://github.com/Terrence721/saga-full/blob/main/todo.md"
+        >Build log</a
+      >
+      <a href="https://terrence721.github.io/saga-full/test-report.html"
+        >Live test report</a
+      >
+      <a href="https://github.com/users/Terrence721/projects/3"
+        >Project board</a
+      >
+      <a href="https://terrence721.github.io/">Portfolio hub</a>
+    </div>
+    <p class="fine">
+      Not a fork of any existing project — an original implementation of a
+      common distributed-systems pattern. Every number on this page is
+      reproducible from the repository's own <code>todo.md</code> phase log,
+      commit history, and CI runs — nothing here is asserted without a link
+      to check it against. <code>api-gateway-service</code>, a register/POS
+      frontend, and a reservation-service addition are still open — see
+      <code>todo.md</code> for the honest current state.
+    </p>
+  </div>
+</footer>
