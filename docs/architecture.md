@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`restaurant-service` repositories)
+Last updated: August 12, 2026 (`restaurant-service` DTOs + `RestaurantService`)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -688,3 +688,22 @@ All three repositories are direct ports, re-typed to match Phase 33 (`Restaurant
 
 - Verified as real, not just written and assumed: all three suites pass against actual Hibernate DDL (`restaurant_inventory`/`restaurant_tickets`/`outbox_record` tables genuinely created and dropped per test), and `OutboxRepositoryTest`'s ordering assertion was deliberately scrambled and re-run to confirm it fails on wrong data, before being reverted. Full multi-module suite (67 tests across 5 modules) also verified green.
 - `RestaurantTicketRepository` deliberately has no `findByOrderId` (unlike `PaymentRepository`, Phase 29) — nothing in `RestaurantService` needs to load and mutate an existing ticket; `restaurant-service` produces the saga's approval/rejection decision, it isn't itself the target of a later compensating action the way `order-service`/`payment-service` are.
+
+## `restaurant-service` DTOs + `RestaurantService`: real validation checks kept, one unreachable check dropped
+
+**Status:** Done — `restaurant-service` service layer, Phase 35.
+
+### Context: the saga's decision point
+
+Unlike `order-service`'s and `payment-service`'s `dto` packages, all five of the source's `restaurant-service` DTOs (`PaymentProcessedEvent`, `PaymentStatus`, `RestaurantApprovedEvent`, `RestaurantRejectedEvent`, `RestaurantEvent`) are genuinely used — no dead code to drop this time. `RestaurantEvent` is a sealed interface (`permits RestaurantApprovedEvent, RestaurantRejectedEvent`) that lets `saveRestaurantTicketOutbox` accept either event type polymorphically through one `orderId()`/`customerId()` contract — a clean, real use of Java's sealed interfaces, not source cruft to strip.
+
+`RestaurantService.processRestaurantStep` validates several things about the incoming `PaymentProcessedEvent`: required-field null checks, `quantity`/`amount` positivity, and `status != APPROVED`. Phase 33 flagged the last one as suspicious — `PaymentService` (Phase 30) only ever publishes a `PaymentProcessedEvent` immediately after creating a `Payment` with status `APPROVED`, never at `REFUNDED` time, so that branch can't currently fire.
+
+### Decision: the saga's decision point
+
+The null-field and `quantity`/`amount` checks are kept — unlike the `OrderCreatedEvent`-must-be-`PENDING` check dropped in Phase 30 (an intra-repo invariant with exactly one producer, fully controlled), these guard against a genuinely different failure mode: a malformed or corrupted message on a shared Kafka topic, which no single service in this repo fully controls end-to-end. The `status != APPROVED` check is dropped, matching Phase 30's precedent exactly — it's the same shape of "unreachable given this repo's own producer" branch. All five DTOs get the established `UUID`/`BigDecimal` typing; `RestaurantEvent.orderId()`/`customerId()` are typed `UUID` accordingly. `RestaurantInventoryService.verifyAndDeductStock` and `RestaurantService.processRestaurantStep`/`createAndSaveTicket`/`saveRestaurantTicketOutbox` are otherwise direct ports of the source's logic, with the idempotency guard (`existsByOrderId`), tracing removal, and real-`ObjectMapper` serialization following the same conventions as `OrderService`/`PaymentService`.
+
+### Consequences: the saga's decision point
+
+- `RestaurantServiceTest` (6 tests) and a new `RestaurantInventoryServiceTest` (3 tests, no source equivalent) were both written — the latter because `RestaurantInventoryService.verifyAndDeductStock` has real branching logic and an actual stock-deduction side effect that `RestaurantServiceTest`'s mocked-inventory-service approach structurally can't exercise, the same reasoning as `OrderConsumerConfigTest`/`PaymentConsumerConfigTest` going beyond the source. Verified with a real `./gradlew :restaurant-service:test` run, and confirmed both new suites genuinely catch wrong data — a wrong deserialized `ticketId` and a wrong deducted stock count — by deliberately breaking each assertion and re-running before reverting. Full multi-module suite (76 tests across 5 modules) also verified green.
+- All three saga participants built so far now have their core business logic in place: `order-service` creates and reacts, `payment-service` charges and refunds, `restaurant-service` decides and allocates inventory. What's left for `restaurant-service` is purely wiring — repositories and domain model already exist (Phases 33-34), so the next phase is `OutboxPublisherService`, consumer config, and `application.yaml`, the same three files that closed out `order-service`/`payment-service`.
