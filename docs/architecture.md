@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`order-service` `OrderService`)
+Last updated: August 12, 2026 (`order-service` `OutboxPublisherService`)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -446,3 +446,20 @@ The source's `OrderService` bundles `createOrder`, `confirmOrder` (restaurant-ap
 
 - `OrderServiceTest` (7 tests) uses a real `ObjectMapper` instance rather than mocking it like the source does — mocking `writeValueAsString` to return a canned string would never prove the outbox payload actually serializes correctly, the same class of gap the Phase 12 `protobuf-java` bug slipped through. The test round-trips the real JSON back into `OrderCreatedEvent` and asserts on the deserialized fields. Verified with a real `./gradlew :order-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong `OrderStatus` and re-running before reverting.
 - The `customerId`-trust-boundary gap is a real, tracked deviation from the source's security posture, not an oversight — it needs revisiting once `api-gateway-service` exists to inject a verified identity.
+
+## `order-service`: `OutboxPublisherService` ships raw JSON via `KafkaTemplate`, not the source's `StreamBridge`
+
+**Status:** Done — `order-service` service layer, Phase 22.
+
+### Context: publishing staged outbox rows to Kafka
+
+The source's `OutboxPublisherService` deserializes each `OutboxRecord.payload` back into `OrderCreatedEvent`, wraps it in a `Message`, and sends it through Spring Cloud Stream's `StreamBridge` with Kafka exactly-once-semantics config (`transaction-id-prefix`, `enable.idempotence`) and manual Micrometer tracing around every span. This repo chose `spring-kafka` directly over Cloud Stream back in Phase 16 specifically to avoid a binder abstraction this single-broker project doesn't need, and has no tracer to feed (Phase 18). The deserialize-then-reserialize step is also structurally pointless here: `OutboxRecord.payload` is already the exact JSON string that needs to end up on the wire — nothing about `KafkaTemplate` requires a typed Java object first.
+
+### Decision: publishing staged outbox rows to Kafka
+
+`publishPendingOutboxRecords` polls a batch via `OutboxRepository.findByOrderByCreatedTimeAsc` (Phase 19's `SKIP LOCKED` query) inside one `@Transactional`/`@Scheduled` method, then publishes each record's raw JSON payload as-is through `KafkaTemplate<String, String>.send(Message<String>)` — keyed on `aggregateId` for per-order partition affinity, with an `eventType` Kafka header even though only one event type exists today. The send is blocked on (`.get()` on the returned `CompletableFuture`) so a record is only deleted after a confirmed successful publish. Failures are caught **per record** and logged, not allowed to propagate and roll back the whole batch's transaction the way the source's rethrow does — since `confirmOrder`/`cancelOrder` (Phase 21) are already idempotency-guarded against duplicate delivery, catching per-record avoids needlessly re-publishing already-successful sends in the same batch.
+
+### Consequences: publishing staged outbox rows to Kafka
+
+- `OutboxPublisherServiceTest` (4 tests) covers: an empty batch doing nothing, a successful publish asserting the real message payload/topic/key/header values then deleting the record, a failed send leaving the record undeleted for retry, and — the specific proof for the per-record-catch decision — a two-record batch where one send fails and the other still gets deleted, showing the batch doesn't roll back as a unit. Verified with a real `./gradlew :order-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong Kafka key header and re-running before reverting.
+- This repo now has no Kafka transactional/exactly-once guarantee at all — messages are published at-least-once, and a crash between a confirmed send and the delete could republish. That's an accepted tradeoff given Phase 21's idempotency guards downstream, not an oversight.
