@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 10, 2026 (`order-service` DTOs)
+Last updated: August 12, 2026 (`order-service` `OrderService`)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -429,3 +429,20 @@ Verified as real, not just written and assumed: both suites pass against actual 
 
 - No dedicated tests were written for these — they're plain records with no behavior of their own, the same reasoning already applied to not testing `Order`/`OutboxRecord`/`OrderStatus` directly (Phase 18). Their shape gets exercised indirectly once `OrderController`/`OrderService`/`OutboxPublisherService` actually use them.
 - Any future module in this repo that copies from the source's `dto` packages should check for the same kind of cross-service copy-paste leftovers before carrying a type over, not assume everything in a `dto` folder is actually load-bearing.
+
+## `order-service`: `OrderService` combines create + saga transitions, with a dedicated `OrderNotFoundException`
+
+**Status:** Done — `order-service` service layer, Phase 21.
+
+### Context: order-service business logic entry point
+
+The source's `OrderService` bundles `createOrder`, `confirmOrder` (restaurant-approved), and `cancelOrder` (restaurant-rejected) in one class, wrapped in manual OpenTelemetry span code and using a plain `IllegalArgumentException` when an order isn't found. This repo already deferred OTel export wiring (Phase 16) and dropped `OutboxRecord`'s `traceId`/`spanId` columns (Phase 18), so there's no trace context to restore here. Separately, `OrderRepository.existsByIdAndStatus` (Phase 19) was written specifically as an idempotency guard for exactly this kind of duplicate-Kafka-redelivery check, but sat unused until this phase gave it a caller. The source's controller layer also reads `customerId` from a gateway-injected header rather than trusting the request body — but no `api-gateway-service` or auth wiring exists yet in this repo to supply that trusted identity separately.
+
+### Decision: order-service business logic entry point
+
+`OrderService.createOrder` builds a `PENDING` `Order`, saves it, and stages a matching `OutboxRecord` in the same `@Transactional` method — trusting `CreateOrderRequest.customerId` directly rather than a separate authenticated-identity parameter, deferred until a real gateway/auth layer exists to enforce that boundary. `confirmOrder`/`cancelOrder` carry over the source's double-guard idempotency pattern unchanged in shape (a cheap `existsByIdAndStatus` check first, then `findById`, then a second status check after load, before mutating) but with all tracing code stripped, and a new `OrderNotFoundException` in place of the source's generic `IllegalArgumentException` — matching `user-service`'s established convention (`UserNotFoundException`, Phase 7) of a dedicated unchecked exception type per domain failure, rather than a generic JDK exception standing in for one.
+
+### Consequences: order-service business logic entry point
+
+- `OrderServiceTest` (7 tests) uses a real `ObjectMapper` instance rather than mocking it like the source does — mocking `writeValueAsString` to return a canned string would never prove the outbox payload actually serializes correctly, the same class of gap the Phase 12 `protobuf-java` bug slipped through. The test round-trips the real JSON back into `OrderCreatedEvent` and asserts on the deserialized fields. Verified with a real `./gradlew :order-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong `OrderStatus` and re-running before reverting.
+- The `customerId`-trust-boundary gap is a real, tracked deviation from the source's security posture, not an oversight — it needs revisiting once `api-gateway-service` exists to inject a verified identity.
