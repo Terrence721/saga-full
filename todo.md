@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 10, 2026 (`order-service` DTOs: `CreateOrderRequest`, `OrderCreatedEvent`, `RestaurantApproved`/`RejectedEvent`)
+**Last Updated:** August 12, 2026 (`order-service` `OrderService`: `createOrder`/`confirmOrder`/`cancelOrder`, `OrderNotFoundException`)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -43,6 +43,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `order-service` | `OrderServiceApplicationTests` | 1 | ✅ passing | Phase 16-17 | 2026-08-10 |
 | `order-service` | `OrderRepositoryTest` | 3 | ✅ passing | Phase 19 | 2026-08-10 |
 | `order-service` | `OutboxRepositoryTest` | 2 | ✅ passing | Phase 19 | 2026-08-10 |
+| `order-service` | `OrderServiceTest` | 7 | ✅ passing | Phase 21 | 2026-08-12 |
 
 ## ✅ Done
 
@@ -99,6 +100,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | 18 | 2026-08-10 | `order-service` domain model written: `OrderStatus` (`PENDING`/`CANCELLED`/`SUCCESS`, unchanged from the source), `Order` (`UUID id`/`customerId` per `user-service`'s Phase 7 precedent, `BigDecimal totalAmount` instead of the source's `double` — floating point can't exactly represent decimal fractions, a real correctness concern for money), and `OutboxRecord` (matches the source, minus its `traceId`/`spanId` columns — deferred along with OTel export wiring itself, per Phase 16, rather than adding trace-context columns with no tracer to populate them). `./gradlew :order-service:compileJava` and the full 22-test suite both verified green with no regression. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 | 19 | 2026-08-10 | `order-service` repositories written: `OrderRepository` (`existsByIdAndStatus`) and `OutboxRepository` (`findByOrderByCreatedTimeAsc`, carrying over the source's `PESSIMISTIC_WRITE` + `SKIP LOCKED` query hint unchanged — the standard mechanism for safe concurrent outbox polling across multiple service instances), both re-typed to `UUID` matching Phase 18's domain model. `OrderRepositoryTest` (3 tests) and `OutboxRepositoryTest` (2 tests) written as real `@DataJpaTest`s against an embedded H2 database, not mocks; confirmed the ordering test genuinely catches wrong data by deliberately scrambling the expected order and re-running before reverting. The `SKIP LOCKED` locking guarantee itself isn't independently proven under real concurrent transactions — trusted as documented Hibernate/PostgreSQL-dialect behavior, matching the source's own test scope. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 | 20 | 2026-08-10 | `order-service` DTOs written: `CreateOrderRequest`, `OrderCreatedEvent`, `RestaurantApprovedEvent`, `RestaurantRejectedEvent` — the repo's first Java records. Id fields typed `UUID` and `OrderCreatedEvent.totalAmount` typed `BigDecimal`, extending Phase 18's typing conventions rather than the source's raw `String`/`double`. The source's `RestaurantTicketStatus` enum was deliberately **not** carried over: grepping confirmed it's defined but never referenced anywhere in the source's `order-service` module, an apparent leftover from its `dto` package being copy-pasted across services without pruning. `./gradlew :order-service:compileJava` and the full 27-test suite both verified green with no regression; no dedicated tests needed for these plain records themselves. Full reasoning in [docs/architecture.md](docs/architecture.md) |
+| 21 | 2026-08-12 | `order-service` `OrderService` written: `createOrder` (builds a `PENDING` `Order`, saves it, stages a matching `OutboxRecord`, all in one `@Transactional` method), plus `confirmOrder`/`cancelOrder` carrying over the source's double-guard idempotency pattern (cheap `existsByIdAndStatus` check, then `findById`, then a second status re-check after load) with all OpenTelemetry tracing stripped out. New `OrderNotFoundException` replaces the source's generic `IllegalArgumentException`, matching `user-service`'s dedicated-exception-type convention. `createOrder` trusts `CreateOrderRequest.customerId` directly rather than a separate authenticated-identity parameter, since no `api-gateway-service`/auth wiring exists yet to supply one. `OrderServiceTest` (7 tests) written using a real `ObjectMapper` instance rather than a mock, round-tripping the real outbox JSON payload back into `OrderCreatedEvent` to actually prove serialization correctness. Verified with a real `./gradlew :order-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong `OrderStatus` and re-running before reverting. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 
 ## 🔧 Still to do
 
