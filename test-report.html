@@ -17,8 +17,8 @@
         <body>
         <h1>saga-full - Aggregated Test Report</h1>
         <div class="summary">
-            <span><strong>Total:</strong> 66</span>
-            <span style="color:#1a7f37"><strong>Passed:</strong> 66</span>
+            <span><strong>Total:</strong> 75</span>
+            <span style="color:#1a7f37"><strong>Passed:</strong> 75</span>
             <span style="color:#cf222e"><strong>Failed:</strong> 0</span>
             <span style="color:#9a6700"><strong>Skipped:</strong> 0</span>
         </div>
@@ -32,7 +32,7 @@
     <td>io.github.terrence721.saga.order.OrderServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.596s</td>
+    <td>0.477s</td>
     <td></td>
 </tr>
 <tr>
@@ -40,7 +40,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsBadRequest_whenPayloadFailsValidation()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.019s</td>
+    <td>0.015s</td>
     <td></td>
 </tr>
 <tr>
@@ -48,7 +48,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsCreated_whenRequestIsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.271s</td>
+    <td>0.244s</td>
     <td></td>
 </tr>
 <tr>
@@ -56,7 +56,7 @@
     <td>io.github.terrence721.saga.order.repository.OrderRepositoryTest</td>
     <td>existsByIdAndStatus_returnsFalse_whenIdDoesNotExist()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.013s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -64,7 +64,7 @@
     <td>io.github.terrence721.saga.order.repository.OrderRepositoryTest</td>
     <td>existsByIdAndStatus_returnsFalse_whenStatusDoesNotMatch()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -72,7 +72,7 @@
     <td>io.github.terrence721.saga.order.repository.OrderRepositoryTest</td>
     <td>existsByIdAndStatus_returnsTrue_whenStatusMatches()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.107s</td>
+    <td>0.091s</td>
     <td></td>
 </tr>
 <tr>
@@ -80,7 +80,7 @@
     <td>io.github.terrence721.saga.order.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsEmpty_whenNoRecords()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.011s</td>
     <td></td>
 </tr>
 <tr>
@@ -88,7 +88,7 @@
     <td>io.github.terrence721.saga.order.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsOldestFirst_upToPageSize()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.032s</td>
+    <td>0.037s</td>
     <td></td>
 </tr>
 <tr>
@@ -96,7 +96,7 @@
     <td>io.github.terrence721.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantApproved_deserializesPayloadAndDelegatesToConfirmOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.027s</td>
+    <td>0.05s</td>
     <td></td>
 </tr>
 <tr>
@@ -104,7 +104,7 @@
     <td>io.github.terrence721.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantRejected_deserializesPayloadAndDelegatesToCancelOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.017s</td>
     <td></td>
 </tr>
 <tr>
@@ -152,7 +152,7 @@
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_transitionsToSuccess_whenPending()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -160,7 +160,7 @@
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>createOrder_savesOrderAndStagesOutboxWithRealSerializedPayload()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.249s</td>
+    <td>0.22s</td>
     <td></td>
 </tr>
 <tr>
@@ -168,7 +168,7 @@
     <td>io.github.terrence721.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_continuesBatch_afterOneRecordFails()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -176,7 +176,7 @@
     <td>io.github.terrence721.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_doesNothing_whenNoRecords()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -192,7 +192,7 @@
     <td>io.github.terrence721.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_publishesRawPayloadAndDeletes_onSuccess()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.197s</td>
+    <td>0.18s</td>
     <td></td>
 </tr>
 <tr>
@@ -200,7 +200,7 @@
     <td>io.github.terrence721.saga.payment.PaymentServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.52s</td>
+    <td>0.562s</td>
     <td></td>
 </tr>
 <tr>
@@ -208,7 +208,7 @@
     <td>io.github.terrence721.saga.payment.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsEmpty_whenNoRecords()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.01s</td>
+    <td>0.011s</td>
     <td></td>
 </tr>
 <tr>
@@ -216,7 +216,7 @@
     <td>io.github.terrence721.saga.payment.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsOldestFirst_upToPageSize()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.098s</td>
+    <td>0.133s</td>
     <td></td>
 </tr>
 <tr>
@@ -224,7 +224,7 @@
     <td>io.github.terrence721.saga.payment.repository.PaymentRepositoryTest</td>
     <td>findByOrderId_returnsEmpty_whenNoneExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.018s</td>
+    <td>0.026s</td>
     <td></td>
 </tr>
 <tr>
@@ -232,7 +232,7 @@
     <td>io.github.terrence721.saga.payment.repository.PaymentRepositoryTest</td>
     <td>findByOrderId_returnsPayment_whenOneExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.011s</td>
+    <td>0.013s</td>
     <td></td>
 </tr>
 <tr>
@@ -240,7 +240,7 @@
     <td>io.github.terrence721.saga.payment.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_continuesBatch_afterOneRecordFails()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.012s</td>
+    <td>0.013s</td>
     <td></td>
 </tr>
 <tr>
@@ -248,7 +248,7 @@
     <td>io.github.terrence721.saga.payment.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_doesNothing_whenNoRecords()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -256,7 +256,7 @@
     <td>io.github.terrence721.saga.payment.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_leavesRecordForRetry_onFailure()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.013s</td>
+    <td>0.014s</td>
     <td></td>
 </tr>
 <tr>
@@ -264,7 +264,7 @@
     <td>io.github.terrence721.saga.payment.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_publishesRawPayloadAndDeletes_onSuccess()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.473s</td>
+    <td>0.494s</td>
     <td></td>
 </tr>
 <tr>
@@ -272,7 +272,7 @@
     <td>io.github.terrence721.saga.payment.service.PaymentConsumerConfigTest</td>
     <td>onOrderCreated_deserializesPayloadAndDelegatesToProcessPaymentSaga()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.115s</td>
+    <td>0.113s</td>
     <td></td>
 </tr>
 <tr>
@@ -280,7 +280,7 @@
     <td>io.github.terrence721.saga.payment.service.PaymentConsumerConfigTest</td>
     <td>onRestaurantRejected_deserializesPayloadAndDelegatesToHandleOrderCompensation()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.009s</td>
+    <td>0.01s</td>
     <td></td>
 </tr>
 <tr>
@@ -296,7 +296,7 @@
     <td>io.github.terrence721.saga.payment.service.PaymentServiceTest</td>
     <td>handleOrderCompensation_shortCircuits_whenAlreadyRefundedAfterLoad()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -304,7 +304,7 @@
     <td>io.github.terrence721.saga.payment.service.PaymentServiceTest</td>
     <td>handleOrderCompensation_throwsPaymentNotFoundException_whenPaymentMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -312,7 +312,7 @@
     <td>io.github.terrence721.saga.payment.service.PaymentServiceTest</td>
     <td>handleOrderCompensation_transitionsToRefunded_whenApproved()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -320,7 +320,7 @@
     <td>io.github.terrence721.saga.payment.service.PaymentServiceTest</td>
     <td>processPaymentSaga_savesPaymentAndStagesOutboxWithRealSerializedPayload()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.119s</td>
+    <td>0.095s</td>
     <td></td>
 </tr>
 <tr>
@@ -328,7 +328,7 @@
     <td>io.github.terrence721.saga.payment.service.PaymentServiceTest</td>
     <td>processPaymentSaga_skipsDuplicate_whenPaymentAlreadyExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -336,7 +336,7 @@
     <td>io.github.terrence721.saga.restaurant.RestaurantServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.421s</td>
+    <td>0.456s</td>
     <td></td>
 </tr>
 <tr>
@@ -344,7 +344,7 @@
     <td>io.github.terrence721.saga.restaurant.repository.InventoryItemRepositoryTest</td>
     <td>findById_returnsEmpty_whenItemCodeUnknown()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.118s</td>
+    <td>0.131s</td>
     <td></td>
 </tr>
 <tr>
@@ -352,7 +352,7 @@
     <td>io.github.terrence721.saga.restaurant.repository.InventoryItemRepositoryTest</td>
     <td>findById_returnsItem_whenItExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.024s</td>
+    <td>0.027s</td>
     <td></td>
 </tr>
 <tr>
@@ -360,7 +360,7 @@
     <td>io.github.terrence721.saga.restaurant.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsEmpty_whenNoRecords()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -368,7 +368,7 @@
     <td>io.github.terrence721.saga.restaurant.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsOldestFirst_upToPageSize()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.117s</td>
+    <td>0.138s</td>
     <td></td>
 </tr>
 <tr>
@@ -376,7 +376,7 @@
     <td>io.github.terrence721.saga.restaurant.repository.RestaurantTicketRepositoryTest</td>
     <td>existsByOrderId_returnsFalse_whenNoTicketExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -384,7 +384,79 @@
     <td>io.github.terrence721.saga.restaurant.repository.RestaurantTicketRepositoryTest</td>
     <td>existsByOrderId_returnsTrue_whenTicketExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.017s</td>
+    <td>0.018s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>restaurant-service</td>
+    <td>io.github.terrence721.saga.restaurant.service.RestaurantInventoryServiceTest</td>
+    <td>verifyAndDeductStock_returnsAllocatedAndDeducts_whenEnoughStock()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.003s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>restaurant-service</td>
+    <td>io.github.terrence721.saga.restaurant.service.RestaurantInventoryServiceTest</td>
+    <td>verifyAndDeductStock_returnsInsufficientStock_whenNotEnough()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.182s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>restaurant-service</td>
+    <td>io.github.terrence721.saga.restaurant.service.RestaurantInventoryServiceTest</td>
+    <td>verifyAndDeductStock_returnsItemNotFound_whenItemCodeUnknown()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.002s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>restaurant-service</td>
+    <td>io.github.terrence721.saga.restaurant.service.RestaurantServiceTest</td>
+    <td>processRestaurantStep_createsPreparingTicketAndApprovedOutbox_whenAllocated()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.016s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>restaurant-service</td>
+    <td>io.github.terrence721.saga.restaurant.service.RestaurantServiceTest</td>
+    <td>processRestaurantStep_createsRejectedTicketAndRejectedOutbox_whenInsufficientStock()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.289s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>restaurant-service</td>
+    <td>io.github.terrence721.saga.restaurant.service.RestaurantServiceTest</td>
+    <td>processRestaurantStep_createsRejectedTicketAndRejectedOutbox_whenItemNotFound()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.008s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>restaurant-service</td>
+    <td>io.github.terrence721.saga.restaurant.service.RestaurantServiceTest</td>
+    <td>processRestaurantStep_skipsDuplicate_whenTicketAlreadyExists()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.003s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>restaurant-service</td>
+    <td>io.github.terrence721.saga.restaurant.service.RestaurantServiceTest</td>
+    <td>processRestaurantStep_throwsIllegalArgumentException_whenAmountNotPositive()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.011s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>restaurant-service</td>
+    <td>io.github.terrence721.saga.restaurant.service.RestaurantServiceTest</td>
+    <td>processRestaurantStep_throwsIllegalArgumentException_whenQuantityNotPositive()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -392,7 +464,7 @@
     <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
     <td>loginRequestRoundTripsThroughSerialization()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -400,7 +472,7 @@
     <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
     <td>loginResponseRoundTripsAtInt64Boundary()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.072s</td>
+    <td>0.085s</td>
     <td></td>
 </tr>
 <tr>
@@ -416,7 +488,7 @@
     <td>io.github.terrence721.saga.user.grpc.UserContractSerializationTest</td>
     <td>validateTokenRequestRoundTripsThroughSerialization()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -440,7 +512,7 @@
     <td>io.github.terrence721.saga.user.UserServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.396s</td>
+    <td>0.378s</td>
     <td></td>
 </tr>
 <tr>
@@ -448,7 +520,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>loginFailsWithNotFoundWhenUserMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -464,7 +536,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>loginFailsWithUnauthenticatedWhenPasswordWrong()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.364s</td>
+    <td>0.347s</td>
     <td></td>
 </tr>
 <tr>
@@ -472,7 +544,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>validateTokenReturnsInvalidWhenTokenVerificationFails()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.013s</td>
+    <td>0.011s</td>
     <td></td>
 </tr>
 <tr>
@@ -480,7 +552,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
     <td>loginSucceedsAndReturnsAccessToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -488,7 +560,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
     <td>validateTokenReturnsValidWhenTokenVerifies()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.12s</td>
+    <td>0.112s</td>
     <td></td>
 </tr>
 <tr>
@@ -504,7 +576,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceIntegrationTest</td>
     <td>loginOverGrpcReturnsAccessToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.108s</td>
+    <td>0.104s</td>
     <td></td>
 </tr>
 <tr>
@@ -512,7 +584,7 @@
     <td>io.github.terrence721.saga.user.infra.grpc.UserGrpcServiceIntegrationTest</td>
     <td>validateTokenOverGrpcReturnsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -520,7 +592,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>createdTokenVerifiesSuccessfullyWithMatchingClaims()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -528,7 +600,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForExpiredToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -544,7 +616,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForTamperedSignature()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.184s</td>
+    <td>0.113s</td>
     <td></td>
 </tr>
 <tr>
@@ -552,7 +624,7 @@
     <td>io.github.terrence721.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForWrongIssuer()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
             </tbody>
