@@ -30,6 +30,26 @@ Each module's own HTML report lives at `<module>/build/reports/tests/test/index.
 
 Output: `build/reports/tests/aggregate/index.html`. Run as two separate commands, not one — `--continue` lets every module's tests run independently of one another, but if `aggregateTestReport` depended on the `test` tasks directly, a single failing module would block it from running at all (a failed dependency always prevents a dependent task from executing). Running it standalone means it always reflects whatever's currently on disk, pass or fail.
 
+## Running against real Postgres + Kafka (Docker)
+
+Tests use H2 (in-memory) and don't need this. To run a module against real infrastructure instead (e.g. `./gradlew :order-service:bootRun`), start the local stack:
+
+```shell
+docker compose up -d
+```
+
+This brings up `postgres-db` and `kafka-broker` only — no per-service containers yet (see [todo.md](todo.md)). A schema-init script (`docker/init-schemas.sql`) creates each service's Postgres schema automatically on first startup.
+
+`postgres-db` maps to host port **5433**, not the standard 5432 — some dev machines already have another project's Postgres container bound to 5432. Activate the `postgres` profile and point at that port:
+
+```shell
+SPRING_PROFILES_ACTIVE=postgres DATABASE_PORT=5433 ./gradlew :order-service:bootRun
+```
+
+`kafka-broker` uses the standard `9092` and needs no override.
+
+Tear down with `docker compose down` when done.
+
 ## Submitting pull requests
 
 Please follow these steps to simplify review:
