@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`payment-service` DTOs + `PaymentService`)
+Last updated: August 12, 2026 (`payment-service` Kafka wiring complete)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -619,3 +619,21 @@ The defensive `PENDING`-only check is dropped: `OrderService.createOrder` (Phase
 
 - `PaymentServiceTest` (6 tests) uses a real `ObjectMapper` instance, not a mock, for the same reason as `OrderServiceTest` (Phase 21) — round-tripping the real outbox JSON payload back into `PaymentProcessedEvent` actually proves serialization correctness rather than trusting a canned mock string. Covers: the happy path with real payload assertions, the duplicate-payment skip, both compensation idempotency guards (pre-load `existsBy` short-circuit and the post-load race-condition re-check), the status transition to `REFUNDED`, and `PaymentNotFoundException`. Verified with a real `./gradlew :payment-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong `PaymentStatus` on the deserialized outbox payload and re-running before reverting. Full multi-module suite (53 tests across 4 modules) also verified green with no regressions.
 - `payment-service` now has real business logic wired end-to-end for both saga directions it participates in — charge on order creation, refund on restaurant rejection — matching `order-service`'s `confirmOrder`/`cancelOrder` on the other side of the same compensating-transaction pair.
+
+## `payment-service` Kafka wiring: `OutboxPublisherService`, `PaymentConsumerConfig`, `application.yaml`
+
+**Status:** Done — `payment-service` Kafka wiring, Phase 31.
+
+### Context: closing the loop from OutboxRecord to a live broker
+
+`PaymentService` (Phase 30) stages `OutboxRecord`s and reacts to consumed events, but nothing yet moved those records onto Kafka or subscribed to the topics `PaymentConsumerConfig` needs. The source's `OutboxPublisherService` for this module is structurally identical to `order-service`'s (Phase 22) — `StreamBridge`, Micrometer tracing, a `PaymentProcessed`/`PaymentFailed` dispatch switch — none of which applies here for the same reasons already established. Its `application.yaml` also targets Minikube-hosted infrastructure (`host.minikube.internal`, a `k8sdb` profile) this repo doesn't have.
+
+### Decision: closing the loop from OutboxRecord to a live broker
+
+All three files are direct structural repeats of `order-service`'s Phase 22/24/25, with no new forks: `OutboxPublisherService` ships each `OutboxRecord`'s raw JSON payload via `KafkaTemplate<String, String>` to `payment-processed-topic`, per-record try/catch so one failure doesn't roll back the batch. `PaymentConsumerConfig` is a plain `@Component` with two `@KafkaListener` methods — `order-created-topic` (group `payment-group`) → `processPaymentSaga`, `restaurant-rejected-topic` (group `payment-compensation-group`) → `handleOrderCompensation` — each deserializing the raw JSON payload manually via `ObjectMapper`, symmetric with the publish side. `application.yaml` follows `user-service`/`order-service`'s `default`/`postgres` profile split (not the source's `default`/`k8sdb`), `payment_db`/`payment_service_schema` naming, and the same plain `StringSerializer`/`StringDeserializer` Kafka config. `docker/init-schemas.sql` (Phase 26) gained a `payment_service_schema` line to match.
+
+### Consequences: closing the loop from OutboxRecord to a live broker
+
+- `OutboxPublisherServiceTest` (4 tests) and `PaymentConsumerConfigTest` (2 tests, new to this repo like `order-service`'s Phase 24 equivalent — the source has no dedicated consumer test) mirror `order-service`'s Phase 22/24 suites exactly. Verified with a real `./gradlew :payment-service:test` run (17 tests in this module now), and confirmed both new suites genuinely catch wrong data by deliberately breaking a Kafka key header assertion and a deserialized `reason` field, re-running to confirm failure, then reverting.
+- Verified end-to-end against real infrastructure, not just unit-level mocks: `docker compose up -d` (recreated so the updated `init-schemas.sql` actually ran — the script only executes on a container's first startup, so the already-running containers from Phase 26 didn't pick up the new schema line automatically), confirmed all three schemas present via `\dn`, then booted `payment-service` for real (`SPRING_PROFILES_ACTIVE=postgres DATABASE_PORT=5433 ./gradlew :payment-service:bootRun`) — a genuine `HikariPool`→`PgConnection` against `payment_service_schema`, and both `payment-group`/`payment-compensation-group` consumers actually joining and getting real partition assignments (`order-created-topic-0`/`restaurant-rejected-topic-0`) against the live broker, the same standard of proof Phase 26 established for `order-service`.
+- Both saga participants built so far (`order-service`, `payment-service`) are now fully wired for their half of the compensating-transaction pair: `order-service` creates and reacts to restaurant decisions, `payment-service` charges and refunds. `restaurant-service` is the missing middle link — it consumes `PaymentProcessedEvent` and is what actually produces the `RestaurantApproved`/`RejectedEvent`s both existing services already wait on.
