@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`restaurant-service` scaffold)
+Last updated: August 12, 2026 (`restaurant-service` domain model)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -654,3 +654,20 @@ The source's `restaurant-service` `pom.xml` and entry point are structurally ide
 
 - Verified with a real `./gradlew :restaurant-service:test` run: `contextLoads()` passes with a genuine `HikariPool`/JPA boot in the log, avoiding the Phase 17-shaped gap from its very first commit, same as `payment-service`. Full multi-module suite (60 tests across 5 modules) also verified green with no regressions.
 - With three of four planned service modules now scaffolded (`api-gateway-service` remains unstarted), the pattern established in Phases 16/27/32 — mirror the source's dependency set, apply the same JDK-25 pins, write `contextLoads()` first — should need no further re-litigation for `api-gateway-service` either.
+
+## `restaurant-service` domain model: natural-key `InventoryItem`, the one `RestaurantTicketStatus` that isn't dead code
+
+**Status:** Done — `restaurant-service` domain model, Phase 33.
+
+### Context: InventoryItem/InventoryStatus/RestaurantTicket/RestaurantTicketStatus/OutboxRecord
+
+`RestaurantTicket` repeats the same un-generated-primary-key pattern already corrected twice (`User.id` Phase 7, `Order.id` Phase 18, `Payment.id` Phase 28): `@Id private String id` with no `@GeneratedValue`, worked around in `RestaurantService.createAndSaveTicket` by manually calling `UUID.randomUUID().toString()`. `RestaurantTicket.orderId` is a loose `String` that should reference `order-service`'s `Order.id`. `OutboxRecord` again carries the `traceId`/`spanId` columns this repo's `restaurant-service` (Phase 32) has no tracer to feed. `InventoryItem`, by contrast, uses `itemCode` as its primary key — a genuine natural business key (the same string identifying an item across `order-service`'s `Order.itemCode`, `payment-service`'s DTOs, etc.), not a surrogate id standing in for one, so it doesn't fit the `UUID`-generation pattern applied everywhere else. `RestaurantTicketStatus` (`PREPARING`/`REJECTED`) is genuinely used here — unlike the dead copies of the same enum name already found and dropped from `order-service`'s (Phase 20) and `payment-service`'s (Phase 30) `dto` packages, this is the real domain enum `RestaurantTicket.status` and `RestaurantService`'s dispatch logic actually consume.
+
+### Decision: InventoryItem/InventoryStatus/RestaurantTicket/RestaurantTicketStatus/OutboxRecord
+
+`RestaurantTicket.id` uses Hibernate-native `UUID` generation, `orderId` is typed `UUID` matching `Order.id`, and this identifier is what actually crosses the wire — `order-service`'s own `RestaurantApprovedEvent.ticketId` (Phase 20) is already `UUID`-typed, so this decision was effectively already made by the consuming side. `InventoryItem` is carried over unchanged (`itemCode` `String` primary key, `stockCount` `int`) — the natural-key exception to the UUID convention, not an oversight. `OutboxRecord` is a direct copy of the established shape minus trace columns. `InventoryStatus` (`ALLOCATED`/`INSUFFICIENT_STOCK`/`ITEM_NOT_FOUND`) is unchanged from the source.
+
+### Consequences: InventoryItem/InventoryStatus/RestaurantTicket/RestaurantTicketStatus/OutboxRecord
+
+- `./gradlew :restaurant-service:compileJava` and `contextLoads()` both verified green with no regression; no dedicated tests written for these plain entities, the same reasoning already applied in Phases 18/28.
+- `RestaurantService`'s own validation logic (deferred to the next phase) includes a `PaymentProcessedEvent.status != APPROVED` check that may turn out to be unreachable given `payment-service`'s actual behavior — `PaymentService` (Phase 30) only ever publishes a `PaymentProcessedEvent` once, immediately after creating a `Payment` with status `APPROVED`, never at `REFUNDED` time — the same shape as the defensive check dropped in Phase 30. Worth re-examining then, not decided here.
