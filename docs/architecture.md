@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`order-service` `application.yaml`)
+Last updated: August 12, 2026 (`docker-compose.yml`: Postgres + Kafka)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -515,3 +515,23 @@ Follows `user-service`'s established `default`/`postgres` profile split (Phase 7
 - Confirmed with a real `./gradlew :order-service:test` run that the full module (all 21 tests, including `contextLoads()`) stays green with this config in place and no live Kafka broker or Postgres running — H2 covers the JPA layer, and Kafka's consumer/producer clients tolerate a missing broker at startup by retrying rather than failing fast.
 - This closes out the "`order-service` service layer + Kafka wiring" item tracked in [todo.md](../todo.md) since Phase 17 — `OrderService`, `OutboxPublisherService`, `OrderController`, `OrderConsumerConfig`, and this config file are all in place with real, verified test coverage (Phases 21-25).
 - `payment-service`/`restaurant-service`, once built, should follow this same `default`/`postgres` profile convention and plain-String Kafka (de)serializer choice for consistency, rather than each re-deciding it from the source's Minikube-oriented config.
+
+## `docker-compose.yml`: Postgres + Kafka only, scoped to what actually needs proving right now
+
+**Status:** Done — local Docker infrastructure, Phase 26.
+
+### Context: what Docker is actually for at this point
+
+The source's `docker-compose.yml` bundles Postgres, a dual-listener KRaft Kafka broker (one listener for containers on the Docker network, one advertised at `host.minikube.internal` for host-machine tools), and a full OTel/Prometheus/Loki/Tempo/Grafana observability stack, plus a per-service `Dockerfile` for each of its four Spring Boot services. This repo's own `todo.md` had already scoped this down before this phase started: the OTel/observability stack was deferred back at Phase 16 (no collector exists to feed), and per-service `Dockerfile`s were explicitly deferred "until there's a complete multi-service stack worth deploying" — only `user-service` and `order-service` exist so far, with `payment-service`/`restaurant-service` still ahead. Right now, the only thing Docker actually needs to prove is `order-service`'s `postgres` profile and its Kafka wiring (Phases 21-25) against real infrastructure instead of H2/mocks.
+
+### Decision: what actually needs proving right now
+
+`docker-compose.yml` has exactly two services: `postgres-db` (matching `application.yaml`'s `postgres` profile: `saga_db`, user/password `postgres`) and `kafka-broker` (KRaft mode, single `PLAINTEXT` listener rather than the source's dual internal/external setup — with no app containers on the Docker network yet, there's no "internal" side to serve, so the dual-listener complexity has nothing to do). A new `docker/init-schemas.sql`, mounted via Postgres's `docker-entrypoint-initdb.d` convention, creates `user_service_schema` and `order_service_schema` on first startup — without it, `application.yaml`'s `currentSchema=...` postgres-profile URLs would fail against a fresh container, since Postgres doesn't auto-create schemas referenced only in a JDBC connection string.
+
+A real, machine-specific conflict surfaced while verifying this: this dev machine already runs `coolify-full` (a separate, permanently-running containerized project) with its own Postgres bound to host port 5432. `postgres-db` maps to host port **5433** instead, documented in a compose comment and in [CONTRIBUTING.md](../CONTRIBUTING.md), so running `saga-full`'s stack never touches `coolify-full`'s.
+
+### Consequences: what actually needs proving right now
+
+- Verified for real, not just written and assumed to work: `docker compose up -d` started both containers; `\dn` inside `postgres-db` confirmed both schemas exist; `kafka-topics --list` inside `kafka-broker` confirmed the broker answers client requests. `order-service` was then actually booted (`SPRING_PROFILES_ACTIVE=postgres DATABASE_PORT=5433 ./gradlew :order-service:bootRun`) against both containers: the log showed a real `HikariPool` connection to `PgConnection`, `Started OrderServiceApplication`, and — the strongest proof — both `@KafkaListener` consumer groups (`order-approved-group`/`order-rejected-group`) actually joining their consumer group and getting real partition assignments against the live broker, not the retry-forever behavior seen in every test run so far with no broker present.
+- The port-5432-vs-5433 conflict was caught *before* any container collision happened — the first `docker compose up -d` attempt was stopped mid-image-pull once `docker ps` showed `coolify-db` already on 5432, and the compose file was fixed before any port bind was actually attempted against a running system.
+- No app-service containers or `Dockerfile`s exist yet — `order-service`/`user-service` still run as host JVM processes (`bootRun` or the IDE) connecting into these two containers, not as containers themselves. That's the natural next step once `payment-service`/`restaurant-service` exist and there's a complete stack worth containerizing.
