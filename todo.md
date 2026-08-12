@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 12, 2026 (`docker-compose.yml`: Postgres + Kafka, verified against a real `order-service` boot)
+**Last Updated:** August 12, 2026 (`payment-service` scaffold: `build.gradle.kts`, entry point, `contextLoads()`)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -27,8 +27,9 @@ A phase-by-phase log of what's been done on this repo and what's still open. Thi
 | **Real risk found and fixed:** Spring Boot 3.4.1 can't boot under JDK 25 | `order-service`'s first test (`contextLoads`) failed outright — Spring Framework's own bundled ASM (not just the Gradle plugin's, per Phase 8) can't parse JDK 25 class files at all during component scanning. Checking `user-service` directly showed it had never once booted a real `ApplicationContext` in any test either, an identical-in-shape gap to the Phase 12 protobuf-java bug. Fixed by bumping **both** modules from Boot 3.4.1 to 3.5.16 — verified with a real `contextLoads()` pass in each, `user-service`'s showing an actual gRPC server starting and stopping. Every future Spring Boot module should start on 3.5.16. Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 17 |
 | `order-service` service layer + Kafka wiring | `OrderService` (`createOrder`/`confirmOrder`/`cancelOrder`, `OrderNotFoundException`), `OutboxPublisherService` (`KafkaTemplate` poller, not the source's `StreamBridge`), `OrderController` (`201 Created`, no perimeter-header trust boundary yet), `OrderConsumerConfig` (`@KafkaListener`, not Cloud Stream), and `application.yaml` (`default`/`postgres` profiles) — 15 new tests across 4 suites, all with real verified runs. Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 21-25 |
 | Docker: `docker-compose.yml` (Postgres + Kafka) | `postgres-db` + `kafka-broker` only — no per-service containers yet. Verified for real: `order-service` actually booted against both containers (`bootRun` with the `postgres` profile), a genuine `HikariPool`→`PgConnection` connection, and both `@KafkaListener` consumer groups joining and getting real partition assignments against the live broker. Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 26 |
+| `payment-service` scaffold | `build.gradle.kts` (mirrors `order-service`'s Phase 16 shape: `spring-kafka` direct, Boot 3.5.16 from the start, Lombok 1.18.42 pinned), `PaymentServiceApplication` entry point, and `contextLoads()` written immediately — the actual next link in the saga chain (consumes `OrderCreatedEvent`, not `restaurant-service`, which depends on `payment-service`'s own output). Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 27 |
 
-**Actually still open, right now:** remaining service modules, a register/POS frontend, a `reservation-service` addition, and `portfolio.html`. See the **Still to do** table below.
+**Actually still open, right now:** `payment-service`'s domain/business logic (only the scaffold exists), `restaurant-service`, a register/POS frontend, a `reservation-service` addition, and `portfolio.html`. See the **Still to do** table below.
 
 ## 🧪 Test Coverage Ledger
 
@@ -49,6 +50,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `order-service` | `OutboxPublisherServiceTest` | 4 | ✅ passing | Phase 22 | 2026-08-12 |
 | `order-service` | `OrderControllerTest` | 2 | ✅ passing | Phase 23 | 2026-08-12 |
 | `order-service` | `OrderConsumerConfigTest` | 2 | ✅ passing | Phase 24 | 2026-08-12 |
+| `payment-service` | `PaymentServiceApplicationTests` | 1 | ✅ passing | Phase 27 | 2026-08-12 |
 
 ## ✅ Done
 
@@ -117,12 +119,18 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | - | - | - |
 | 26 | 2026-08-12 | `docker-compose.yml` written: `postgres-db` + `kafka-broker` only, not the source's full Postgres/Kafka/OTel/Prometheus/Loki/Tempo/Grafana stack or its per-service `Dockerfile`s — both explicitly out of scope until a complete multi-service stack exists. Kafka uses a single `PLAINTEXT` listener rather than the source's dual internal/external setup, since no app containers exist yet to need an "internal" side. New `docker/init-schemas.sql` creates `user_service_schema`/`order_service_schema` on first startup via Postgres's `docker-entrypoint-initdb.d` convention. A real, machine-specific port-5432 conflict with an unrelated always-running project (`coolify-full`) was caught *before* any container collision — `postgres-db` remapped to host port 5433, documented in [CONTRIBUTING.md](CONTRIBUTING.md). Verified for real, not assumed: schemas confirmed via `\dn`, Kafka confirmed answering via `kafka-topics --list`, and `order-service` actually booted against both containers (`bootRun`, `postgres` profile) — real `HikariPool`→`PgConnection` connection, and both `@KafkaListener` consumer groups joining and getting real partition assignments against the live broker, not the retry-forever behavior every prior test run saw with no broker present. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 
+### `payment-service` module
+
+| Phase | Date | What |
+| - | - | - |
+| 27 | 2026-08-12 | `payment-service` scaffold: `settings.gradle.kts` registration, `build.gradle.kts` mirroring `order-service`'s Phase 16 shape (`spring-kafka` direct instead of the source's Cloud Stream binder, Spring Boot 3.5.16 from the start rather than 3.4.1, Lombok pinned to 1.18.42, explicit `springBoot { mainClass.set(...) }`), and `PaymentServiceApplication` entry point. Checking the source's actual `RestaurantConsumerConfig`/`PaymentConsumerConfig` wiring showed `payment-service`, not `restaurant-service`, is the real next link in the saga chain: it consumes `OrderCreatedEvent` (currently published into a void) and publishes `PaymentProcessedEvent`, which `restaurant-service` itself depends on — `restaurant-service` can't be meaningfully built first. `PaymentServiceApplicationTests.contextLoads()` written immediately, before any business logic, per the Phase 17 lesson. No REST controller exists in the source for this module at all; `actuator`+`web` kept anyway for the same HTTP-health-endpoint reasoning as `order-service`, `spring-boot-starter-validation` deliberately not added yet (nothing to validate without a controller). Verified with a real `./gradlew :payment-service:test` run: `contextLoads()` passes with a genuine `HikariPool`/JPA boot in the log. Full reasoning in [docs/architecture.md](docs/architecture.md) |
+
 ## 🔧 Still to do
 
 | Item | Detail |
 | - | - |
 | Docker: per-service `Dockerfile`s + Kubernetes manifests | `docker-compose.yml` (Postgres + Kafka only, Phase 26) is done and verified. Per-service `Dockerfile`s for `user-service`/`order-service`, and any Kubernetes manifests, are still deferred until there's a complete multi-service stack worth deploying — `payment-service`/`restaurant-service` don't exist yet. The full OTel/Prometheus/Loki/Tempo/Grafana observability stack from the source remains deferred too (Phase 16) |
-| Remaining service modules | `payment-service`, `restaurant-service`, `api-gateway-service` — same one-file-at-a-time approach, each starting on Spring Boot 3.5.16 per Phase 17 |
+| Remaining service modules | `payment-service` has its scaffold (Phase 27) but no domain/business logic yet — `Payment`/`PaymentStatus`, repositories, `PaymentService` (`processPaymentSaga` on `OrderCreatedEvent`, `handleOrderCompensation`/refund on `RestaurantRejectedEvent`), `OutboxPublisherService`, consumer config, `application.yaml`. `restaurant-service` and `api-gateway-service` haven't started at all. Same one-file-at-a-time approach as `order-service`, each starting on Spring Boot 3.5.16 per Phase 17 |
 | Frontend: restaurant register/POS | This repo has none planned yet — the source doesn't have one either, it's backend-only. Direction settled on: not a generic storefront, but a register/POS-style UI matching the domain the backend already models — a cashier enters an order, watches it move live through kitchen approval (`restaurant-service`) and payment (`payment-service`) via `api-gateway-service`, landing on `SUCCESS`/`CANCELLED`. Real-time delivery (polling vs. SSE/WebSockets) is an open question. Deferred until the backend saga flow (`order-service` → `restaurant-service` → `payment-service`) actually exists end-to-end, so there's something real to visualize |
 | Backend: reservation piece | A real new addition, not yet scoped — no `reservation-service` exists in either this repo or the source. Would need its own module (domain, saga participation, and whatever events tie it into the order/restaurant flow) designed from scratch, the same one-file-at-a-time way as the other services, once the core order/payment/restaurant saga is done |
 | `portfolio.html` | Case-study page for the portfolio site, written once there are real results/metrics to show |
