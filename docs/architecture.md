@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`payment-service` repositories)
+Last updated: August 12, 2026 (`payment-service` DTOs + `PaymentService`)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -586,3 +586,36 @@ The source's `PaymentRepository` (`findByOrderId`) and `OutboxRepository` (`find
 
 - Verified as real, not just written and assumed: both suites pass against actual Hibernate DDL (`payments`/`outbox_record` tables genuinely created and dropped per test, visible in the run output — `Hibernate: drop table if exists outbox_record cascade` / `payments cascade`), and `OutboxRepositoryTest`'s ordering assertion was deliberately scrambled and re-run to confirm it fails on wrong data, before being reverted — the same verification discipline as Phase 19.
 - Like `order-service`'s Phase 19 decision, the `SKIP LOCKED` locking guarantee itself isn't independently reproven under real concurrent transactions here either — trusted as documented Hibernate/PostgreSQL-dialect behavior, consistent with both the source's own test scope and this repo's prior decision.
+
+## `payment-service` DTOs: two dead event types dropped, one enum's drift from `order-service` corrected
+
+**Status:** Done — `payment-service` DTOs, Phase 30.
+
+### Context: which cross-service events actually need a DTO
+
+`payment-service` needs its own local copies of the events it consumes/produces — `order-service`'s `OrderCreatedEvent`, `RestaurantRejectedEvent`, and its own `PaymentProcessedEvent` — since services in this repo share no event-contract library, only the wire format. The source's `dto` package for this module has five records, not three: `PaymentFailedEvent` and `RestaurantPreparedEvent`/`RestaurantTicketStatus` are also present. Grepping the source's actual `payment-service` code (not just the `dto` package) showed `PaymentFailedEvent` is referenced exactly once outside its own file — a comment in `OutboxPublisherService` ("Ready for gateway rejections!") marking a dispatch case that's never actually reached, since `PaymentService.deductFunds` always succeeds unconditionally and never constructs one. `RestaurantPreparedEvent`/`RestaurantTicketStatus` are referenced nowhere outside their own files at all — even `PaymentService`'s own class-level Javadoc describes "`RestaurantPreparedEvent`s indicat[ing] a rejection," a concept the actual code never uses (it consumes `RestaurantRejectedEvent` instead). The source's local `OrderStatus` copy in this package also has a fourth value, `PAID`, that `order-service`'s actual `OrderStatus` enum (Phase 18: `PENDING`/`CANCELLED`/`SUCCESS`) never produces.
+
+### Decision: which cross-service events actually need a DTO
+
+Only the three DTOs actually consumed/produced by `PaymentConsumerConfig`/`PaymentService` are built: `OrderCreatedEvent`, `PaymentProcessedEvent`, `RestaurantRejectedEvent` — the same "don't carry over unreferenced source cruft" call already made for `order-service`'s dead `RestaurantTicketStatus` in Phase 20, applied here to two DTOs and one enum instead of one enum. `payment-service`'s local `OrderStatus` copy matches `order-service`'s real 3-value enum, not the source's inconsistent 4-value one. All `UUID`/`BigDecimal` typing follows the conventions already established in Phases 18/28: `OrderCreatedEvent`/`RestaurantRejectedEvent` get their own local `orderId`/`customerId: UUID` fields (unavoidable duplication across service boundaries in an event-driven system with no shared contract library), while `PaymentProcessedEvent.status` reuses `payment-service`'s own domain `PaymentStatus` enum directly rather than a separate DTO-local copy, since `payment-service` is the one publishing it — the same pattern `order-service`'s `OrderCreatedEvent.status: OrderStatus` already uses (Phase 20).
+
+### Consequences: which cross-service events actually need a DTO
+
+- If a real payment-failure or restaurant-preparation-tracking need shows up later, the matching DTO gets added at that point, as a real addition driven by an actual code path — not speculatively pre-built now to mirror a source package that itself never wires them up.
+
+## `payment-service`: `PaymentService` reuses `order-service`'s idempotency-guard shape, drops one defensive check the source's code never actually needs
+
+**Status:** Done — `payment-service` service layer, Phase 30.
+
+### Context: processPaymentSaga/handleOrderCompensation
+
+The source's `PaymentService.processPaymentSaga` throws `IllegalArgumentException` if the incoming `OrderCreatedEvent.status` isn't `PENDING`, and its idempotency guards use a single `findByOrderId` call followed by an in-memory check, rather than `order-service`'s two-step "cheap `existsBy` check, then load" pattern (Phase 21). It also uses `IllegalArgumentException` for "payment not found," the same generic-exception pattern `order-service`'s Phase 21 already moved away from in favor of dedicated types.
+
+### Decision: processPaymentSaga/handleOrderCompensation
+
+The defensive `PENDING`-only check is dropped: `OrderService.createOrder` (Phase 21) is the only code in this repo that ever constructs an `OrderCreatedEvent`, and it's always `PENDING` — there's no code path in this system where a non-`PENDING` event could ever arrive, making the check unreachable validation rather than real defense. `PaymentRepository` gained `existsByOrderId`/`existsByOrderIdAndStatus` (extending Phase 29's repository) specifically so `processPaymentSaga`/`handleOrderCompensation` can use the same cheap-check-before-load idempotency shape as `order-service`'s `confirmOrder`/`cancelOrder` — `existsByOrderIdAndStatus(orderId, REFUNDED)` short-circuits before ever loading the full `Payment` row for the common duplicate-event case, and a second in-memory status check after `findByOrderId` protects against a genuine TOCTOU race between two service instances both passing the cheap check before either commits. A new `PaymentNotFoundException` replaces the source's `IllegalArgumentException`, matching `OrderNotFoundException`'s (Phase 21) convention.
+
+### Consequences: processPaymentSaga/handleOrderCompensation
+
+- `PaymentServiceTest` (6 tests) uses a real `ObjectMapper` instance, not a mock, for the same reason as `OrderServiceTest` (Phase 21) — round-tripping the real outbox JSON payload back into `PaymentProcessedEvent` actually proves serialization correctness rather than trusting a canned mock string. Covers: the happy path with real payload assertions, the duplicate-payment skip, both compensation idempotency guards (pre-load `existsBy` short-circuit and the post-load race-condition re-check), the status transition to `REFUNDED`, and `PaymentNotFoundException`. Verified with a real `./gradlew :payment-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong `PaymentStatus` on the deserialized outbox payload and re-running before reverting. Full multi-module suite (53 tests across 4 modules) also verified green with no regressions.
+- `payment-service` now has real business logic wired end-to-end for both saga directions it participates in — charge on order creation, refund on restaurant rejection — matching `order-service`'s `confirmOrder`/`cancelOrder` on the other side of the same compensating-transaction pair.
