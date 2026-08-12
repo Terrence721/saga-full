@@ -3,3 +3,4 @@
 -- each module's application.yaml postgres profile currentSchema setting.
 CREATE SCHEMA IF NOT EXISTS user_service_schema;
 CREATE SCHEMA IF NOT EXISTS order_service_schema;
+CREATE SCHEMA IF NOT EXISTS payment_service_schema;
