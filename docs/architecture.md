@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`order-service` `OutboxPublisherService`)
+Last updated: August 12, 2026 (`order-service` `OrderController`)
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
@@ -463,3 +463,20 @@ The source's `OutboxPublisherService` deserializes each `OutboxRecord.payload` b
 
 - `OutboxPublisherServiceTest` (4 tests) covers: an empty batch doing nothing, a successful publish asserting the real message payload/topic/key/header values then deleting the record, a failed send leaving the record undeleted for retry, and — the specific proof for the per-record-catch decision — a two-record batch where one send fails and the other still gets deleted, showing the batch doesn't roll back as a unit. Verified with a real `./gradlew :order-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong Kafka key header and re-running before reverting.
 - This repo now has no Kafka transactional/exactly-once guarantee at all — messages are published at-least-once, and a crash between a confirmed send and the delete could republish. That's an accepted tradeoff given Phase 21's idempotency guards downstream, not an oversight.
+
+## `order-service`: `OrderController` has no perimeter-header trust boundary yet, and returns 201 over the source's 200
+
+**Status:** Done — `order-service` service layer, Phase 23.
+
+### Context: the REST entry point for order creation
+
+The source's `OrderController` extracts a gateway-injected `X-Perimeter-User-Id` header and cross-checks it against the request body's `customerId`, throwing a `ClientIdentityMismatchException` (mapped to HTTP 403) on mismatch — a real security boundary, but one that assumes an `api-gateway-service` upstream that doesn't exist yet in this repo, and a `ClientIdentityMismatchException` type this repo has no reason to define with nothing to throw it. `OrderService.createOrder` (Phase 21) already made the corresponding call to trust `CreateOrderRequest.customerId` directly rather than take a separately-verified identity parameter.
+
+### Decision: the REST entry point for order creation
+
+`OrderController` stays minimal: `@PostMapping` on `/orders`, `@Valid @RequestBody CreateOrderRequest`, straight into `OrderService.createOrder`. It returns the `Order` entity directly in the response body rather than a dedicated response DTO — `Order` has no lazy associations to leak, and a DTO that would mirror it field-for-field with exactly one caller right now is a speculative abstraction, not a real decoupling need yet. The response status is `201 Created`, correct REST semantics for a resource-creating POST, deviating from the source's `200 OK`.
+
+### Consequences: the REST entry point for order creation
+
+- The perimeter-header trust boundary is a tracked gap, not a silent omission — it needs to be added once `api-gateway-service` exists to actually inject a verified identity; until then, anything calling this endpoint directly can claim any `customerId`.
+- `OrderControllerTest` (2 tests, `@WebMvcTest`) covers the happy path (asserting the real `201` status and JSON body fields) and a bean-validation failure (`400`). No header/auth-boundary test exists yet, since no such boundary exists yet either. Verified with a real `./gradlew :order-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately asserting a wrong `status` field value and re-running before reverting.
