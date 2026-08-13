@@ -91,6 +91,16 @@ Discussed the tradeoff before fixing: collapsing `PERMISSION_DENIED` too has a r
 
 ---
 
+### [`UserGrpcServiceImpl.java`](https://github.com/Terrence721/saga-full/blob/main/user-service/src/main/java/io/github/terrence721/saga/user/infra/grpc/UserGrpcServiceImpl.java)
+
+**medium · Security** — Fixed via [PR #41](https://github.com/Terrence721/saga-full/pull/41) ([issue #40](https://github.com/Terrence721/saga-full/issues/40))
+
+`login()` short-circuited via `orElseThrow()` when the email wasn't found, and threw on an inactive account before ever calling `passwordEncoder.matches()`. BCrypt is deliberately slow (~100ms at cost factor 10); skipping it for "unknown email" and "inactive account" meant those cases responded measurably faster than a real login attempt — a timing side-channel (CWE-208) surviving even after #38/PR #39 already made all three cases return the identical `UNAUTHENTICATED` status.
+
+Chose the full fix, matching #38's scope. Restructured `login()` so `passwordEncoder.matches()` runs exactly once on every path — found-active, found-inactive, and not-found (against a fixed, real, unused bcrypt hash, generated for real via `BCryptPasswordEncoder`, not hand-typed) — before any branching. The original precedence (unknown-email > inactive > wrong-password, for server-side logging) is preserved; only the timing is normalized. Added 2 tests verifying via Mockito `verify()` that `passwordEncoder.matches()` is genuinely invoked on both previously-fast-path branches. Verified for real: reverted the fix temporarily, confirmed both new tests fail against the old code, restored it, confirmed everything passes again. Full multi-module suite (90 tests) verified green.
+
+---
+
 ---
 
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
