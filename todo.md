@@ -191,7 +191,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 
 | File | Last commit SHA | Sub-issue | PR | Status |
 | - | - | - | - | - |
-| `src/main/proto/user.proto` | [`8c1614c`](https://github.com/Terrence721/saga-full/commit/8c1614c) | — | — | Pending |
+| `src/main/proto/user.proto` | [`8c1614c`](https://github.com/Terrence721/saga-full/commit/8c1614c) | [#24](https://github.com/Terrence721/saga-full/issues/24) | [#25](https://github.com/Terrence721/saga-full/pull/25) | In review — no defect, 1 structural note (unused `ValidateToken` RPC) |
 
 ## 🔧 Still to do
 
