@@ -71,4 +71,12 @@ Identical trivial shape to `InvalidCredentialsException.java`. Confirmed correct
 
 ---
 
+### [`UserNotFoundException.java`](https://github.com/Terrence721/saga-full/blob/main/user-service/src/main/java/io/github/terrence721/saga/user/exception/UserNotFoundException.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #36](https://github.com/Terrence721/saga-full/issues/36))
+
+Third and last of the three sibling exception types. Confirmed correct usage: thrown when `findByEmail` finds no match, mapped to gRPC `NOT_FOUND`. All three individually are correct — the enumeration observation they collectively drive (`NOT_FOUND`/`UNAUTHENTICATED`/`PERMISSION_DENIED` all distinguishable) will be written up as a real finding on `GrpcExecutor.java`, the file that actually owns the mapping.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
