@@ -776,3 +776,20 @@ The source's `api-gateway-service` calls a `UserServiceBlockingStub.authenticate
 - `ApiGatewayServiceApplicationTests.contextLoads()` (1 test) was added once the gRPC client, filter, and route config all existed together, and passed on its first real run — genuine log evidence the filter initialized with the right issuer, Spring Cloud Gateway loaded its full `RoutePredicateFactory` set (proving `application.yaml`'s route table parsed without error), and the gRPC stub bean wired, all with no live `order-service`/`user-service` running (gRPC channels connect lazily, matching every other module's Kafka-listener-without-a-broker precedent from Phase 24).
 - `AuthenticationControllerTest` (3) and the corrected `JwtPerimeterGuardGatewayFilterFactoryTest` (3) verified with a real `./gradlew :api-gateway-service:test` run — 7 tests in this module, all passing. Confirmed the suite genuinely catches wrong data by deliberately asserting a wrong token value in the happy-path test, re-running to confirm failure, then reverting. Full multi-module suite (88 tests across all 6 modules) also verified green with no regressions.
 - **This completes all five originally-planned backend modules** (`user-service`, `order-service`, `payment-service`, `restaurant-service`, `api-gateway-service`) — the saga chain now has a real security perimeter and single entry point in front of it, not just direct service-to-service access. What's left, per `todo.md`, is infrastructure (per-service `Dockerfile`s/Kubernetes manifests) and net-new scope (a register/POS frontend, a `reservation-service`), not further backend modules from the original plan.
+
+## `order-service`: `OrderController` logs individual fields, not the raw request, after a real CodeQL log-injection finding
+
+**Status:** Done — Phase 41.
+
+### Context: a genuine CWE-117 finding, not a false positive
+
+CodeQL's code scanning flagged `OrderController.createOrder` (`log.info("Received create order request: {}", request)`, Phase 23) as Medium-severity log injection. `CreateOrderRequest.itemCode` is a `@NotBlank String` with no length cap or character allow-list, taken directly off the public `POST /orders` body — the request record's `toString()` interpolates it raw. A client could set `itemCode` to a string containing `\r`/`\n` to forge fake log lines (spoofed timestamps, fabricated `ERROR`/admin-looking entries) or inject control characters into whatever ingests this service's logs. Checked every other `log.info`/`log.warn` call site across all five modules for the same pattern: every other one already logs individual, type-safe fields (`event.orderId()` — a `UUID`, `event.reason()` — always one of `RestaurantService`'s internally-generated messages, never raw user text) rather than a whole DTO's `toString()`. This was the one call site that slipped through, not a repo-wide pattern.
+
+### Decision: a genuine CWE-117 finding, not a false positive
+
+Replaced the single `{}`-on-`request` log call with four separate placeholders for `customerId`/`itemCode`/`quantity`/`totalAmount`, matching the "log safe fields individually" convention already used everywhere else. `itemCode` specifically gets `.replaceAll("[\r\n]", "_")` before logging — the one field with no character restriction and therefore the only one actually capable of forging a log line; `customerId` (`UUID`), `totalAmount` (`BigDecimal`), and `quantity` (`int`) have no string-injection surface by their types alone, so no sanitization needed there.
+
+### Consequences: a genuine CWE-117 finding, not a false positive
+
+- `./gradlew :order-service:test` verified green with no regressions (`OrderControllerTest` doesn't assert on log output, so the fix was purely additive from a test-coverage standpoint).
+- No dedicated test added for the sanitization itself — matching this repo's own precedent of not writing tests for straightforward one-line defensive fixes with no branching logic (e.g. `DependencyUnavailableException`'s constructors, Phase 38) — verified instead by reading the fixed line directly.
