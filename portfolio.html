@@ -2,24 +2,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta
   name="description"
-  content="An original implementation of the Distributed Saga pattern across five independent Spring Boot / gRPC microservices — order, payment, and restaurant fulfillment, coordinated through Kafka with compensating transactions, verified against real Postgres and Kafka infrastructure."
+  content="An original implementation of the Distributed Saga pattern across six independent Spring Boot / gRPC microservices — a JWT-guarded API gateway in front of order, payment, and restaurant fulfillment, coordinated through Kafka with compensating transactions, verified against real Postgres and Kafka infrastructure."
 />
 <link rel="canonical" href="https://terrence721.github.io/saga-full/portfolio.html" />
 
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Terrence Daniels — Portfolio" />
 <meta property="og:url" content="https://terrence721.github.io/saga-full/portfolio.html" />
-<meta property="og:title" content="saga-full — a distributed saga in five real services, by Terrence Daniels" />
+<meta property="og:title" content="saga-full — a distributed saga in six real services, by Terrence Daniels" />
 <meta
   property="og:description"
-  content="An original implementation of the Distributed Saga pattern across five independent Spring Boot / gRPC microservices, coordinated through Kafka with compensating transactions — verified against real Postgres and Kafka, not mocked. Not a toy demo."
+  content="An original implementation of the Distributed Saga pattern across six independent Spring Boot / gRPC microservices, coordinated through Kafka with compensating transactions — verified against real Postgres and Kafka, not mocked. Not a toy demo."
 />
 
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:title" content="saga-full — a distributed saga in five real services, by Terrence Daniels" />
+<meta name="twitter:title" content="saga-full — a distributed saga in six real services, by Terrence Daniels" />
 <meta
   name="twitter:description"
-  content="An original implementation of the Distributed Saga pattern across five independent microservices — order, payment, and restaurant fulfillment, coordinated through Kafka, verified against real infrastructure."
+  content="An original implementation of the Distributed Saga pattern across six independent microservices — a JWT-guarded gateway in front of order, payment, and restaurant fulfillment, coordinated through Kafka, verified against real infrastructure."
 />
 <style>
   :root {
@@ -416,17 +416,18 @@
 
 <div class="hero">
   <div class="wrap">
-    <p class="eyebrow">Portfolio Manifest — Prepared 2026-08-12</p>
+    <p class="eyebrow">Portfolio Manifest — Prepared 2026-08-13</p>
     <h1 class="name">Terrence&nbsp;Daniels</h1>
     <p class="role">Backend &amp; Distributed Systems Engineer</p>
     <p class="thesis">
       An original implementation of the <strong>Distributed Saga</strong>
-      pattern across five independent Spring Boot / gRPC microservices —
-      order placement, payment settlement, and restaurant fulfillment,
-      coordinated through Kafka with compensating transactions instead of a
-      shared database transaction. Built and verified one service at a time
-      against real Postgres and Kafka infrastructure — not mocked past the
-      point where mocking stops proving anything.
+      pattern across six independent Spring Boot / gRPC microservices — a
+      JWT-guarded API gateway in front of order placement, payment
+      settlement, and restaurant fulfillment, coordinated through Kafka with
+      compensating transactions instead of a shared database transaction.
+      Built and verified one service at a time against real Postgres and
+      Kafka infrastructure — not mocked past the point where mocking stops
+      proving anything.
     </p>
     <div class="hero-actions">
       <a class="btn primary" href="https://github.com/Terrence721/saga-full"
@@ -446,7 +447,7 @@
   </div>
   <div class="stamp" aria-hidden="true">
     <div class="stamp-inner">
-      <span class="n">4</span>
+      <span class="n">6</span>
       <span class="l">REAL BUGS<br />FOUND &amp; FIXED</span>
     </div>
   </div>
@@ -456,19 +457,19 @@
   <div class="wrap">
     <div class="manifest-row">
       <div class="manifest-cell">
-        <span class="v">36</span><span class="k">phases shipped</span>
+        <span class="v">41</span><span class="k">phases shipped</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">81/81</span><span class="k">tests passing</span>
+        <span class="v">88/88</span><span class="k">tests passing</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">5</span><span class="k">services complete</span>
+        <span class="v">6</span><span class="k">services complete</span>
       </div>
       <div class="manifest-cell">
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">4</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">6</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -507,13 +508,16 @@
   </section>
 
   <section>
-    <h2>Five services, one saga chain</h2>
+    <h2>Six services, one saga chain</h2>
     <p class="h2-sub">
-      Outbox pattern, compensating transactions, wired end-to-end
+      Outbox pattern, compensating transactions, wired end-to-end behind a
+      real security perimeter
     </p>
     <p class="lede">
-      <code>order-service</code> creates an order and stages an outbox
-      record in the same transaction; a poller ships it to Kafka.
+      <code>api-gateway-service</code> fronts the chain — JWT-guarded
+      routing and a Resilience4j circuit breaker sit in front of everything
+      below. <code>order-service</code> creates an order and stages an
+      outbox record in the same transaction; a poller ships it to Kafka.
       <code>payment-service</code> consumes it, settles payment, and
       publishes its own event. <code>restaurant-service</code> consumes
       that, allocates inventory, and makes the saga's real decision —
@@ -634,6 +638,43 @@
           </div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">05</div>
+        <div>
+          <div class="file">api-gateway-service — a ported test that could never pass</div>
+          <div class="desc">
+            Porting <code>JwtPerimeterGuardGatewayFilterFactoryTest</code>
+            and actually running it — never assumed — showed two of its
+            three cases asserting an HTTP response status the filter itself
+            never sets; that translation only happens through
+            <code>GlobalExceptionHandler</code>, a layer absent from an
+            isolated filter unit test. Failed immediately with
+            <code>onError</code> instead of the expected
+            <code>onComplete</code>. Rewritten to assert the filter's real,
+            provable contract instead.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · test correctness</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">06</div>
+        <div>
+          <div class="file">order-service — log injection (CWE-117)</div>
+          <div class="desc">
+            GitHub CodeQL flagged <code>OrderController</code> logging a
+            whole request record whose <code>itemCode</code> field is
+            free-form client input with no character restriction —
+            <code>\r</code>/<code>\n</code> bytes could forge fake log
+            lines. Fixed by logging fields individually and stripping
+            control characters from the one field that actually needed it.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · security</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -652,7 +693,7 @@
     </p>
     <div class="twocol">
       <div class="card">
-        <h3>81/81 tests, real infra behind them</h3>
+        <h3>88/88 tests, real infra behind them</h3>
         <p>
           Repository tests run against embedded H2 with real Hibernate DDL,
           not mocks; Kafka/Postgres wiring is separately verified against
@@ -724,8 +765,8 @@
       common distributed-systems pattern. Every number on this page is
       reproducible from the repository's own <code>todo.md</code> phase log,
       commit history, and CI runs — nothing here is asserted without a link
-      to check it against. <code>api-gateway-service</code>, a register/POS
-      frontend, and a reservation-service addition are still open — see
+      to check it against. A register/POS frontend and a
+      <code>reservation-service</code> addition are still open — see
       <code>todo.md</code> for the honest current state.
     </p>
   </div>
