@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 13, 2026 (code-review audit scaffolded — parent tracking issue + 6 module sub-issues open, `user-contract` up first)
+**Last Updated:** August 13, 2026 (`user-contract` code review complete — 1/1 files, 0 real bugs; `user-service` up next)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -40,7 +40,7 @@ A phase-by-phase log of what's been done on this repo and what's still open. Thi
 | `api-gateway-service` | Reactive WebFlux/Spring Cloud Gateway module (Spring Cloud 2025.0.0, this repo's first non-servlet stack) — `AuthenticationController`/`UserGrpcClient` proxy `POST /auth/login` to `user-service`'s real `Login` gRPC RPC, `JwtPerimeterGuardGatewayFilterFactory` guards `POST /orders` using the same signing secret as `user-service`'s `JwtTokenProvider`, a Resilience4j circuit breaker falls back to `GatewayFallbackController` on downstream failure. Found and fixed a real bug in the source's own filter test (asserted a response status the filter never sets). 7 new tests, `./gradlew :api-gateway-service:test` verified green; full 88-test multi-module suite also green. **Completes all five originally-planned backend modules.** Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 37-40 |
 | `portfolio.html` | Case-study page for the portfolio site, written from this repo's own real test/architecture numbers (test-coverage ledger, the At-a-glance table's labeled real-bug findings) | (standalone, between Phase 36 and 37) |
 
-**Actually still open, right now:** a register/POS frontend, a `reservation-service` addition, and the code-review audit (just started — see the **Code review — per-file tracking** section below). See the **Still to do** table below.
+**Actually still open, right now:** a register/POS frontend, a `reservation-service` addition, and the code-review audit (`user-contract` done, 5 modules left — see the **Code review — per-file tracking** section below). See the **Still to do** table below.
 
 ## 🧪 Test Coverage Ledger
 
@@ -187,11 +187,22 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 
 **Total scope:** 73 files across 6 modules (`user-contract` 1, `user-service` 10, `order-service` 15, `payment-service` 14, `restaurant-service` 18, `api-gateway-service` 15).
 
-### `user-contract` (module tracking issue [#18](https://github.com/Terrence721/saga-full/issues/18)) — started 2026-08-13
+**`user-contract` module review complete — 1/1 files reviewed, 0 real bugs found, 1 structural note recorded** (`ValidateToken` has no real caller anywhere in this repo yet, contradicting `docs/architecture.md`'s own Phase 7 plan — flagged for a decision, not fixed). See [docs/code-review.md](docs/code-review.md) for the full write-up and [#18](https://github.com/Terrence721/saga-full/issues/18) for the closed tracking issue.
+
+### `user-service` (module tracking issue [#19](https://github.com/Terrence721/saga-full/issues/19)) — started 2026-08-13
 
 | File | Last commit SHA | Sub-issue | PR | Status |
 | - | - | - | - | - |
-| `src/main/proto/user.proto` | [`8c1614c`](https://github.com/Terrence721/saga-full/commit/8c1614c) | [#24](https://github.com/Terrence721/saga-full/issues/24) | [#25](https://github.com/Terrence721/saga-full/pull/25) | In review — no defect, 1 structural note (unused `ValidateToken` RPC) |
+| `src/main/java/.../UserServiceApplication.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../config/SecurityConfig.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../domain/User.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../exception/InvalidCredentialsException.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../exception/UserInactiveException.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../exception/UserNotFoundException.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../infra/grpc/GrpcExecutor.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../infra/grpc/UserGrpcServiceImpl.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../infra/security/JwtTokenProvider.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../repository/UserRepository.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
 
 ## 🔧 Still to do
 
