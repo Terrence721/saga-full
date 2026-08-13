@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 13, 2026 (`user-contract` code review complete — 1/1 files, 0 real bugs; `user-service` up next)
+**Last Updated:** August 13, 2026 (`user-service` code review complete — 10/10 files, 5 real findings fixed; `order-service` up next)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -40,7 +40,7 @@ A phase-by-phase log of what's been done on this repo and what's still open. Thi
 | `api-gateway-service` | Reactive WebFlux/Spring Cloud Gateway module (Spring Cloud 2025.0.0, this repo's first non-servlet stack) — `AuthenticationController`/`UserGrpcClient` proxy `POST /auth/login` to `user-service`'s real `Login` gRPC RPC, `JwtPerimeterGuardGatewayFilterFactory` guards `POST /orders` using the same signing secret as `user-service`'s `JwtTokenProvider`, a Resilience4j circuit breaker falls back to `GatewayFallbackController` on downstream failure. Found and fixed a real bug in the source's own filter test (asserted a response status the filter never sets). 7 new tests, `./gradlew :api-gateway-service:test` verified green; full 88-test multi-module suite also green. **Completes all five originally-planned backend modules.** Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 37-40 |
 | `portfolio.html` | Case-study page for the portfolio site, written from this repo's own real test/architecture numbers (test-coverage ledger, the At-a-glance table's labeled real-bug findings) | (standalone, between Phase 36 and 37) |
 
-**Actually still open, right now:** a register/POS frontend, a `reservation-service` addition, and the code-review audit (`user-contract` done, 5 modules left — see the **Code review — per-file tracking** section below). See the **Still to do** table below.
+**Actually still open, right now:** a register/POS frontend, a `reservation-service` addition, and the code-review audit (`user-contract` + `user-service` done, 4 modules left — see the **Code review — per-file tracking** section below). See the **Still to do** table below.
 
 ## 🧪 Test Coverage Ledger
 
@@ -202,7 +202,29 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../infra/grpc/GrpcExecutor.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#38](https://github.com/Terrence721/saga-full/issues/38) | [#39](https://github.com/Terrence721/saga-full/pull/39) | Done — real security fix (login enumeration, CWE-203, collapsed to generic UNAUTHENTICATED), merged |
 | `src/main/java/.../infra/grpc/UserGrpcServiceImpl.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#40](https://github.com/Terrence721/saga-full/issues/40) | [#41](https://github.com/Terrence721/saga-full/pull/41) | Done — real security fix (login timing side-channel, CWE-208, constant-cost password check), merged |
 | `src/main/java/.../infra/security/JwtTokenProvider.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#42](https://github.com/Terrence721/saga-full/issues/42) | [#43](https://github.com/Terrence721/saga-full/pull/43) | Done — minor fix (cache JWTVerifier once, matching api-gateway-service's pattern), merged |
-| `src/main/java/.../repository/UserRepository.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#44](https://github.com/Terrence721/saga-full/issues/44) | [#45](https://github.com/Terrence721/saga-full/pull/45) | In review — real test-coverage gap fixed (no `@DataJpaTest` existed for this module) |
+| `src/main/java/.../repository/UserRepository.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#44](https://github.com/Terrence721/saga-full/issues/44) | [#45](https://github.com/Terrence721/saga-full/pull/45) | Done — real test-coverage gap fixed (no `@DataJpaTest` existed for this module), merged |
+
+**`user-service` module review complete — 10/10 files reviewed, 5 real findings fixed** (a test-coverage gap in `SecurityConfig.java`, a login-enumeration security fix in `GrpcExecutor.java`, its timing-side-channel sibling in `UserGrpcServiceImpl.java`, a minor efficiency fix in `JwtTokenProvider.java`, and a test-coverage gap in `UserRepository.java`), plus 2 structural notes flagged for later (unused `ValidateToken` RPC, case-sensitive email lookups — both blocked on a registration flow that doesn't exist yet). See [docs/code-review.md](docs/code-review.md) for the full write-up and [#19](https://github.com/Terrence721/saga-full/issues/19) for the closed tracking issue.
+
+### `order-service` (module tracking issue [#20](https://github.com/Terrence721/saga-full/issues/20)) — started 2026-08-13
+
+| File | Last commit SHA | Sub-issue | PR | Status |
+| - | - | - | - | - |
+| `src/main/java/.../OrderServiceApplication.java` | [`d7a6505`](https://github.com/Terrence721/saga-full/commit/d7a6505) | — | — | Pending |
+| `src/main/java/.../controller/OrderController.java` | [`aea11df`](https://github.com/Terrence721/saga-full/commit/aea11df) | — | — | Pending |
+| `src/main/java/.../domain/Order.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | — | — | Pending |
+| `src/main/java/.../domain/OrderStatus.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | — | — | Pending |
+| `src/main/java/.../domain/OutboxRecord.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | — | — | Pending |
+| `src/main/java/.../dto/CreateOrderRequest.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | — | — | Pending |
+| `src/main/java/.../dto/OrderCreatedEvent.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | — | — | Pending |
+| `src/main/java/.../dto/RestaurantApprovedEvent.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | — | — | Pending |
+| `src/main/java/.../dto/RestaurantRejectedEvent.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | — | — | Pending |
+| `src/main/java/.../exception/OrderNotFoundException.java` | [`98c7470`](https://github.com/Terrence721/saga-full/commit/98c7470) | — | — | Pending |
+| `src/main/java/.../repository/OrderRepository.java` | [`c1ecda2`](https://github.com/Terrence721/saga-full/commit/c1ecda2) | — | — | Pending |
+| `src/main/java/.../repository/OutboxRepository.java` | [`c1ecda2`](https://github.com/Terrence721/saga-full/commit/c1ecda2) | — | — | Pending |
+| `src/main/java/.../service/OrderConsumerConfig.java` | [`86ac556`](https://github.com/Terrence721/saga-full/commit/86ac556) | — | — | Pending |
+| `src/main/java/.../service/OrderService.java` | [`98c7470`](https://github.com/Terrence721/saga-full/commit/98c7470) | — | — | Pending |
+| `src/main/java/.../service/OutboxPublisherService.java` | [`1a7469d`](https://github.com/Terrence721/saga-full/commit/1a7469d) | — | — | Pending |
 
 ## 🔧 Still to do
 
@@ -211,4 +233,4 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | Docker: per-service `Dockerfile`s + Kubernetes manifests | `docker-compose.yml` (Postgres + Kafka only, Phase 26) is done and verified against `order-service`, `payment-service`, and `restaurant-service`. Per-service `Dockerfile`s, and any Kubernetes manifests, are still deferred until there's a complete multi-service stack worth deploying — now including `api-gateway-service`, which also has none yet. The full OTel/Prometheus/Loki/Tempo/Grafana observability stack from the source remains deferred too (Phase 16, reaffirmed for the gateway in Phase 37) |
 | Frontend: restaurant register/POS | This repo has none planned yet — the source doesn't have one either, it's backend-only. Direction settled on: not a generic storefront, but a register/POS-style UI matching the domain the backend already models — a cashier enters an order, watches it move live through kitchen approval (`restaurant-service`) and payment (`payment-service`), landing on `SUCCESS`/`CANCELLED`. Real-time delivery (polling vs. SSE/WebSockets) is an open question. Its stated trigger — `api-gateway-service` existing as a single entry point for a frontend to call — is now met (Phase 40); still not started |
 | Backend: reservation piece | A real new addition, not yet scoped — no `reservation-service` exists in either this repo or the source. Would need its own module (domain, saga participation, and whatever events tie it into the order/restaurant flow) designed from scratch, the same one-file-at-a-time way as the other services. Its stated trigger — the core order/payment/restaurant saga being done — is now met (Phase 36); still not started or scoped |
-| Code review: audit all 6 modules ([#17](https://github.com/Terrence721/saga-full/issues/17), parent tracking issue with one sub-issue per module, [#18](https://github.com/Terrence721/saga-full/issues/18)–[#23](https://github.com/Terrence721/saga-full/issues/23)) | Scaffolded, not yet started — see the **Code review — per-file tracking** section above. `user-contract` is up first (1 file); same file-by-file/sub-issue/PR process `platform-main` used, adapted for this repo's module layout |
+| Code review: audit all 6 modules ([#17](https://github.com/Terrence721/saga-full/issues/17), parent tracking issue with one sub-issue per module, [#18](https://github.com/Terrence721/saga-full/issues/18)–[#23](https://github.com/Terrence721/saga-full/issues/23)) | In progress — see the **Code review — per-file tracking** section above. `user-contract` complete 2026-08-13 (1/1 files, 0 real bugs, 1 structural note — [#18](https://github.com/Terrence721/saga-full/issues/18)), `user-service` complete 2026-08-13 (10/10 files, 5 real findings fixed, 2 structural notes — [#19](https://github.com/Terrence721/saga-full/issues/19)), `order-service` up next (15 files). Same file-by-file/sub-issue/PR process `platform-main` used, adapted for this repo's module layout |

@@ -5,20 +5,20 @@
 
 **[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)**
 
-Last updated: August 13, 2026 (`api-gateway-service` complete — all five originally-planned backend modules done; frontend/reservation direction tracked in `todo.md`)
+Last updated: August 13, 2026 (code-review audit: `user-contract` + `user-service` modules complete, 5 real findings fixed; `order-service` up next)
 
 This repository is a from-scratch demonstration of the Distributed Saga pattern for coordinating long-running business transactions across independent microservices — order placement, payment settlement, and fulfillment, each owned by its own service, coordinated without a shared database transaction.
 
 This is an original implementation, not a fork of any existing project. The module boundaries and general shape of the problem (order → payment → fulfillment, with compensation on failure) are common territory for this class of system; the code, design decisions, and tradeoffs recorded here are this repo's own.
 
-**At a glance:** 88/88 tests passing across `user-contract` + `user-service` + `order-service` + `payment-service` + `restaurant-service` + `api-gateway-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
+**At a glance:** 95/95 tests passing across `user-contract` + `user-service` + `order-service` + `payment-service` + `restaurant-service` + `api-gateway-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
 
 ## 🧭 Start Here
 
 - **[`todo.md`](todo.md)** — the phase-by-phase log of everything done and everything still open. This is the source of truth for progress.
 - **[GitHub Project board](https://github.com/users/Terrence721/projects/3)** — a Scrum-style Backlog/Planned/In Progress/Verification & QA/Done view of the same work, for a quick at-a-glance status without reading the full log. Kept in sync with [`todo.md`](todo.md).
 - **[`docs/architecture.md`](docs/architecture.md)** — the reasoning behind this repo's architectural decisions (context, alternatives, what each one actually cost), not just what changed.
-- **[`docs/code-review.md`](docs/code-review.md)** — a per-module, per-file code-review audit of the whole codebase, one real GitHub PR per file (findings or not). Just scaffolded — `user-contract` is up first, see [todo.md](todo.md) for the tracking table.
+- **[`docs/code-review.md`](docs/code-review.md)** — a per-module, per-file code-review audit of the whole codebase, one real GitHub PR per file (findings or not). `user-contract` and `user-service` are complete (5 real findings fixed, including two real security issues); `order-service` is up next — see [todo.md](todo.md) for the tracking table.
 - **[`docs/case-study.md`](docs/case-study.md)** — problem, constraints, tradeoffs, and results, for anyone scanning this repo as a portfolio piece rather than reading it as documentation.
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** — development setup, testing commands, commit conventions.
 
