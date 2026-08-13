@@ -45,4 +45,12 @@ The 8-line `@Configuration` class exposing a `BCryptPasswordEncoder`-backed `Pas
 
 ---
 
+### [`User.java`](https://github.com/Terrence721/saga-full/blob/main/user-service/src/main/java/io/github/terrence721/saga/user/domain/User.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #30](https://github.com/Terrence721/saga-full/issues/30))
+
+JPA entity: Hibernate-native `UUID` id generation, `email` unique/not-null, `password_hash` explicitly column-named, `active` a primitive `boolean` matching its `nullable = false` constraint. No custom `equals`/`hashCode` — the safe default for a JPA entity, matching every other entity in this repo. All 4 real `User.builder()` call sites (all in test code) explicitly set `.active(...)`. Cross-checked structurally against `order-service`'s `Order.java` — identical shape, no new pattern introduced.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
