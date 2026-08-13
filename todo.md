@@ -202,7 +202,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../infra/grpc/GrpcExecutor.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#38](https://github.com/Terrence721/saga-full/issues/38) | [#39](https://github.com/Terrence721/saga-full/pull/39) | Done — real security fix (login enumeration, CWE-203, collapsed to generic UNAUTHENTICATED), merged |
 | `src/main/java/.../infra/grpc/UserGrpcServiceImpl.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#40](https://github.com/Terrence721/saga-full/issues/40) | [#41](https://github.com/Terrence721/saga-full/pull/41) | Done — real security fix (login timing side-channel, CWE-208, constant-cost password check), merged |
 | `src/main/java/.../infra/security/JwtTokenProvider.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#42](https://github.com/Terrence721/saga-full/issues/42) | [#43](https://github.com/Terrence721/saga-full/pull/43) | Done — minor fix (cache JWTVerifier once, matching api-gateway-service's pattern), merged |
-| `src/main/java/.../repository/UserRepository.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../repository/UserRepository.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#44](https://github.com/Terrence721/saga-full/issues/44) | [#45](https://github.com/Terrence721/saga-full/pull/45) | In review — real test-coverage gap fixed (no `@DataJpaTest` existed for this module) |
 
 ## 🔧 Still to do
 
