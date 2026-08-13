@@ -194,7 +194,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | File | Last commit SHA | Sub-issue | PR | Status |
 | - | - | - | - | - |
 | `src/main/java/.../UserServiceApplication.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#26](https://github.com/Terrence721/saga-full/issues/26) | [#27](https://github.com/Terrence721/saga-full/pull/27) | Done — no findings, merged |
-| `src/main/java/.../config/SecurityConfig.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
+| `src/main/java/.../config/SecurityConfig.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | [#28](https://github.com/Terrence721/saga-full/issues/28) | [#29](https://github.com/Terrence721/saga-full/pull/29) | In review — real test-coverage gap fixed (`encode()` never exercised anywhere in the repo) |
 | `src/main/java/.../domain/User.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
 | `src/main/java/.../exception/InvalidCredentialsException.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
 | `src/main/java/.../exception/UserInactiveException.java` | [`43cddfe`](https://github.com/Terrence721/saga-full/commit/43cddfe) | — | — | Pending |
