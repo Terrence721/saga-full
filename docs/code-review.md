@@ -117,12 +117,10 @@ A 4-line Spring Data JPA repository, one derived query method (`findByEmail`). `
 
 **Structural note, not fixed**: email lookups are case-sensitive (no normalization anywhere in `user-service`). Not fixed — this repo has no registration/write flow to normalize at intake (#28/#30), so a read-time fix alone would just be guessing at how out-of-band-seeded data is cased. Worth revisiting if a registration flow is ever built.
 
-**Real finding, fixed (test-coverage gap)**: `user-service` had zero `@DataJpaTest` repository coverage, unlike `order-service`/`payment-service`/`restaurant-service`, which all established this as standard practice. `findByEmail` and the `email` unique constraint had never been verified against a real database. Added `UserRepositoryTest` (3 tests, mirroring `OrderRepositoryTest`'s shape): found/not-found by email, and a real proof the unique constraint is genuinely enforced (`saveAndFlush` a duplicate, expect `DataIntegrityViolationException`). Verified with a real `./gradlew :user-service:test` run, confirmed the unique-constraint test genuinely catches wrong data by deliberately using a non-duplicate email and re-running before reverting. Full multi-module suite (93 tests) verified green.
+**Real finding, fixed (test-coverage gap)**: `user-service` had zero `@DataJpaTest` repository coverage, unlike `order-service`/`payment-service`/`restaurant-service`, which all established this as standard practice. `findByEmail` and the `email` unique constraint had never been verified against a real database. Added `UserRepositoryTest` (3 tests, mirroring `OrderRepositoryTest`'s shape): found/not-found by email, and a real proof the unique constraint is genuinely enforced (`saveAndFlush` a duplicate, expect `DataIntegrityViolationException`). Verified with a real `./gradlew :user-service:test` run, confirmed the unique-constraint test genuinely catches wrong data by deliberately using a non-duplicate email and re-running before reverting.
 
 ---
 
----
-
----
+**`user-service` module review complete — 10/10 files reviewed, 5 real findings fixed, 2 structural notes recorded.** A test-coverage gap in `SecurityConfig.java`, a login-enumeration security fix (CWE-203) in `GrpcExecutor.java`, its timing-side-channel sibling (CWE-208) in `UserGrpcServiceImpl.java`, a minor efficiency fix in `JwtTokenProvider.java`, and a test-coverage gap in `UserRepository.java`. Both structural notes (`ValidateToken`'s unused RPC, case-sensitive email lookups) are blocked on a registration flow that doesn't exist in this repo yet. Full multi-module suite: 95/95 tests passing. See [todo.md](../todo.md) for the full per-file table and the next module in the audit.
 
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
