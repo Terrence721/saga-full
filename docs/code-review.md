@@ -53,4 +53,14 @@ JPA entity: Hibernate-native `UUID` id generation, `email` unique/not-null, `pas
 
 ---
 
+### [`InvalidCredentialsException.java`](https://github.com/Terrence721/saga-full/blob/main/user-service/src/main/java/io/github/terrence721/saga/user/exception/InvalidCredentialsException.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #32](https://github.com/Terrence721/saga-full/issues/32))
+
+Trivial `RuntimeException` subclass. Confirmed correct usage end to end: thrown by `UserGrpcServiceImpl.login()` on a password mismatch, caught by `GrpcExecutor` and mapped to gRPC `UNAUTHENTICATED`, matching `UserGrpcServiceImplErrorTest`'s coverage.
+
+**Related observation, not a defect here**: `login()`'s branching returns a different status for "unknown email" (`NOT_FOUND`) versus "wrong password" (this class, `UNAUTHENTICATED`) — a user-enumeration pattern (CWE-203). The root cause lives in `UserGrpcServiceImpl`/`GrpcExecutor`, not this exception type — flagged for when those files come up.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
