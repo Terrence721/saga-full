@@ -101,6 +101,16 @@ Chose the full fix, matching #38's scope. Restructured `login()` so `passwordEnc
 
 ---
 
+### [`JwtTokenProvider.java`](https://github.com/Terrence721/saga-full/blob/main/user-service/src/main/java/io/github/terrence721/saga/user/infra/security/JwtTokenProvider.java)
+
+**low · Maintainability** — Fixed via [PR #43](https://github.com/Terrence721/saga-full/pull/43) ([issue #42](https://github.com/Terrence721/saga-full/issues/42))
+
+`createToken()`/`verifyToken()` logic is correct, already covered by `JwtTokenProviderTest`'s 5 tests. But `verifyToken()` rebuilt a fresh `JWTVerifier` on every call, while the sibling code in `api-gateway-service`'s `JwtPerimeterGuardGatewayFilterFactory` deliberately builds it once in the constructor for exactly this reason. Since `algorithm`/`issuer` are immutable fields here too, moved the `.build()` call into the constructor as a cached field, matching the established pattern — zero behavior change, existing test suite passed unchanged as proof.
+
+---
+
+---
+
 ---
 
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
