@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 13, 2026 (real CodeQL log-injection finding fixed in `order-service`'s `OrderController`)
+**Last Updated:** August 13, 2026 (code-review audit scaffolded — parent tracking issue + 6 module sub-issues open, `user-contract` up first)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -40,7 +40,7 @@ A phase-by-phase log of what's been done on this repo and what's still open. Thi
 | `api-gateway-service` | Reactive WebFlux/Spring Cloud Gateway module (Spring Cloud 2025.0.0, this repo's first non-servlet stack) — `AuthenticationController`/`UserGrpcClient` proxy `POST /auth/login` to `user-service`'s real `Login` gRPC RPC, `JwtPerimeterGuardGatewayFilterFactory` guards `POST /orders` using the same signing secret as `user-service`'s `JwtTokenProvider`, a Resilience4j circuit breaker falls back to `GatewayFallbackController` on downstream failure. Found and fixed a real bug in the source's own filter test (asserted a response status the filter never sets). 7 new tests, `./gradlew :api-gateway-service:test` verified green; full 88-test multi-module suite also green. **Completes all five originally-planned backend modules.** Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 37-40 |
 | `portfolio.html` | Case-study page for the portfolio site, written from this repo's own real test/architecture numbers (test-coverage ledger, the At-a-glance table's labeled real-bug findings) | (standalone, between Phase 36 and 37) |
 
-**Actually still open, right now:** a register/POS frontend and a `reservation-service` addition — both real, unscoped new work, not gaps in the original plan. See the **Still to do** table below.
+**Actually still open, right now:** a register/POS frontend, a `reservation-service` addition, and the code-review audit (just started — see the **Code review — per-file tracking** section below). See the **Still to do** table below.
 
 ## 🧪 Test Coverage Ledger
 
@@ -181,6 +181,18 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | - | - | - |
 | 41 | 2026-08-13 | GitHub CodeQL flagged a real Medium-severity log-injection finding (CWE-117) in `OrderController.createOrder` (Phase 23): `log.info("...: {}", request)` interpolated the whole `CreateOrderRequest` record, and `itemCode` — a `@NotBlank String` with no length cap or character restriction, taken straight off the public `POST /orders` body — flows into that `toString()` unsanitized, letting a client forge fake log lines with embedded `\r`/`\n`. Checked every other `log.info`/`log.warn` call site across all five modules for the same pattern: everywhere else already logs individual, type-safe fields, confirming this was the one call site that slipped through, not a repo-wide issue. Fixed by logging `customerId`/`itemCode`/`quantity`/`totalAmount` individually, with `itemCode` passed through `.replaceAll("[\r\n]", "_")` — the only field with actual string-injection surface, since the other three are `UUID`/`BigDecimal`/`int`. `./gradlew :order-service:test` verified green with no regressions. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 
+## 🔍 Code review — per-file tracking
+
+Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issue [#17](https://github.com/Terrence721/saga-full/issues/17), one sub-issue per module ([#18](https://github.com/Terrence721/saga-full/issues/18) `user-contract` – [#23](https://github.com/Terrence721/saga-full/issues/23) `api-gateway-service`), same Backlog/Planned/In Progress/Verification & QA/Done board as the rest of this repo's work. One module worked at a time, same dependency order the modules were originally built in; this section holds the table for whichever module is currently in progress, and is replaced by the next module's table once every row here is closed out.
+
+**Total scope:** 73 files across 6 modules (`user-contract` 1, `user-service` 10, `order-service` 15, `payment-service` 14, `restaurant-service` 18, `api-gateway-service` 15).
+
+### `user-contract` (module tracking issue [#18](https://github.com/Terrence721/saga-full/issues/18)) — started 2026-08-13
+
+| File | Last commit SHA | Sub-issue | PR | Status |
+| - | - | - | - | - |
+| `src/main/proto/user.proto` | [`8c1614c`](https://github.com/Terrence721/saga-full/commit/8c1614c) | — | — | Pending |
+
 ## 🔧 Still to do
 
 | Item | Detail |
@@ -188,3 +200,4 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | Docker: per-service `Dockerfile`s + Kubernetes manifests | `docker-compose.yml` (Postgres + Kafka only, Phase 26) is done and verified against `order-service`, `payment-service`, and `restaurant-service`. Per-service `Dockerfile`s, and any Kubernetes manifests, are still deferred until there's a complete multi-service stack worth deploying — now including `api-gateway-service`, which also has none yet. The full OTel/Prometheus/Loki/Tempo/Grafana observability stack from the source remains deferred too (Phase 16, reaffirmed for the gateway in Phase 37) |
 | Frontend: restaurant register/POS | This repo has none planned yet — the source doesn't have one either, it's backend-only. Direction settled on: not a generic storefront, but a register/POS-style UI matching the domain the backend already models — a cashier enters an order, watches it move live through kitchen approval (`restaurant-service`) and payment (`payment-service`), landing on `SUCCESS`/`CANCELLED`. Real-time delivery (polling vs. SSE/WebSockets) is an open question. Its stated trigger — `api-gateway-service` existing as a single entry point for a frontend to call — is now met (Phase 40); still not started |
 | Backend: reservation piece | A real new addition, not yet scoped — no `reservation-service` exists in either this repo or the source. Would need its own module (domain, saga participation, and whatever events tie it into the order/restaurant flow) designed from scratch, the same one-file-at-a-time way as the other services. Its stated trigger — the core order/payment/restaurant saga being done — is now met (Phase 36); still not started or scoped |
+| Code review: audit all 6 modules ([#17](https://github.com/Terrence721/saga-full/issues/17), parent tracking issue with one sub-issue per module, [#18](https://github.com/Terrence721/saga-full/issues/18)–[#23](https://github.com/Terrence721/saga-full/issues/23)) | Scaffolded, not yet started — see the **Code review — per-file tracking** section above. `user-contract` is up first (1 file); same file-by-file/sub-issue/PR process `platform-main` used, adapted for this repo's module layout |
