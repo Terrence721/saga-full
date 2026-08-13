@@ -97,8 +97,13 @@ class UserGrpcServiceIntegrationTest {
         assertThat(response.getExpiresInSeconds()).isEqualTo(3600L);
     }
 
+    /**
+     * A real gRPC wire round trip, not just the in-process observer: unknown email
+     * collapses to the same generic UNAUTHENTICATED status wrong-password would return,
+     * so a caller can't enumerate registered emails via this endpoint (CWE-203).
+     */
     @Test
-    void loginOverGrpcPropagatesNotFoundStatus() {
+    void loginOverGrpcPropagatesGenericUnauthenticatedStatus() {
         when(userRepository.findByEmail("missing@example.com")).thenReturn(Optional.empty());
 
         LoginRequest request = LoginRequest.newBuilder()
@@ -109,7 +114,7 @@ class UserGrpcServiceIntegrationTest {
         assertThatThrownBy(() -> client.login(request))
                 .isInstanceOf(StatusRuntimeException.class)
                 .extracting(ex -> ((StatusRuntimeException) ex).getStatus().getCode())
-                .isEqualTo(Status.Code.NOT_FOUND);
+                .isEqualTo(Status.Code.UNAUTHENTICATED);
     }
 
     @Test
