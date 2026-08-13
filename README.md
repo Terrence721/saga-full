@@ -5,13 +5,13 @@
 
 **[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)**
 
-Last updated: August 10, 2026 (`order-service` DTOs; frontend/reservation direction tracked in `todo.md`)
+Last updated: August 13, 2026 (`api-gateway-service` complete — all five originally-planned backend modules done; frontend/reservation direction tracked in `todo.md`)
 
 This repository is a from-scratch demonstration of the Distributed Saga pattern for coordinating long-running business transactions across independent microservices — order placement, payment settlement, and fulfillment, each owned by its own service, coordinated without a shared database transaction.
 
 This is an original implementation, not a fork of any existing project. The module boundaries and general shape of the problem (order → payment → fulfillment, with compensation on failure) are common territory for this class of system; the code, design decisions, and tradeoffs recorded here are this repo's own.
 
-**At a glance:** 81/81 tests passing across `user-contract` + `user-service` + `order-service` + `payment-service` + `restaurant-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
+**At a glance:** 88/88 tests passing across `user-contract` + `user-service` + `order-service` + `payment-service` + `restaurant-service` + `api-gateway-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
 
 ## 🧭 Start Here
 
@@ -27,22 +27,21 @@ Saga orchestration is a common interview-whiteboard topic and an uncommon thing 
 
 ## 🏗 What's Here So Far
 
-`user-contract` (shared gRPC contract), `user-service` (identity + auth: login, token issuance, token validation), `order-service` (order creation, transactional outbox, Kafka publish/consume, the saga's create/confirm/cancel lifecycle), `payment-service` (charge on order creation, refund on restaurant rejection), and `restaurant-service` (inventory allocation, ticket creation, the saga's approve/reject decision) are complete, all with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). The full saga chain is wired end-to-end: order → payment → restaurant, with compensation flowing back on rejection. `api-gateway-service` is the only remaining module from the original plan. See `todo.md` for the full build-out plan.
+`user-contract` (shared gRPC contract), `user-service` (identity + auth: login, token issuance, token validation), `order-service` (order creation, transactional outbox, Kafka publish/consume, the saga's create/confirm/cancel lifecycle), `payment-service` (charge on order creation, refund on restaurant rejection), `restaurant-service` (inventory allocation, ticket creation, the saga's approve/reject decision), and `api-gateway-service` (reactive WebFlux edge — JWT-guarded routing to `order-service`, gRPC-backed login, a Resilience4j circuit breaker on the downstream hop) are complete, all with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). The full saga chain is wired end-to-end behind a real security perimeter: order → payment → restaurant, with compensation flowing back on rejection. This completes all five originally-planned backend modules — what's left is a register/POS frontend and an unscoped `reservation-service` addition. See `todo.md` for the full build-out plan.
 
 ```text
-(planned, mirrors the shape of the problem — not final)
-  api-gateway-service/   inbound edge, routing, auth
-  order-service/         saga orchestrator / state machine    🚧 scaffold in progress
-  payment-service/       payment ledger + settlement
-  restaurant-service/    fulfillment-side processor
-  user-service/          identity + auth                      ✅ done
-  user-contract/         shared API contract types            ✅ done
+  api-gateway-service/   inbound edge, JWT perimeter guard, routing         ✅ done
+  order-service/         saga orchestrator / state machine                 ✅ done
+  payment-service/       payment ledger + settlement                       ✅ done
+  restaurant-service/    fulfillment-side processor                        ✅ done
+  user-service/          identity + auth                                   ✅ done
+  user-contract/         shared API contract types                         ✅ done
 ```
 
 ## 🖥 Getting Started
 
 ```shell
-./gradlew :user-service:compileJava
+./gradlew :api-gateway-service:compileJava
 ```
 
-A full runnable stack needs at least one more service to talk to `user-service` over gRPC — this section will expand as that lands.
+A full runnable stack needs Postgres + Kafka up (`docker-compose up`, see [CONTRIBUTING.md](CONTRIBUTING.md)) and each service started with the `postgres` profile — `user-service` and `order-service` first, since `api-gateway-service` and `payment-service`/`restaurant-service` depend on them being reachable over gRPC and Kafka respectively.
