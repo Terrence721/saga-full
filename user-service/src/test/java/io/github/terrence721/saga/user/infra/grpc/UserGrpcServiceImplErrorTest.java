@@ -52,30 +52,40 @@ class UserGrpcServiceImplErrorTest {
                 .build();
     }
 
+    /**
+     * Unknown email, wrong password, and an inactive account all collapse to the same
+     * generic UNAUTHENTICATED status/message - distinguishing them at the wire level would
+     * let a caller enumerate registered emails (and their active status) without ever
+     * guessing a password (CWE-203). See GrpcExecutor.
+     */
     @Test
-    void loginFailsWithNotFoundWhenUserMissing() {
+    void loginFailsWithGenericUnauthenticatedWhenUserMissing() {
         when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.empty());
 
         RecordingStreamObserver<LoginResponse> observer = new RecordingStreamObserver<>();
         service.login(loginRequest("any-password"), observer);
 
         assertThat(observer.firstValueOrNull()).isNull();
-        assertThat(Status.fromThrowable(observer.error()).getCode()).isEqualTo(Status.Code.NOT_FOUND);
+        Status status = Status.fromThrowable(observer.error());
+        assertThat(status.getCode()).isEqualTo(Status.Code.UNAUTHENTICATED);
+        assertThat(status.getDescription()).isEqualTo("Invalid email or password");
     }
 
     @Test
-    void loginFailsWithPermissionDeniedWhenUserInactive() {
+    void loginFailsWithGenericUnauthenticatedWhenUserInactive() {
         when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(userWithActive(false)));
 
         RecordingStreamObserver<LoginResponse> observer = new RecordingStreamObserver<>();
         service.login(loginRequest("any-password"), observer);
 
         assertThat(observer.firstValueOrNull()).isNull();
-        assertThat(Status.fromThrowable(observer.error()).getCode()).isEqualTo(Status.Code.PERMISSION_DENIED);
+        Status status = Status.fromThrowable(observer.error());
+        assertThat(status.getCode()).isEqualTo(Status.Code.UNAUTHENTICATED);
+        assertThat(status.getDescription()).isEqualTo("Invalid email or password");
     }
 
     @Test
-    void loginFailsWithUnauthenticatedWhenPasswordWrong() {
+    void loginFailsWithGenericUnauthenticatedWhenPasswordWrong() {
         User user = userWithActive(true);
         when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrong-password", "hashed-password")).thenReturn(false);
@@ -84,7 +94,9 @@ class UserGrpcServiceImplErrorTest {
         service.login(loginRequest("wrong-password"), observer);
 
         assertThat(observer.firstValueOrNull()).isNull();
-        assertThat(Status.fromThrowable(observer.error()).getCode()).isEqualTo(Status.Code.UNAUTHENTICATED);
+        Status status = Status.fromThrowable(observer.error());
+        assertThat(status.getCode()).isEqualTo(Status.Code.UNAUTHENTICATED);
+        assertThat(status.getDescription()).isEqualTo("Invalid email or password");
     }
 
     @Test
