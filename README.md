@@ -18,6 +18,7 @@ This is an original implementation, not a fork of any existing project. The modu
 - **[`todo.md`](todo.md)** — the phase-by-phase log of everything done and everything still open. This is the source of truth for progress.
 - **[GitHub Project board](https://github.com/users/Terrence721/projects/3)** — a Scrum-style Backlog/Planned/In Progress/Verification & QA/Done view of the same work, for a quick at-a-glance status without reading the full log. Kept in sync with [`todo.md`](todo.md).
 - **[`docs/architecture.md`](docs/architecture.md)** — the reasoning behind this repo's architectural decisions (context, alternatives, what each one actually cost), not just what changed.
+- **[`docs/code-review.md`](docs/code-review.md)** — a per-module, per-file code-review audit of the whole codebase, one real GitHub PR per file (findings or not). Just scaffolded — `user-contract` is up first, see [todo.md](todo.md) for the tracking table.
 - **[`docs/case-study.md`](docs/case-study.md)** — problem, constraints, tradeoffs, and results, for anyone scanning this repo as a portfolio piece rather than reading it as documentation.
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** — development setup, testing commands, commit conventions.
 
