@@ -19,6 +19,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -97,6 +101,38 @@ class UserGrpcServiceImplErrorTest {
         Status status = Status.fromThrowable(observer.error());
         assertThat(status.getCode()).isEqualTo(Status.Code.UNAUTHENTICATED);
         assertThat(status.getDescription()).isEqualTo("Invalid email or password");
+    }
+
+    /**
+     * BCrypt verification is deliberately slow; skipping it whenever no user is found
+     * would let an attacker distinguish "unknown email" from "wrong password" purely by
+     * response latency, even though both now return the identical UNAUTHENTICATED status
+     * (see GrpcExecutor). Proves the constant-cost comparison is actually wired in, not
+     * just that the exception/status still comes out right.
+     */
+    @Test
+    void loginComparesAgainstADummyHashWhenUserNotFound_forTimingSafety() {
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.empty());
+
+        RecordingStreamObserver<LoginResponse> observer = new RecordingStreamObserver<>();
+        service.login(loginRequest("any-password"), observer);
+
+        verify(passwordEncoder, times(1)).matches(eq("any-password"), anyString());
+    }
+
+    /**
+     * Same timing-safety guarantee for an inactive account: the original code threw
+     * before ever calling passwordEncoder.matches() here, giving it a smaller timing
+     * footprint than a real login attempt against an active account.
+     */
+    @Test
+    void loginStillComparesPasswordWhenUserInactive_forTimingSafety() {
+        when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(userWithActive(false)));
+
+        RecordingStreamObserver<LoginResponse> observer = new RecordingStreamObserver<>();
+        service.login(loginRequest("any-password"), observer);
+
+        verify(passwordEncoder, times(1)).matches(eq("any-password"), eq("hashed-password"));
     }
 
     @Test

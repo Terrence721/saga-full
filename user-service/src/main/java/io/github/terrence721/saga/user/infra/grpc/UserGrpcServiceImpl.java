@@ -16,9 +16,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.grpc.server.service.GrpcService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 @GrpcService
 @Slf4j
 public class UserGrpcServiceImpl extends UserIdentityServiceGrpc.UserIdentityServiceImplBase {
+
+    // A valid but unused bcrypt hash, compared against whenever no real user is found -
+    // so an unknown email costs the same real BCrypt verification time as a known one,
+    // rather than returning early and leaking "this account doesn't exist" via response
+    // latency even after GrpcExecutor already hides it behind a generic status.
+    private static final String DUMMY_PASSWORD_HASH = "$2a$10$Iwf4.JZgaIfsOqlfbLfQg.sS6S9u0Dg8lzeHjeMRivBKrL8mW5Dv6";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -33,14 +41,22 @@ public class UserGrpcServiceImpl extends UserIdentityServiceGrpc.UserIdentitySer
     @Override
     public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
         GrpcExecutor.execute(responseObserver, () -> {
-            User user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new UserNotFoundException("No user found for email: " + request.getEmail()));
+            Optional<User> maybeUser = userRepository.findByEmail(request.getEmail());
+
+            // Runs exactly once on every path - found or not, active or not - so none of
+            // them can be told apart by how long the response takes.
+            boolean passwordMatches = passwordEncoder.matches(
+                    request.getPassword(),
+                    maybeUser.map(User::getPasswordHash).orElse(DUMMY_PASSWORD_HASH));
+
+            User user = maybeUser.orElseThrow(
+                    () -> new UserNotFoundException("No user found for email: " + request.getEmail()));
 
             if (!user.isActive()) {
                 throw new UserInactiveException("User account is inactive: " + request.getEmail());
             }
 
-            if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            if (!passwordMatches) {
                 throw new InvalidCredentialsException("Invalid credentials for email: " + request.getEmail());
             }
 
