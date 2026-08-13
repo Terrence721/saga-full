@@ -63,4 +63,12 @@ Trivial `RuntimeException` subclass. Confirmed correct usage end to end: thrown 
 
 ---
 
+### [`UserInactiveException.java`](https://github.com/Terrence721/saga-full/blob/main/user-service/src/main/java/io/github/terrence721/saga/user/exception/UserInactiveException.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #34](https://github.com/Terrence721/saga-full/issues/34))
+
+Identical trivial shape to `InvalidCredentialsException.java`. Confirmed correct usage: thrown when `User.isActive()` is false (checked before the password check), mapped to gRPC `PERMISSION_DENIED`. Same enumeration observation as #32 applies, one more facet: an inactive account with a wrong password still returns `PERMISSION_DENIED` rather than `UNAUTHENTICATED`, also revealing account-active status to anyone who already knows the email. Same root cause, same file to fix — not this one.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
