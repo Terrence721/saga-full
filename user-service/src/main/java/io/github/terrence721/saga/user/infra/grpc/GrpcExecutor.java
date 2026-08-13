@@ -12,20 +12,20 @@ import java.util.function.Supplier;
 @Slf4j
 public class GrpcExecutor {
 
+    private static final String GENERIC_AUTHENTICATION_FAILURE_MESSAGE = "Invalid email or password";
+
     public static <T> void execute(StreamObserver<T> responseObserver, Supplier<T> action) {
         try {
             T response = action.get();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (UserNotFoundException ex) {
-            log.warn("User not found: {}", ex.getMessage());
-            responseObserver.onError(Status.NOT_FOUND.withDescription(ex.getMessage()).asRuntimeException());
-        } catch (InvalidCredentialsException ex) {
-            log.warn("Invalid credentials: {}", ex.getMessage());
-            responseObserver.onError(Status.UNAUTHENTICATED.withDescription(ex.getMessage()).asRuntimeException());
-        } catch (UserInactiveException ex) {
-            log.warn("User inactive: {}", ex.getMessage());
-            responseObserver.onError(Status.PERMISSION_DENIED.withDescription(ex.getMessage()).asRuntimeException());
+        } catch (UserNotFoundException | InvalidCredentialsException | UserInactiveException ex) {
+            // Deliberately collapsed to one status and one generic message: distinguishing
+            // "unknown email" / "wrong password" / "inactive account" at the wire level lets
+            // a caller enumerate registered emails (and their active status) without ever
+            // guessing a password - CWE-203. The specific reason is still logged server-side.
+            log.warn("Authentication failed: {}", ex.getMessage());
+            responseObserver.onError(Status.UNAUTHENTICATED.withDescription(GENERIC_AUTHENTICATION_FAILURE_MESSAGE).asRuntimeException());
         } catch (IllegalArgumentException ex) {
             log.warn("Invalid request payload: {}", ex.getMessage());
             responseObserver.onError(Status.INVALID_ARGUMENT.withDescription(ex.getMessage()).asRuntimeException());

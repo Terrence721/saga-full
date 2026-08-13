@@ -79,4 +79,18 @@ Third and last of the three sibling exception types. Confirmed correct usage: th
 
 ---
 
+### [`GrpcExecutor.java`](https://github.com/Terrence721/saga-full/blob/main/user-service/src/main/java/io/github/terrence721/saga/user/infra/grpc/GrpcExecutor.java)
+
+**medium · Security** — Fixed via [PR #39](https://github.com/Terrence721/saga-full/pull/39) ([issue #38](https://github.com/Terrence721/saga-full/issues/38))
+
+`execute()` mapped three exceptions to three *distinguishable* gRPC statuses on `Login`: unknown email → `NOT_FOUND`, wrong password → `UNAUTHENTICATED`, inactive account → `PERMISSION_DENIED`. Any caller could enumerate registered emails — and their active status — purely from the login response, without ever guessing a password (CWE-203). This is the finding flagged across #32/#34/#36.
+
+Discussed the tradeoff before fixing: collapsing `PERMISSION_DENIED` too has a real cost (some systems deliberately tell a user their account was deactivated as a UX courtesy). Decision: full enumeration protection — collapsed all three into one generic `UNAUTHENTICATED` / `"Invalid email or password"` response via a multi-catch. The specific reason is still logged server-side; only the wire response is generic. Updated `UserGrpcServiceImplErrorTest` (3 tests) and `UserGrpcServiceIntegrationTest`'s real-wire-round-trip test to match. Verified with a real `./gradlew :user-service:test` run, confirmed the suite genuinely catches wrong data by deliberately reverting one assertion and re-running before reverting back, and confirmed the full multi-module suite (88 tests) stays green.
+
+**Known cross-module consequence, not fixed here**: `api-gateway-service`'s `UserGrpcExceptionTranslator` still maps `NOT_FOUND`/`PERMISSION_DENIED` to their own exception types — those branches are now unreachable via the login path specifically, since `user-service` never returns those codes for `Login` anymore. Left as-is, since the translator is generic infrastructure for any future RPC, not login-specific logic; `api-gateway-service`'s own code-review pass is the right place to revisit it.
+
+---
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
