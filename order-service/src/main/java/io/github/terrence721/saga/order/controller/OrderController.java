@@ -25,7 +25,12 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<Order> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        log.info("Received create order request: {}", request);
+        // Logs fields individually, not the raw request - itemCode is free-form
+        // client input with no character restrictions, so interpolating the
+        // whole record's toString() would let CR/LF bytes forge fake log lines.
+        log.info("Received create order request: customerId={}, itemCode={}, quantity={}, totalAmount={}",
+                request.customerId(), request.itemCode().replaceAll("[\r\n]", "_"),
+                request.quantity(), request.totalAmount());
         Order order = orderService.createOrder(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
