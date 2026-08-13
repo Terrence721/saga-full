@@ -110,6 +110,20 @@ class OrderServiceTest {
     }
 
     @Test
+    void confirmOrder_ignoresLateApproval_whenAlreadyCancelled() {
+        UUID orderId = UUID.randomUUID();
+        Order cancelled = pendingOrder(orderId);
+        cancelled.setStatus(OrderStatus.CANCELLED);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(cancelled));
+
+        orderService.confirmOrder(new RestaurantApprovedEvent(orderId, cancelled.getCustomerId(), UUID.randomUUID()));
+
+        assertThat(cancelled.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
     void confirmOrder_throwsOrderNotFoundException_whenOrderMissing() {
         UUID orderId = UUID.randomUUID();
         when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
@@ -142,6 +156,20 @@ class OrderServiceTest {
 
         assertThat(existing.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         verify(orderRepository).save(existing);
+    }
+
+    @Test
+    void cancelOrder_ignoresLateRejection_whenAlreadySuccess() {
+        UUID orderId = UUID.randomUUID();
+        Order succeeded = pendingOrder(orderId);
+        succeeded.setStatus(OrderStatus.SUCCESS);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(succeeded));
+
+        orderService.cancelOrder(new RestaurantRejectedEvent(orderId, succeeded.getCustomerId(), "Out of stock"));
+
+        assertThat(succeeded.getStatus()).isEqualTo(OrderStatus.SUCCESS);
+        verify(orderRepository, never()).save(any());
     }
 
     @Test

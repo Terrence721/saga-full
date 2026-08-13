@@ -123,4 +123,14 @@ A 4-line Spring Data JPA repository, one derived query method (`findByEmail`). `
 
 **`user-service` module review complete — 10/10 files reviewed, 5 real findings fixed, 2 structural notes recorded.** A test-coverage gap in `SecurityConfig.java`, a login-enumeration security fix (CWE-203) in `GrpcExecutor.java`, its timing-side-channel sibling (CWE-208) in `UserGrpcServiceImpl.java`, a minor efficiency fix in `JwtTokenProvider.java`, and a test-coverage gap in `UserRepository.java`. Both structural notes (`ValidateToken`'s unused RPC, case-sensitive email lookups) are blocked on a registration flow that doesn't exist in this repo yet. Full multi-module suite: 95/95 tests passing. See [todo.md](../todo.md) for the full per-file table and the next module in the audit.
 
+---
+
+### [`OrderService.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/service/OrderService.java)
+
+**medium · Correctness** (+ **low · Security**) — Fixed under [#20](https://github.com/Terrence721/saga-full/issues/20)
+
+`confirmOrder`/`cancelOrder` carried the source's double-guard idempotency shape (cheap `existsByIdAndStatus`, then load, then a second in-memory check) but the post-load check only skipped the *same* terminal status each method produces. A late `RestaurantApprovedEvent` against an already-`CANCELLED` order still flipped it to `SUCCESS`; a late `RestaurantRejectedEvent` against an already-`SUCCESS` order still flipped it to `CANCELLED`. At-least-once Kafka delivery (accepted in Phase 22) makes those crossed events realistic under reordering/retries.
+
+Fix: after load, only `PENDING` may transition — any other status is ignored. Added 2 tests covering both illegal terminal→terminal flips. Also sanitized `event.reason()` in the cancel log line (`[\r\n]` → `_`), matching Phase 41's CWE-117 fix on `OrderController`'s `itemCode` logging — `reason` is free-form upstream text with the same injection surface.
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._

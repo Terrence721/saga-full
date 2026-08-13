@@ -223,7 +223,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../repository/OrderRepository.java` | [`c1ecda2`](https://github.com/Terrence721/saga-full/commit/c1ecda2) | — | — | Pending |
 | `src/main/java/.../repository/OutboxRepository.java` | [`c1ecda2`](https://github.com/Terrence721/saga-full/commit/c1ecda2) | — | — | Pending |
 | `src/main/java/.../service/OrderConsumerConfig.java` | [`86ac556`](https://github.com/Terrence721/saga-full/commit/86ac556) | — | — | Pending |
-| `src/main/java/.../service/OrderService.java` | [`98c7470`](https://github.com/Terrence721/saga-full/commit/98c7470) | — | — | Pending |
+| `src/main/java/.../service/OrderService.java` | [`98c7470`](https://github.com/Terrence721/saga-full/commit/98c7470) | — | — | In review — terminal-state guard + cancel-reason log sanitize |
 | `src/main/java/.../service/OutboxPublisherService.java` | [`1a7469d`](https://github.com/Terrence721/saga-full/commit/1a7469d) | — | — | Pending |
 
 ## 🔧 Still to do

@@ -59,8 +59,10 @@ public class OrderService {
         }
 
         Order order = findOrder(event.orderId());
-        if (order.getStatus() == OrderStatus.SUCCESS) {
-            log.debug("Order {} already SUCCESS after load; skipping", event.orderId());
+        // Terminal states are final: a late approval must not revive a CANCELLED order
+        // (or re-apply SUCCESS). Only PENDING may transition to SUCCESS.
+        if (order.getStatus() != OrderStatus.PENDING) {
+            log.debug("Order {} is {}; ignoring approval event", event.orderId(), order.getStatus());
             return;
         }
 
@@ -77,14 +79,23 @@ public class OrderService {
         }
 
         Order order = findOrder(event.orderId());
-        if (order.getStatus() == OrderStatus.CANCELLED) {
-            log.debug("Order {} already CANCELLED after load; skipping", event.orderId());
+        // Terminal states are final: a late rejection must not undo a SUCCESS order
+        // (or re-apply CANCELLED). Only PENDING may transition to CANCELLED.
+        if (order.getStatus() != OrderStatus.PENDING) {
+            log.debug("Order {} is {}; ignoring rejection event", event.orderId(), order.getStatus());
             return;
         }
 
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
-        log.warn("Order {} cancelled: {}", event.orderId(), event.reason());
+        // reason is free-form text from an upstream event — sanitize CR/LF so a
+        // crafted reason cannot forge extra log lines (same CWE-117 pattern as
+        // OrderController's itemCode logging, Phase 41).
+        log.warn("Order {} cancelled: {}", event.orderId(), sanitizeForLog(event.reason()));
+    }
+
+    private static String sanitizeForLog(String value) {
+        return value == null ? null : value.replaceAll("[\r\n]", "_");
     }
 
     private Order findOrder(UUID orderId) {
