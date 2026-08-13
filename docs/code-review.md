@@ -29,4 +29,12 @@ Message/service definitions checked against every real consumer across all six m
 
 ---
 
+### [`UserServiceApplication.java`](https://github.com/Terrence721/saga-full/blob/main/user-service/src/main/java/io/github/terrence721/saga/user/UserServiceApplication.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #26](https://github.com/Terrence721/saga-full/issues/26))
+
+12 lines: package declaration, two imports, a single `@SpringBootApplication`-annotated class with a `main()` calling `SpringApplication.run()`. No custom logic, no branching, nothing to get wrong. Identical in shape to every other module's entry-point class already in this repo.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
