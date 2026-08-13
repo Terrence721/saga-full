@@ -37,4 +37,12 @@ Message/service definitions checked against every real consumer across all six m
 
 ---
 
+### [`SecurityConfig.java`](https://github.com/Terrence721/saga-full/blob/main/user-service/src/main/java/io/github/terrence721/saga/user/config/SecurityConfig.java)
+
+**low · Maintainability** — Fixed via [PR #29](https://github.com/Terrence721/saga-full/pull/29) ([issue #28](https://github.com/Terrence721/saga-full/issues/28))
+
+The 8-line `@Configuration` class exposing a `BCryptPasswordEncoder`-backed `PasswordEncoder` bean is itself correct — nothing to fix in its logic. But grepping the whole repo for `.encode(` turned up zero matches, in production code or tests: `UserGrpcServiceImpl` only ever calls `.matches()` during login, and every test that touches `PasswordEncoder` mocks it, setting `User.passwordHash` to a literal placeholder like `"hashed-password"` rather than a real bcrypt hash. No registration/user-creation RPC exists anywhere in `user.proto` (a deliberate scope decision, not an oversight), so `BCryptPasswordEncoder.encode()`'s actual behavior had never been exercised by a single line of code in this repo — assumed correct, never verified. Added `SecurityConfigTest` (2 tests): a real `encode()`/`matches()` round trip, plus a negative case proving a wrong password is rejected. Verified with a real `./gradlew :user-service:test` run, and confirmed the suite genuinely catches wrong data by deliberately flipping the negative assertion's expected boolean and re-running before reverting.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
