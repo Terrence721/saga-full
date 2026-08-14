@@ -15,6 +15,13 @@ This is an original implementation, not a fork of any existing project. The modu
 
 ## 🧭 Start Here
 
+- **[Architecture Overview](https://terrence721.github.io/saga-full/diagrams/system-architecture.html)** — the module map, the two transports (gRPC + Kafka), and how the one entry point (`api-gateway-service`) fits together
+- **[Saga Flow](https://terrence721.github.io/saga-full/diagrams/saga-flow.html)** — how a single order actually moves through all five saga-participating services, happy path and compensation
+- **[Services Reference](https://terrence721.github.io/saga-full/diagrams/services-reference.html)** — the shared outbox-then-poll shape every service follows, and what's actually different per service (ports, topics, schemas)
+- **[Testing Strategy](https://terrence721.github.io/saga-full/diagrams/testing-strategy.html)** — the four test layers this repo runs together, each with a real bug example it alone caught
+
+The rest of the [wiki](https://github.com/Terrence721/saga-full/wiki) goes deeper per-module (one page per service).
+
 - **[`todo.md`](todo.md)** — the phase-by-phase log of everything done and everything still open. This is the source of truth for progress.
 - **[GitHub Project board](https://github.com/users/Terrence721/projects/3)** — a Scrum-style Backlog/Planned/In Progress/Verification & QA/Done view of the same work, for a quick at-a-glance status without reading the full log. Kept in sync with [`todo.md`](todo.md).
 - **[`docs/architecture.md`](docs/architecture.md)** — the reasoning behind this repo's architectural decisions (context, alternatives, what each one actually cost), not just what changed.

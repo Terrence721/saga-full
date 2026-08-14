@@ -1,0 +1,305 @@
+<title>Testing Strategy — Four Layers, Run Together</title>
+<style>
+  :root {
+    --ink: #1b1f1e;
+    --ink-soft: #4b544f;
+    --paper: #e9ece9;
+    --surface: #ffffff;
+    --line: #b7bfba;
+    --boot: #5b4b8a;
+    --boot-bg: #e9e5f4;
+    --unit: #8b5e3c;
+    --unit-bg: #f1e6da;
+    --repo: #2b6e63;
+    --repo-bg: #e1ede9;
+    --wire: #2b5f6e;
+    --wire-bg: #dfe9ea;
+    --shared: #3c4440;
+    --shared-bg: #eef1ef;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Consolas", "Liberation Mono", monospace;
+    --sans: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #eceeec;
+    --ink-soft: #a9b2ac;
+    --paper: #141716;
+    --surface: #1c2120;
+    --line: #3a423e;
+    --boot: #a794e0;
+    --boot-bg: #221d33;
+    --unit: #d99a63;
+    --unit-bg: #2c2119;
+    --repo: #5cb3a4;
+    --repo-bg: #172925;
+    --wire: #7fb8c9;
+    --wire-bg: #1b2c30;
+    --shared: #cdd3d0;
+    --shared-bg: #222725;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eceeec;
+      --ink-soft: #a9b2ac;
+      --paper: #141716;
+      --surface: #1c2120;
+      --line: #3a423e;
+      --boot: #a794e0;
+      --boot-bg: #221d33;
+      --unit: #d99a63;
+      --unit-bg: #2c2119;
+      --repo: #5cb3a4;
+      --repo-bg: #172925;
+      --wire: #7fb8c9;
+      --wire-bg: #1b2c30;
+      --shared: #cdd3d0;
+      --shared-bg: #222725;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    padding: 2.5rem 1.5rem 4rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { max-width: 1180px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 0.6rem;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 2.6vw, 2.15rem);
+    line-height: 1.15;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .dek {
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 70ch;
+    margin: 0 0 2.4rem;
+  }
+
+  .dek code { font-family: var(--mono); font-size: 0.9em; color: var(--ink); }
+
+  .layers {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+    margin-bottom: 1.6rem;
+  }
+
+  .layer {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    padding: 1.2rem 1.2rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .layer-tag {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    display: inline-block;
+    width: fit-content;
+  }
+
+  .layer--boot .layer-tag { color: var(--boot); background: var(--boot-bg); }
+  .layer--unit .layer-tag { color: var(--unit); background: var(--unit-bg); }
+  .layer--repo .layer-tag { color: var(--repo); background: var(--repo-bg); }
+  .layer--wire .layer-tag { color: var(--wire); background: var(--wire-bg); }
+
+  .layer-title { font-size: 0.98rem; font-weight: 600; margin: 0; }
+  .layer-title span {
+    display: block;
+    font-family: var(--mono);
+    font-weight: 400;
+    font-size: 0.74rem;
+    color: var(--ink-soft);
+    margin-top: 0.15rem;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 0.3rem; }
+
+  .field-label {
+    font-family: var(--mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .field-body { font-size: 0.82rem; line-height: 1.48; }
+
+  .layer--boot .field--proves .field-body { border-left: 2px solid var(--boot); padding-left: 0.6rem; }
+  .layer--unit .field--proves .field-body { border-left: 2px solid var(--unit); padding-left: 0.6rem; }
+  .layer--repo .field--proves .field-body { border-left: 2px solid var(--repo); padding-left: 0.6rem; }
+  .layer--wire .field--proves .field-body { border-left: 2px solid var(--wire); padding-left: 0.6rem; }
+
+  .field--blind .field-body {
+    border-left: 2px dashed var(--line);
+    padding-left: 0.6rem;
+    color: var(--ink-soft);
+  }
+
+  .example {
+    margin-top: auto;
+    padding-top: 0.7rem;
+    border-top: 1px dashed var(--line);
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  .example strong { color: var(--ink); font-weight: 600; }
+  .example code { font-family: var(--mono); font-size: 0.92em; }
+
+  .union {
+    border: 1px solid var(--shared);
+    background: var(--shared-bg);
+    border-radius: 10px;
+    padding: 1.1rem 1.4rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .union-mark {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--shared);
+    font-weight: 600;
+    flex: 0 0 auto;
+  }
+
+  .union p { margin: 0; font-size: 0.9rem; line-height: 1.55; color: var(--ink); }
+  .union strong { font-weight: 600; }
+  .union code { font-family: var(--mono); font-size: 0.9em; }
+
+  footer {
+    margin-top: 2.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 900px) {
+    .layers { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 560px) {
+    .layers { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="page">
+  <p class="eyebrow">saga-full — testing strategy</p>
+  <h1>Four layers, run together — each blind to a different failure mode.</h1>
+  <p class="dek">
+    <code>compileJava</code>/<code>assemble</code>/<code>bootJar</code> succeeding proves nothing about
+    whether a module actually starts, wires into Spring, or survives a real wire round trip. Every
+    suite in this repo is deliberately broken and re-run to confirm it actually catches bad data,
+    before being trusted — assumed-correct-but-never-run is treated as untested here.
+  </p>
+
+  <div class="layers">
+    <div class="layer layer--boot">
+      <span class="layer-tag">contextLoads()</span>
+      <p class="layer-title">Context boot<span>@SpringBootTest, written first for every module</span></p>
+      <div class="field field--proves">
+        <div class="field-label">Proves</div>
+        <div class="field-body">A real ApplicationContext actually starts — component scan, JPA/Hikari, the gRPC server — under this repo's actual JDK.</div>
+      </div>
+      <div class="field field--blind">
+        <div class="field-label">Blind to</div>
+        <div class="field-body">Zero business logic exercised — a module can boot cleanly while every real code path is broken.</div>
+      </div>
+      <div class="example">
+        <strong>Caught it:</strong> Spring Boot 3.4.1 couldn't boot <em>at all</em> under JDK 25 — Spring's own bundled ASM can't parse the class files. Neither Boot module had ever proven real startup before this test existed.
+      </div>
+    </div>
+
+    <div class="layer layer--unit">
+      <span class="layer-tag">Mockito + real ObjectMapper</span>
+      <p class="layer-title">Unit, mocked collaborators<span>service-layer business logic</span></p>
+      <div class="field field--proves">
+        <div class="field-label">Proves</div>
+        <div class="field-body">Branching, idempotency guards, JSON round-trips — and that generated protobuf/gRPC classes actually construct at runtime, not just compile.</div>
+      </div>
+      <div class="field field--blind">
+        <div class="field-label">Blind to</div>
+        <div class="field-body">Never sends a message over the wire — serialization and gRPC Status codes aren't proven here.</div>
+      </div>
+      <div class="example">
+        <strong>Caught it:</strong> <code>spring-grpc</code>'s BOM silently downgraded <code>protobuf-java</code> below what generated code needs, on the real runtime classpath — invisible until this layer first built a message object.
+      </div>
+    </div>
+
+    <div class="layer layer--repo">
+      <span class="layer-tag">@DataJpaTest</span>
+      <p class="layer-title">Repository<span>embedded H2, real Hibernate DDL</span></p>
+      <div class="field field--proves">
+        <div class="field-label">Proves</div>
+        <div class="field-body">Query correctness against a real schema — ordering, <code>existsBy*</code> guards, the outbox's <code>SKIP LOCKED</code> query actually compiles and runs.</div>
+      </div>
+      <div class="field field--blind">
+        <div class="field-label">Blind to</div>
+        <div class="field-body">H2's Postgres compatibility mode, not the real dialect — and single-threaded, not real concurrent access.</div>
+      </div>
+      <div class="example">
+        <strong>Untested edge, acknowledged:</strong> <code>SKIP LOCKED</code>'s concurrent-safety guarantee has never been exercised under genuinely concurrent transactions — trusted as documented Hibernate/Postgres behavior, not independently proven here.
+      </div>
+    </div>
+
+    <div class="layer layer--wire">
+      <span class="layer-tag">InProcess gRPC + real Docker infra</span>
+      <p class="layer-title">Wire / integration<span>real (de)serialization, real Postgres + Kafka</span></p>
+      <div class="field field--proves">
+        <div class="field-label">Proves</div>
+        <div class="field-body">Messages and Status codes survive real serialization; a genuine HikariPool→PgConnection and Kafka consumer groups getting real partition assignments against a live broker.</div>
+      </div>
+      <div class="field field--blind">
+        <div class="field-label">Blind to</div>
+        <div class="field-body">Nothing structurally — but it only covers the specific scenarios actually run against the local Docker stack.</div>
+      </div>
+      <div class="example">
+        <strong>Caught it:</strong> <code>grpc-inprocess</code> was already on <code>testRuntimeClasspath</code> (transitive) but absent from <code>testCompileClasspath</code> — a real compile-vs-runtime dependency-scope gap this layer surfaced.
+      </div>
+    </div>
+  </div>
+
+  <div class="union">
+    <span class="union-mark">∴</span>
+    <p>All four run <strong>together</strong>: a booting context plus mocked-unit-correct still doesn't prove a message survives the wire, and a passing repository test still doesn't prove the module starts at all. Full per-tool JDK-25 gotchas (Lombok, Mockito/ByteBuddy, Spring's own ASM) are catalogued on the <a href="https://github.com/Terrence721/saga-full/wiki">wiki</a>.</p>
+  </div>
+
+  <footer>saga-full · JUnit 5.11.4 + AssertJ 3.26.3 · contextLoads-first discipline · aggregateTestReport merges every module</footer>
+</div>

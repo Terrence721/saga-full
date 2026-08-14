@@ -1,0 +1,338 @@
+<title>System Architecture — Six Services, Two Transports</title>
+<style>
+  :root {
+    --ink: #1b1f1e;
+    --ink-soft: #4b544f;
+    --paper: #e9ece9;
+    --surface: #ffffff;
+    --line: #b7bfba;
+    --grpc: #2b5f6e;
+    --grpc-bg: #dfe9ea;
+    --kafka: #8b5e3c;
+    --kafka-bg: #f1e6da;
+    --entry: #2b6e63;
+    --entry-bg: #e1ede9;
+    --shared: #3c4440;
+    --shared-bg: #eef1ef;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Consolas", "Liberation Mono", monospace;
+    --sans: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #eceeec;
+    --ink-soft: #a9b2ac;
+    --paper: #141716;
+    --surface: #1c2120;
+    --line: #3a423e;
+    --grpc: #7fb8c9;
+    --grpc-bg: #1b2c30;
+    --kafka: #d99a63;
+    --kafka-bg: #2c2119;
+    --entry: #5cb3a4;
+    --entry-bg: #172925;
+    --shared: #cdd3d0;
+    --shared-bg: #222725;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eceeec;
+      --ink-soft: #a9b2ac;
+      --paper: #141716;
+      --surface: #1c2120;
+      --line: #3a423e;
+      --grpc: #7fb8c9;
+      --grpc-bg: #1b2c30;
+      --kafka: #d99a63;
+      --kafka-bg: #2c2119;
+      --entry: #5cb3a4;
+      --entry-bg: #172925;
+      --shared: #cdd3d0;
+      --shared-bg: #222725;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    padding: 2.5rem 1.5rem 4rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { max-width: 1080px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 0.6rem;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 2.6vw, 2.15rem);
+    line-height: 1.15;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .dek {
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 70ch;
+    margin: 0 0 2.2rem;
+  }
+
+  .dek code { font-family: var(--mono); font-size: 0.9em; color: var(--ink); }
+
+  h2 {
+    font-size: 0.72rem;
+    font-family: var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 1rem;
+  }
+
+  /* System diagram */
+  .diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2.2rem;
+  }
+
+  .diagram-row { display: flex; justify-content: center; }
+
+  .node {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0.6rem 1.1rem;
+    white-space: nowrap;
+  }
+
+  .node--entry { border-color: var(--entry); color: var(--entry); font-weight: 600; }
+  .node--grpc { border-color: var(--grpc); color: var(--grpc); }
+  .node--kafka { border-color: var(--kafka); color: var(--kafka); }
+
+  .diagram-arrow-v { color: var(--ink-soft); font-size: 0.78rem; font-family: var(--mono); }
+
+  .spokes {
+    display: flex;
+    justify-content: center;
+    gap: 2.4rem;
+    flex-wrap: wrap;
+    margin-top: 0.3rem;
+  }
+
+  .spoke {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .spoke-note {
+    font-size: 0.76rem;
+    color: var(--ink-soft);
+    max-width: 16ch;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  /* Card grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+  }
+
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    padding: 1.1rem 1.2rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .card-tag {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+    width: fit-content;
+  }
+
+  .card--entry .card-tag { color: var(--entry); background: var(--entry-bg); }
+  .card--grpc .card-tag { color: var(--grpc); background: var(--grpc-bg); }
+  .card--kafka .card-tag { color: var(--kafka); background: var(--kafka-bg); }
+
+  .card-title { font-size: 0.95rem; font-weight: 600; margin: 0; }
+
+  .card ul { margin: 0; padding-left: 1.1rem; font-size: 0.82rem; line-height: 1.6; color: var(--ink-soft); }
+  .card ul li::marker { color: var(--line); }
+
+  .card-link { font-size: 0.78rem; margin-top: auto; }
+  .card-link a { color: var(--ink); }
+
+  .callout {
+    border: 1px solid var(--shared);
+    background: var(--shared-bg);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin-bottom: 2rem;
+  }
+
+  .callout-mark { font-family: var(--mono); font-size: 0.95rem; color: var(--shared); font-weight: 600; flex: 0 0 auto; }
+  .callout p { margin: 0; font-size: 0.88rem; line-height: 1.55; color: var(--ink); }
+  .callout code { font-family: var(--mono); font-size: 0.92em; }
+
+  footer {
+    margin-top: 2.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 720px) {
+    .grid { grid-template-columns: 1fr; }
+    .spokes { flex-direction: column; align-items: center; }
+  }
+</style>
+
+<div class="page">
+  <p class="eyebrow">saga-full — system architecture</p>
+  <h1>Six independent services. No central saga orchestrator.</h1>
+  <p class="dek">
+    <code>api-gateway-service</code> is the only synchronous entry point a client ever talks to — one
+    gRPC hop to <code>user-service</code> for auth, one guarded HTTP route into the Kafka-driven saga
+    chain. Everything past that gateway reacts to events independently; nothing issues commands down
+    the chain. See <a href="saga-flow.html">Saga Flow</a> for how a single order actually moves through it.
+  </p>
+
+  <h2>Entry Points</h2>
+  <div class="diagram">
+    <div class="diagram-row">
+      <span class="node node--entry">Client</span>
+    </div>
+    <span class="diagram-arrow-v">↓ HTTPS</span>
+    <div class="diagram-row">
+      <span class="node node--entry">api-gateway-service (WebFlux, :8080)</span>
+    </div>
+    <div class="spokes">
+      <div class="spoke">
+        <span class="diagram-arrow-v">↓ gRPC</span>
+        <span class="node node--grpc">user-service (:9090)</span>
+        <span class="spoke-note">POST /auth/login → Login RPC</span>
+      </div>
+      <div class="spoke">
+        <span class="diagram-arrow-v">↓ HTTP, JwtPerimeterGuard</span>
+        <span class="node node--kafka">order-service (:8081)</span>
+        <span class="spoke-note">POST /orders → saga entry point</span>
+      </div>
+    </div>
+    <span class="diagram-arrow-v">↓ order-created-topic</span>
+    <div class="diagram-row">
+      <span class="node node--kafka">payment-service → restaurant-service</span>
+    </div>
+    <span class="diagram-arrow-v">↑↓ restaurant-approved / restaurant-rejected-topic, back to order-service + payment-service</span>
+  </div>
+
+  <h2>Modules</h2>
+  <div class="grid">
+    <div class="card card--entry">
+      <span class="card-tag">Entry point</span>
+      <p class="card-title">api-gateway-service</p>
+      <ul>
+        <li>Reactive WebFlux + Spring Cloud Gateway</li>
+        <li>JWT perimeter guard, local HMAC verification</li>
+        <li>Resilience4j circuit breaker on the downstream hop</li>
+      </ul>
+    </div>
+
+    <div class="card card--grpc">
+      <span class="card-tag">gRPC only</span>
+      <p class="card-title">user-service</p>
+      <ul>
+        <li>Login + JWT issuance</li>
+        <li>No HTTP surface at all</li>
+        <li>BCrypt via spring-security-crypto</li>
+      </ul>
+    </div>
+
+    <div class="card card--grpc">
+      <span class="card-tag">Contract</span>
+      <p class="card-title">user-contract</p>
+      <ul>
+        <li>One hand-written <code>user.proto</code></li>
+        <li>Everything else protoc-generated</li>
+      </ul>
+    </div>
+
+    <div class="card card--kafka">
+      <span class="card-tag">Saga entry</span>
+      <p class="card-title">order-service</p>
+      <ul>
+        <li>Owns the order's PENDING → SUCCESS/CANCELLED lifecycle</li>
+        <li>Transactional outbox → Kafka</li>
+      </ul>
+      <div class="card-link"><a href="services-reference.html">→ Services reference</a></div>
+    </div>
+
+    <div class="card card--kafka">
+      <span class="card-tag">Choreography</span>
+      <p class="card-title">payment-service</p>
+      <ul>
+        <li>Charges on order creation</li>
+        <li>Compensates (refunds) on rejection</li>
+      </ul>
+      <div class="card-link"><a href="services-reference.html">→ Services reference</a></div>
+    </div>
+
+    <div class="card card--kafka">
+      <span class="card-tag">Choreography</span>
+      <p class="card-title">restaurant-service</p>
+      <ul>
+        <li>Inventory allocation, ticket creation</li>
+        <li>The saga's approve/reject decision</li>
+      </ul>
+      <div class="card-link"><a href="services-reference.html">→ Services reference</a></div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="callout-mark">i</span>
+    <p>
+      Every Kafka-driven service follows the same transactional-outbox shape (domain write + outbox
+      row, one transaction, then a separate poller). What's actually different per service — ports,
+      topics, schemas — is on the <a href="services-reference.html">Services Reference</a> diagram.
+      Testing follows its own layered approach, independent of this module split — see the
+      <a href="testing-strategy.html">Testing Strategy</a> diagram.
+    </p>
+  </div>
+
+  <footer>saga-full · 6 modules · gRPC + Kafka · transactional outbox pattern · io.github.terrence721.saga</footer>
+</div>
