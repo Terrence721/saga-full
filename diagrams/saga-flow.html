@@ -1,0 +1,315 @@
+<title>Saga Flow — Happy Path and Compensation</title>
+<style>
+  :root {
+    --ink: #1b1f1e;
+    --ink-soft: #4b544f;
+    --paper: #e9ece9;
+    --surface: #ffffff;
+    --line: #b7bfba;
+    --outbox: #2b6e63;
+    --outbox-bg: #e1ede9;
+    --kafka: #8b5e3c;
+    --kafka-bg: #f1e6da;
+    --compensate: #a34b3f;
+    --compensate-bg: #f3e2df;
+    --shared: #3c4440;
+    --shared-bg: #eef1ef;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Consolas", "Liberation Mono", monospace;
+    --sans: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+
+  :root[data-theme="dark"] {
+    --ink: #eceeec;
+    --ink-soft: #a9b2ac;
+    --paper: #141716;
+    --surface: #1c2120;
+    --line: #3a423e;
+    --outbox: #5cb3a4;
+    --outbox-bg: #172925;
+    --kafka: #d99a63;
+    --kafka-bg: #2c2119;
+    --compensate: #e0958a;
+    --compensate-bg: #2e1e1b;
+    --shared: #cdd3d0;
+    --shared-bg: #222725;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eceeec;
+      --ink-soft: #a9b2ac;
+      --paper: #141716;
+      --surface: #1c2120;
+      --line: #3a423e;
+      --outbox: #5cb3a4;
+      --outbox-bg: #172925;
+      --kafka: #d99a63;
+      --kafka-bg: #2c2119;
+      --compensate: #e0958a;
+      --compensate-bg: #2e1e1b;
+      --shared: #cdd3d0;
+      --shared-bg: #222725;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    padding: 2.5rem 1.5rem 4rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { max-width: 1080px; margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 0.6rem;
+  }
+
+  h1 {
+    font-size: clamp(1.6rem, 2.6vw, 2.15rem);
+    line-height: 1.15;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  .dek {
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 72ch;
+    margin: 0 0 2.2rem;
+  }
+
+  .dek code { font-family: var(--mono); font-size: 0.9em; color: var(--ink); }
+
+  h2 {
+    font-size: 0.72rem;
+    font-family: var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 0.9rem;
+  }
+
+  .pipeline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .pipeline-label {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    width: 100%;
+    margin-bottom: 0.3rem;
+  }
+
+  .step {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.5rem 0.95rem;
+    white-space: nowrap;
+  }
+
+  .step--zoomed { border-width: 2px; font-weight: 600; }
+  .step--zoomed.z-outbox { border-color: var(--outbox); color: var(--outbox); }
+  .step--zoomed.z-kafka { border-color: var(--kafka); color: var(--kafka); }
+  .step--zoomed.z-compensate { border-color: var(--compensate); color: var(--compensate); }
+
+  .arrow { color: var(--ink-soft); font-size: 0.9rem; }
+
+  .happy-path { margin-bottom: 1.6rem; }
+  .rejection-path { margin-bottom: 2.2rem; }
+
+  .zoom {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface);
+    padding: 1.3rem 1.4rem 1.4rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .zoom-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.9rem; }
+
+  .zoom-tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .zoom--outbox .zoom-tag { color: var(--outbox); background: var(--outbox-bg); }
+  .zoom--kafka .zoom-tag { color: var(--kafka); background: var(--kafka-bg); }
+  .zoom--compensate .zoom-tag { color: var(--compensate); background: var(--compensate-bg); }
+
+  .zoom-title { font-size: 0.98rem; font-weight: 600; margin: 0; }
+
+  .zoom p, .zoom ul { font-size: 0.86rem; line-height: 1.6; color: var(--ink); margin: 0 0 0.7rem; }
+  .zoom ul { padding-left: 1.15rem; }
+  .zoom ul:last-child, .zoom p:last-child { margin-bottom: 0; }
+  .zoom code { font-family: var(--mono); font-size: 0.88em; background: var(--paper); border-radius: 3px; padding: 0.05rem 0.3rem; }
+
+  .topics {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  .topics th, .topics td {
+    text-align: left;
+    padding: 0.4rem 0.6rem 0.4rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .topics th {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .topics tr:last-child td { border-bottom: none; }
+  .topics code { font-family: var(--mono); font-size: 0.9em; }
+
+  .callout {
+    border: 1px solid var(--shared);
+    background: var(--shared-bg);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin: 1.4rem 0 2rem;
+  }
+
+  .callout-mark { font-family: var(--mono); font-size: 0.95rem; color: var(--shared); font-weight: 600; flex: 0 0 auto; }
+  .callout p { margin: 0; font-size: 0.88rem; line-height: 1.55; color: var(--ink); }
+  .callout code { font-family: var(--mono); font-size: 0.92em; }
+
+  footer {
+    margin-top: 2.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+</style>
+
+<div class="page">
+  <p class="eyebrow">saga-full — saga flow</p>
+  <h1>One order touches five services — happy path and compensation.</h1>
+  <p class="dek">
+    Choreography, not orchestration: every service downstream of <code>order-service</code> reacts to
+    Kafka events independently — nothing tells <code>payment-service</code> to compensate, it just
+    happens to be subscribed to the same rejection event <code>order-service</code> reacts to. Three
+    steps below — the outbox pattern, the topic map, and compensation itself — are zoomed into, since
+    each is a real design decision worth understanding on its own.
+  </p>
+
+  <h2>Happy Path</h2>
+  <div class="pipeline happy-path">
+    <span class="step">Login (gRPC)</span><span class="arrow">→</span>
+    <span class="step">POST /orders</span><span class="arrow">→</span>
+    <span class="step step--zoomed z-outbox">Create Order (PENDING)</span><span class="arrow">→</span>
+    <span class="step step--zoomed z-kafka">order-created-topic</span><span class="arrow">→</span>
+    <span class="step">Charge Payment (APPROVED)</span><span class="arrow">→</span>
+    <span class="step">payment-processed-topic</span><span class="arrow">→</span>
+    <span class="step">Allocate Inventory</span><span class="arrow">→</span>
+    <span class="step">restaurant-approved-topic</span><span class="arrow">→</span>
+    <span class="step">Confirm Order (SUCCESS)</span>
+  </div>
+
+  <h2>Rejection / Compensation</h2>
+  <div class="pipeline rejection-path">
+    <span class="step">Allocate Inventory fails</span><span class="arrow">→</span>
+    <span class="step step--zoomed z-kafka">restaurant-rejected-topic</span><span class="arrow">→</span>
+    <span class="step">Cancel Order (CANCELLED)</span>
+    <span class="arrow">+</span>
+    <span class="step step--zoomed z-compensate">Compensate Payment (REFUNDED)</span>
+  </div>
+
+  <h2>Zoomed In</h2>
+
+  <div class="zoom zoom--outbox">
+    <div class="zoom-head">
+      <span class="zoom-tag">Transactional Outbox</span>
+      <p class="zoom-title">Domain write and event-to-publish, one transaction</p>
+    </div>
+    <p>
+      Every service that emits a saga event writes an <code>OutboxRecord</code> in the <strong>same</strong>
+      database transaction as its domain change — e.g. <code>order-service</code> creates a
+      <code>PENDING</code> <code>Order</code> and its matching outbox row together, or neither happens.
+      A separate <code>@Scheduled</code> poller (every 500ms, <code>PESSIMISTIC_WRITE</code> +
+      <code>SKIP LOCKED</code> — safe across multiple instances of the same service) ships pending
+      records to Kafka and deletes each one only after a confirmed send.
+    </p>
+  </div>
+
+  <div class="zoom zoom--kafka">
+    <div class="zoom-head">
+      <span class="zoom-tag">Kafka Topics</span>
+      <p class="zoom-title">Four topics carry the whole saga</p>
+    </div>
+    <table class="topics">
+      <thead><tr><th>Topic</th><th>Publisher</th><th>Consumer(s)</th></tr></thead>
+      <tbody>
+        <tr><td><code>order-created-topic</code></td><td>order-service</td><td>payment-service</td></tr>
+        <tr><td><code>payment-processed-topic</code></td><td>payment-service</td><td>restaurant-service</td></tr>
+        <tr><td><code>restaurant-approved-topic</code></td><td>restaurant-service</td><td>order-service</td></tr>
+        <tr><td><code>restaurant-rejected-topic</code></td><td>restaurant-service</td><td>order-service, payment-service</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="zoom zoom--compensate">
+    <div class="zoom-head">
+      <span class="zoom-tag">Compensation</span>
+      <p class="zoom-title">Two consumers, one rejection event</p>
+    </div>
+    <p>
+      <code>restaurant-rejected-topic</code> has two independent consumer groups:
+      <code>order-rejected-group</code> (order-service, marks the order <code>CANCELLED</code>) and
+      <code>payment-compensation-group</code> (payment-service, <code>handleOrderCompensation</code> —
+      the actual compensating transaction, undoing a charge already committed because a later saga
+      step failed). Neither consumer knows the other exists; both just react to the same topic. This is
+      the concrete instance of the pattern this whole repo demonstrates.
+    </p>
+  </div>
+
+  <div class="callout">
+    <span class="callout-mark">i</span>
+    <p>
+      Every consumer that mutates state guards against Kafka's at-least-once delivery with a
+      cheap-check-before-load idempotency pattern (<code>existsByOrderIdAndStatus</code>, then
+      <code>findById</code>, then a re-check after load) — a duplicate message must not double-charge
+      or double-allocate inventory. Per-service detail (ports, schemas, key classes):
+      <a href="services-reference.html">Services Reference</a>.
+    </p>
+  </div>
+
+  <footer>saga-full · 4 Kafka topics · 5 saga-participating services · transactional outbox every hop</footer>
+</div>
