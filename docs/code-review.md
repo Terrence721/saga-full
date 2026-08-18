@@ -163,4 +163,14 @@ Considered flagging the class-level `@Setter` leaving `setCustomerId`/`setTotalA
 
 ---
 
+### [`OutboxRecord.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/domain/OutboxRecord.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #60](https://github.com/Terrence721/saga-full/issues/60))
+
+JPA entity backing the transactional outbox pattern. `aggregateId`'s `String` typing (vs. `Order.id`'s `UUID`) is deliberate — it's used directly as the Kafka message key `OutboxPublisherService` sends, not a typing inconsistency. `@Lob` on the JSON `payload` is a known PostgreSQL/Hibernate gotcha area (can map to the `oid` large-object type instead of `text` depending on dialect/version) — not flagging it as unverified, since Phase 26's real `bootRun` against live Postgres already exercised this exact mapping end-to-end. Matches `payment-service`/`restaurant-service`'s identical `OutboxRecord` shape.
+
+Checked every setter call site across the module: zero. `OutboxRecord` is built once via `.builder()` and only ever read or deleted — a stronger case of the same class-level-`@Setter` pattern already reviewed and accepted on `Order.java` (#52), not a new issue.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
