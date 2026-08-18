@@ -212,7 +212,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | - | - | - | - | - |
 | `src/main/java/.../OrderServiceApplication.java` | [`d7a6505`](https://github.com/Terrence721/saga-full/commit/d7a6505) | [#48](https://github.com/Terrence721/saga-full/issues/48) | [#49](https://github.com/Terrence721/saga-full/pull/49) | Done — no findings, merged |
 | `src/main/java/.../controller/OrderController.java` | [`aea11df`](https://github.com/Terrence721/saga-full/commit/aea11df) | [#50](https://github.com/Terrence721/saga-full/issues/50) | [#51](https://github.com/Terrence721/saga-full/pull/51) | Done — real security fix (perimeter-header trust boundary, CWE-284/639-class IDOR), merged |
-| `src/main/java/.../domain/Order.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | — | — | Pending |
+| `src/main/java/.../domain/Order.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | [#52](https://github.com/Terrence721/saga-full/issues/52) | — | In review |
 | `src/main/java/.../domain/OrderStatus.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | — | — | Pending |
 | `src/main/java/.../domain/OutboxRecord.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | — | — | Pending |
 | `src/main/java/.../dto/CreateOrderRequest.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | — | — | Pending |

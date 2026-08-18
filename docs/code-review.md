@@ -141,4 +141,14 @@ Discussed the implementation shape before fixing, since `order-service` has no e
 
 ---
 
+### [`Order.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/domain/Order.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #52](https://github.com/Terrence721/saga-full/issues/52))
+
+JPA entity: Hibernate-native `UUID` id generation, `total_amount` `BigDecimal` with `precision = 19, scale = 2` matching `payment-service`'s `Payment` entity exactly, no custom `equals`/`hashCode` per this repo's established safe default. Table name `customer_orders` (not `orders`) is a deliberate, already-tested choice, not an accident. The only production construction site is `OrderService.createOrder`, built entirely from an already-validated `CreateOrderRequest`.
+
+Considered flagging the class-level `@Setter` leaving `setCustomerId`/`setTotalAmount`/`setItemCode`/`setQuantity` as unused dead surface (only `setStatus` and a test-only `setId` are ever actually called) — but `User.java`'s already-closed review has the identical shape and passed clean. Raising it here would relitigate an already-accepted repo-wide Lombok convention, not flag something specific to this file.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
