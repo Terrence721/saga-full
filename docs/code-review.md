@@ -131,4 +131,14 @@ A 4-line Spring Data JPA repository, one derived query method (`findByEmail`). `
 
 ---
 
+### [`OrderController.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/controller/OrderController.java)
+
+**medium · Security** — Fixed via [PR #51](https://github.com/Terrence721/saga-full/pull/51) ([issue #50](https://github.com/Terrence721/saga-full/issues/50))
+
+`docs/architecture.md`'s own Phase 23 entry already recorded this as a tracked gap: the perimeter-header trust boundary "needs to be added once `api-gateway-service` exists to actually inject a verified identity." That gateway now exists (Phase 37-40) and its `JwtPerimeterGuardGatewayFilterFactory` injects a verified `X-Perimeter-User-Id` header on every request routed to `POST /orders` — but `OrderController` never read it. Since `CreateOrderRequest.customerId` is only `@NotNull`, any authenticated caller could set it to an arbitrary UUID and create an order attributed to a different customer; the gateway's identity verification was completely inert for this endpoint's actual authorization decision. Confirmed via a repo-wide grep for `X-Perimeter-User-Id`: only the gateway injects it, nothing downstream ever read it.
+
+Discussed the implementation shape before fixing, since `order-service` has no exception-handling infrastructure at all (no `@ControllerAdvice` anywhere in the module — not even for the existing `OrderNotFoundException`). Chose a `ResponseStatusException(FORBIDDEN)` thrown inline over the source's dedicated `ClientIdentityMismatchException` + handler — a whole new exception-handling layer for one check was more infrastructure than the module needs today. Rejects with `403` when the header is missing entirely or doesn't match `request.customerId()`, failing closed for any call that bypassed the gateway. Added 2 tests (missing header, mismatched header); the existing happy-path test now sends a matching header. Verified for real: ran the suite with the fix (4/4 passing), reverted the fix only, confirmed both new tests genuinely fail against the old code, restored it and confirmed green again.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._

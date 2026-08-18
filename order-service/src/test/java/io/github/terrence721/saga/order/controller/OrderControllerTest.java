@@ -49,6 +49,7 @@ class OrderControllerTest {
         when(orderService.createOrder(any(CreateOrderRequest.class))).thenReturn(savedOrder);
 
         mockMvc.perform(post("/orders")
+                        .header("X-Perimeter-User-Id", customerId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new CreateOrderRequest(customerId, new BigDecimal("25.50"), "BURGER_01", 2))))
@@ -65,5 +66,29 @@ class OrderControllerTest {
                         .content(objectMapper.writeValueAsString(
                                 new CreateOrderRequest(null, new BigDecimal("-10.00"), "", 0))))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createOrder_returnsForbidden_whenPerimeterHeaderMissing() throws Exception {
+        UUID customerId = UUID.randomUUID();
+
+        mockMvc.perform(post("/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new CreateOrderRequest(customerId, new BigDecimal("25.50"), "BURGER_01", 2))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void createOrder_returnsForbidden_whenPerimeterHeaderDoesNotMatchCustomerId() throws Exception {
+        UUID customerId = UUID.randomUUID();
+        UUID differentCallerId = UUID.randomUUID();
+
+        mockMvc.perform(post("/orders")
+                        .header("X-Perimeter-User-Id", differentCallerId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new CreateOrderRequest(customerId, new BigDecimal("25.50"), "BURGER_01", 2))))
+                .andExpect(status().isForbidden());
     }
 }
