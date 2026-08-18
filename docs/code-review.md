@@ -201,4 +201,16 @@ Not fixed here — the record itself correctly mirrors the real wire contract; t
 
 ---
 
+### [`RestaurantRejectedEvent.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/dto/RestaurantRejectedEvent.java)
+
+**n/a · Maintainability** — Reviewed, structural note recorded, not fixed here ([issue #68](https://github.com/Terrence721/saga-full/issues/68))
+
+Same unused-field note as `RestaurantApprovedEvent.java` (#66): `customerId` is deserialized but never read anywhere in `order-service`.
+
+**Real finding, traced end-to-end, not fixed here**: `reason` is a genuine CWE-117 log-injection sink. Client-controlled `itemCode` (length-capped by #62, but content unrestricted) survives unmodified through `Order`/`OrderCreatedEvent`, gets passed straight through `payment-service`'s `PaymentProcessedEvent`, then gets raw-concatenated into `restaurant-service`'s rejection reason (`"Invalid item code: " + event.itemCode()`) on `RestaurantRejectedEvent`, which `order-service`'s `OrderService.cancelOrder` logs unsanitized — the same vulnerability class already fixed three times in this module (Phase 41, #54, #58), reached through a different, cross-service path. `ITEM_NOT_FOUND` is trivially triggerable (almost any string won't match a real `InventoryItem`), so this is a live, reachable path, not a hypothetical.
+
+Not fixed here — the record correctly carries the wire contract, and the vulnerable `log.warn` call lives in `OrderService.cancelOrder`, a file not yet reached in this review's order. Matches the precedent set by the CWE-203 enumeration finding (flagged across #32/#34/#36, fixed only when `GrpcExecutor.java` reached its own turn): documented now, will be fixed when `OrderService.java` comes up.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
