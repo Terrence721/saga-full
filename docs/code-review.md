@@ -175,7 +175,7 @@ Checked every setter call site across the module: zero. `OutboxRecord` is built 
 
 ### [`CreateOrderRequest.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/dto/CreateOrderRequest.java)
 
-**low · Reliability** — Fixed via [PR #TBD](https://github.com/Terrence721/saga-full/pull/) ([issue #62](https://github.com/Terrence721/saga-full/issues/62))
+**low · Reliability** — Fixed via [PR #63](https://github.com/Terrence721/saga-full/pull/63) ([issue #62](https://github.com/Terrence721/saga-full/issues/62))
 
 `itemCode` had `@NotBlank` but no upper bound, while `Order.itemCode` maps to Hibernate's default `VARCHAR(255)`. `totalAmount` had `@NotNull`/`@Positive` but no `@Digits`, while `Order.totalAmount` is `NUMERIC(19,2)`. Grepped the whole repo for `@Size`/`@Digits`: zero matches — a genuine gap, not an inconsistency with an established convention. Since `order-service` has no exception-handling infrastructure, a request that passes this DTO's validation but violates the entity's actual column constraints currently reaches the database raw and surfaces as an unhandled `500`, not a clean `400` — a real system boundary (`POST /orders` is public behind gateway auth, otherwise unrestricted body content), not a scenario that can't happen.
 

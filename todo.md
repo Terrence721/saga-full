@@ -215,7 +215,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../domain/Order.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | [#52](https://github.com/Terrence721/saga-full/issues/52) | [#53](https://github.com/Terrence721/saga-full/pull/53) | Done — no findings, merged |
 | `src/main/java/.../domain/OrderStatus.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | [#56](https://github.com/Terrence721/saga-full/issues/56) | [#57](https://github.com/Terrence721/saga-full/pull/57) | Done — no findings, merged |
 | `src/main/java/.../domain/OutboxRecord.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | [#60](https://github.com/Terrence721/saga-full/issues/60) | [#61](https://github.com/Terrence721/saga-full/pull/61) | Done — no findings, merged |
-| `src/main/java/.../dto/CreateOrderRequest.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | [#62](https://github.com/Terrence721/saga-full/issues/62) | — | In review |
+| `src/main/java/.../dto/CreateOrderRequest.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | [#62](https://github.com/Terrence721/saga-full/issues/62) | [#63](https://github.com/Terrence721/saga-full/pull/63) | In review |
 | `src/main/java/.../dto/OrderCreatedEvent.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | — | — | Pending |
 | `src/main/java/.../dto/RestaurantApprovedEvent.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | — | — | Pending |
 | `src/main/java/.../dto/RestaurantRejectedEvent.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | — | — | Pending |
