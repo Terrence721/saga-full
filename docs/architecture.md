@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: August 12, 2026 (`restaurant-service` Kafka wiring complete — full saga chain wired end-to-end)
+Last updated: August 18, 2026 (all six backend modules complete through `api-gateway-service`, Phase 40; a CodeQL-flagged log-injection fix, Phase 41; the code-review audit is now underway — see [`docs/code-review.md`](code-review.md))
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
