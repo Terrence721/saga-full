@@ -217,7 +217,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../domain/OutboxRecord.java` | [`2d5dfd4`](https://github.com/Terrence721/saga-full/commit/2d5dfd4) | [#60](https://github.com/Terrence721/saga-full/issues/60) | [#61](https://github.com/Terrence721/saga-full/pull/61) | Done — no findings, merged |
 | `src/main/java/.../dto/CreateOrderRequest.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | [#62](https://github.com/Terrence721/saga-full/issues/62) | [#63](https://github.com/Terrence721/saga-full/pull/63) | Done — real fix (DTO bounds matching Order's schema), merged |
 | `src/main/java/.../dto/OrderCreatedEvent.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | [#64](https://github.com/Terrence721/saga-full/issues/64) | [#65](https://github.com/Terrence721/saga-full/pull/65) | Done — no findings, merged |
-| `src/main/java/.../dto/RestaurantApprovedEvent.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | — | — | Pending |
+| `src/main/java/.../dto/RestaurantApprovedEvent.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | [#66](https://github.com/Terrence721/saga-full/issues/66) | — | In review |
 | `src/main/java/.../dto/RestaurantRejectedEvent.java` | [`39ce123`](https://github.com/Terrence721/saga-full/commit/39ce123) | — | — | Pending |
 | `src/main/java/.../exception/OrderNotFoundException.java` | [`98c7470`](https://github.com/Terrence721/saga-full/commit/98c7470) | — | — | Pending |
 | `src/main/java/.../repository/OrderRepository.java` | [`c1ecda2`](https://github.com/Terrence721/saga-full/commit/c1ecda2) | — | — | Pending |
