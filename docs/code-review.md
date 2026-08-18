@@ -191,4 +191,14 @@ Outbox event record, no custom logic. Its only construction site is `OrderServic
 
 ---
 
+### [`RestaurantApprovedEvent.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/dto/RestaurantApprovedEvent.java)
+
+**n/a · Maintainability** — Reviewed, structural note recorded, not fixed here ([issue #66](https://github.com/Terrence721/saga-full/issues/66))
+
+Inbound event record. Grepped every `.customerId()`/`.ticketId()` call site: `OrderService.confirmOrder` only ever reads `event.orderId()` — both other fields are deserialized but never consumed. Confirmed they aren't placeholder data: `restaurant-service`'s producer populates them with a real persisted `RestaurantTicket.id` and the real saga `customerId`. A genuine asymmetry against `restaurant-service`'s own inbound event (`PaymentProcessedEvent`), which validates/uses every field defensively against malformed Kafka messages (Phase 35) — `order-service`'s consumers do zero validation on any field of either inbound event.
+
+Not fixed here — the record itself correctly mirrors the real wire contract; the fix belongs to `OrderService.java`'s own review, the file that actually owns `confirmOrder`.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
