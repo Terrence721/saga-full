@@ -153,4 +153,12 @@ Considered flagging the class-level `@Setter` leaving `setCustomerId`/`setTotalA
 
 ---
 
+### [`OrderStatus.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/domain/OrderStatus.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #56](https://github.com/Terrence721/saga-full/issues/56))
+
+3-value enum (`PENDING`, `CANCELLED`, `SUCCESS`). Grepped every reference across the whole repo: all 3 values are genuinely used in `order-service`'s own saga transitions, no dead values. Cross-checked against `payment-service`'s local copy — matches exactly, consistent with Phase 30's documented correction. `Order.java`'s `@Enumerated(EnumType.STRING)` (reviewed in #52) means storage is name-based, so reordering is safe.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
