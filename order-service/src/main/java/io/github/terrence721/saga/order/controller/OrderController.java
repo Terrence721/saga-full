@@ -39,10 +39,11 @@ public class OrderController {
             // perimeterUserId is client-controlled (a raw request header) whenever
             // this check actually fires - a caller that bypassed the gateway could
             // set it to anything, so it needs the same CR/LF sanitizing as itemCode
-            // below before it's safe to log.
-            String sanitizedPerimeterUserId = perimeterUserId == null
-                    ? "null"
-                    : perimeterUserId.replaceAll("[\r\n]", "_");
+            // below before it's safe to log. String.valueOf(null) returns "null",
+            // so replaceAll runs unconditionally on every path - CodeQL's log-injection
+            // sanitizer detection didn't recognize a ternary that only called
+            // replaceAll on one branch as a barrier (still flagged post-PR #55).
+            String sanitizedPerimeterUserId = String.valueOf(perimeterUserId).replaceAll("[\r\n]", "_");
             log.warn("Rejected create order request: X-Perimeter-User-Id ({}) does not match customerId ({})",
                     sanitizedPerimeterUserId, request.customerId());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
