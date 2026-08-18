@@ -141,6 +141,8 @@ Discussed the implementation shape before fixing, since `order-service` has no e
 
 **Follow-up, fixed via [PR #55](https://github.com/Terrence721/saga-full/pull/55) ([issue #54](https://github.com/Terrence721/saga-full/issues/54))**: CodeQL flagged the fix above's own `log.warn` call — `perimeterUserId` is a raw, client-controlled header value whenever the check actually fires, and it was being logged unsanitized, the same CWE-117 class Phase 41 already fixed for `itemCode` in this same file. Sanitized with the identical `.replaceAll("[\r\n]", "_")` pattern, handling the `null` case since the header is optional. No dedicated test added, matching Phase 41's own precedent of relying on the full suite staying green rather than a log-content assertion.
 
+**Second follow-up, fixed via [PR #59](https://github.com/Terrence721/saga-full/pull/59) ([issue #58](https://github.com/Terrence721/saga-full/issues/58))**: PR #55's ternary-based sanitization (`perimeterUserId == null ? "null" : perimeterUserId.replaceAll(...)`) resolved that CodeQL alert but a new one opened on the next scan — its sanitizer detection doesn't treat a `.replaceAll()` call nested inside only one ternary branch as a barrier for the whole expression. Restructured to `String.valueOf(perimeterUserId).replaceAll("[\r\n]", "_")`, where the sanitizing call runs unconditionally on every path (`String.valueOf(null)` returns the literal `"null"`), rather than being conditionally applied.
+
 ---
 
 ### [`Order.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/domain/Order.java)
