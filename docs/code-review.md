@@ -233,4 +233,12 @@ Not fixed here — the exception type itself is blameless; the fix belongs to `O
 
 ---
 
+### [`OutboxRepository.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/repository/OutboxRepository.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #74](https://github.com/Terrence721/saga-full/issues/74))
+
+Spring Data JPA interface, one custom query (`findByOrderByCreatedTimeAsc`, `PESSIMISTIC_WRITE` + `lock.timeout=-2` → `SKIP LOCKED`). Grepped every call site: `save`, `findByOrderByCreatedTimeAsc`, `delete` — all genuinely used. `findByOrderByCreatedTimeAsc` is tested against real embedded H2 with a real assertion (12 records inserted, confirms exactly the 10 oldest come back in correct order), not a count check. The `SKIP LOCKED` semantic itself isn't independently proven under real concurrent transactions — already a documented, deliberate scope decision from Phase 19, not a new gap.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
