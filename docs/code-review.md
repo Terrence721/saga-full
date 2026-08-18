@@ -183,4 +183,12 @@ Added `@Size(max = 255)` to `itemCode` and `@Digits(integer = 17, fraction = 2)`
 
 ---
 
+### [`OrderCreatedEvent.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/dto/OrderCreatedEvent.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #64](https://github.com/Terrence721/saga-full/issues/64))
+
+Outbox event record, no custom logic. Its only construction site is `OrderService.buildOutboxRecord`, called exactly once from `createOrder`, built directly off an already-persisted `Order` entity whose fields already passed `CreateOrderRequest`'s validation — never bound from untrusted input directly, so no Bean Validation is needed here. Field-for-field identical to `payment-service`'s mirrored copy (confirmed in #56). Since `buildOutboxRecord` is only ever reached from `createOrder`, `status` is always `PENDING` on every real instance, consistent with `payment-service`'s already-reviewed assumption (Phase 30).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
