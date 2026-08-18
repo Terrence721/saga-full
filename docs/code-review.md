@@ -133,7 +133,7 @@ A 4-line Spring Data JPA repository, one derived query method (`findByEmail`). `
 
 ### [`OrderController.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/controller/OrderController.java)
 
-**medium · Security** — Fixed via [PR #TBD](https://github.com/Terrence721/saga-full/pull/) ([issue #50](https://github.com/Terrence721/saga-full/issues/50))
+**medium · Security** — Fixed via [PR #51](https://github.com/Terrence721/saga-full/pull/51) ([issue #50](https://github.com/Terrence721/saga-full/issues/50))
 
 `docs/architecture.md`'s own Phase 23 entry already recorded this as a tracked gap: the perimeter-header trust boundary "needs to be added once `api-gateway-service` exists to actually inject a verified identity." That gateway now exists (Phase 37-40) and its `JwtPerimeterGuardGatewayFilterFactory` injects a verified `X-Perimeter-User-Id` header on every request routed to `POST /orders` — but `OrderController` never read it. Since `CreateOrderRequest.customerId` is only `@NotNull`, any authenticated caller could set it to an arbitrary UUID and create an order attributed to a different customer; the gateway's identity verification was completely inert for this endpoint's actual authorization decision. Confirmed via a repo-wide grep for `X-Perimeter-User-Id`: only the gateway injects it, nothing downstream ever read it.
 
