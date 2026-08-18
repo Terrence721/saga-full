@@ -69,6 +69,28 @@ class OrderControllerTest {
     }
 
     @Test
+    void createOrder_returnsBadRequest_whenItemCodeExceedsMaxLength() throws Exception {
+        String tooLongItemCode = "A".repeat(256);
+
+        mockMvc.perform(post("/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new CreateOrderRequest(UUID.randomUUID(), new BigDecimal("25.50"), tooLongItemCode, 2))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createOrder_returnsBadRequest_whenTotalAmountHasTooManyIntegerDigits() throws Exception {
+        BigDecimal tooLarge = new BigDecimal("123456789012345678.00");
+
+        mockMvc.perform(post("/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new CreateOrderRequest(UUID.randomUUID(), tooLarge, "BURGER_01", 2))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void createOrder_returnsForbidden_whenPerimeterHeaderMissing() throws Exception {
         UUID customerId = UUID.randomUUID();
 
