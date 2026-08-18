@@ -213,4 +213,16 @@ Not fixed here — the record correctly carries the wire contract, and the vulne
 
 ---
 
+### [`OrderNotFoundException.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/exception/OrderNotFoundException.java)
+
+**n/a · Maintainability** — Reviewed, structural note recorded, not fixed here ([issue #70](https://github.com/Terrence721/saga-full/issues/70))
+
+Trivial, itself-correct `RuntimeException` subclass. Thrown exactly once (`OrderService.findOrder`), reachable only from `confirmOrder`/`cancelOrder` — never the HTTP path. Its message interpolates `orderId`, but that field is `UUID`-typed on both inbound events, so Jackson rejects malformed values before this code runs — no log-injection surface here, unlike `reason`/`itemCode` (#68).
+
+**Real finding, not fixed here**: this exception is caught nowhere — no `@ControllerAdvice`, no try/catch in `OrderConsumerConfig`, and no Kafka listener error-handling configuration anywhere in the module (`application.yaml`'s `kafka:` section has none). Since it's only reachable from `@KafkaListener` methods, an uncaught throw propagates out of the listener and Spring Kafka's default error handling retries indefinitely with no backoff limit — a poison-pill scenario triggered by any restaurant-service event referencing an order ID this service doesn't recognize, a genuinely reachable case given independent producers and at-least-once Kafka delivery.
+
+Not fixed here — the exception type itself is blameless; the fix belongs to `OrderConsumerConfig.java`'s own review, the file that owns the listener wiring.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
