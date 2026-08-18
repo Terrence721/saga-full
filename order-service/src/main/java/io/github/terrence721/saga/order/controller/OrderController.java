@@ -36,8 +36,15 @@ public class OrderController {
         // create orders in their name. A missing header (e.g. a direct call that
         // bypassed the gateway) is treated the same as a mismatch: fail closed.
         if (perimeterUserId == null || !perimeterUserId.equals(request.customerId().toString())) {
+            // perimeterUserId is client-controlled (a raw request header) whenever
+            // this check actually fires - a caller that bypassed the gateway could
+            // set it to anything, so it needs the same CR/LF sanitizing as itemCode
+            // below before it's safe to log.
+            String sanitizedPerimeterUserId = perimeterUserId == null
+                    ? "null"
+                    : perimeterUserId.replaceAll("[\r\n]", "_");
             log.warn("Rejected create order request: X-Perimeter-User-Id ({}) does not match customerId ({})",
-                    perimeterUserId, request.customerId());
+                    sanitizedPerimeterUserId, request.customerId());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
         }
 
