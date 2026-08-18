@@ -123,4 +123,12 @@ A 4-line Spring Data JPA repository, one derived query method (`findByEmail`). `
 
 **`user-service` module review complete — 10/10 files reviewed, 5 real findings fixed, 2 structural notes recorded.** A test-coverage gap in `SecurityConfig.java`, a login-enumeration security fix (CWE-203) in `GrpcExecutor.java`, its timing-side-channel sibling (CWE-208) in `UserGrpcServiceImpl.java`, a minor efficiency fix in `JwtTokenProvider.java`, and a test-coverage gap in `UserRepository.java`. Both structural notes (`ValidateToken`'s unused RPC, case-sensitive email lookups) are blocked on a registration flow that doesn't exist in this repo yet. Full multi-module suite: 95/95 tests passing. See [todo.md](../todo.md) for the full per-file table and the next module in the audit.
 
+### [`OrderServiceApplication.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/OrderServiceApplication.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #48](https://github.com/Terrence721/saga-full/issues/48))
+
+15 lines: package declaration, two imports, a single `@SpringBootApplication`-annotated class with a `main()` calling `SpringApplication.run()`. The one difference from the other modules' entry points, `@EnableScheduling`, is genuinely needed — confirmed by grepping for `@Scheduled`, which turned up `OutboxPublisherService`'s real polling method in this same module. Identical in shape otherwise to every other module's entry-point class already reviewed.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
