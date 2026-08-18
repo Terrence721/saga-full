@@ -225,4 +225,12 @@ Not fixed here — the exception type itself is blameless; the fix belongs to `O
 
 ---
 
+### [`OrderRepository.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/repository/OrderRepository.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #72](https://github.com/Terrence721/saga-full/issues/72))
+
+2-line Spring Data JPA interface, one custom derived query (`existsByIdAndStatus`). Grepped every call site: `save`/`findById` (inherited) and `existsByIdAndStatus` (the idempotency guard) — all genuinely used, nothing unused or missing. `existsByIdAndStatus` is tested against real embedded H2 across all 3 branches, not assumed. Matches `UserRepository`'s already-reviewed precedent closely in shape and test rigor.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
