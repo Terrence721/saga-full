@@ -447,7 +447,7 @@
   </div>
   <div class="stamp" aria-hidden="true">
     <div class="stamp-inner">
-      <span class="n">11</span>
+      <span class="n">15</span>
       <span class="l">REAL BUGS<br />FOUND &amp; FIXED</span>
     </div>
   </div>
@@ -469,7 +469,7 @@
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">11</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">15</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -756,6 +756,83 @@
           </div>
           <div class="meta">
             <span class="tag">low · test coverage</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">12</div>
+        <div>
+          <div class="file">order-service — Kafka poison-pill risk, no error handler configured</div>
+          <div class="desc">
+            Neither Kafka listener caught anything — an event referencing an
+            unrecognized order ID or a malformed payload fell through to
+            Spring Boot's autoconfigured default with nothing in the code
+            announcing that. Verifying that default for real turned up a
+            second bug: an earlier write-up had already mischaracterized it
+            as retrying indefinitely, when the actual behavior is 10 rapid
+            retries then a silent drop. Fixed with an explicit, bounded
+            error handler — and the inaccurate claim corrected in the same
+            PR.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · reliability</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">13</div>
+        <div>
+          <div class="file">order-service — a second log injection, three services away from the first</div>
+          <div class="desc">
+            The same client-controlled <code>itemCode</code> field CodeQL
+            had already flagged once (item 06) turned out to have a second,
+            cross-service path to an unsanitized log line:
+            <code>order-service</code> → <code>payment-service</code> →
+            <code>restaurant-service</code>'s raw string-concatenated
+            rejection reason → back into <code>order-service</code>'s own
+            <code>cancelOrder</code>. Traced end-to-end before being fixed
+            with the same sanitizing pattern already established for the
+            first instance.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · security</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">14</div>
+        <div>
+          <div class="file">order-service — customerId and ticketId deserialized, never read</div>
+          <div class="desc">
+            Two inbound Kafka events carried <code>customerId</code> (and
+            one carried <code>ticketId</code>) all the way into
+            <code>confirmOrder</code>/<code>cancelOrder</code> without
+            either method ever checking them — a real asymmetry against
+            this repo's own established pattern of validating every field
+            on an inbound event. Fixed by cross-checking
+            <code>customerId</code> against the order already on record,
+            catching a corrupted or mismatched message on the shared topic
+            instead of trusting it blindly.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · reliability</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">15</div>
+        <div>
+          <div class="file">order-service — outbox publisher blocked on Kafka with no timeout</div>
+          <div class="desc">
+            The transactional outbox's Kafka send blocked on an unbounded
+            <code>Future.get()</code>, implicitly relying on Kafka's own
+            undocumented 120-second client default while holding a database
+            row lock open the whole time — a degraded broker could have
+            held that lock for up to 20 minutes across a full batch. Fixed
+            with an explicit, bounded timeout.
+          </div>
+          <div class="meta">
+            <span class="tag">low · reliability</span>
           </div>
         </div>
       </div>
