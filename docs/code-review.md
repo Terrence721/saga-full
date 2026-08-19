@@ -309,4 +309,12 @@ Byte-for-byte identical to `order-service`'s `OutboxRecord.java` (already review
 
 ---
 
+### [`Payment.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/domain/Payment.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #86](https://github.com/Terrence721/saga-full/issues/86))
+
+JPA entity: Hibernate-native `UUID` id generation, `amount` a `BigDecimal(19,2)` and `status` an `EnumType.STRING` enum — matching `order-service`'s `Order.java` conventions (already reviewed clean, #52/#53). No custom `equals`/`hashCode` — the established safe default for entities in this repo. `orderId` carries a genuine `unique = true, nullable = false` constraint — a real DB-level backstop for the "one payment per order" invariant, matching `PaymentService.processPaymentSaga`'s own `existsByOrderId` idempotency check. Grepped every `Payment.builder`/`.setStatus`/`paymentRepository.` call site: every field maps to a real caller, nothing orphaned or unused.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
