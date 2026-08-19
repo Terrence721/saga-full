@@ -293,4 +293,12 @@ Added 1 test: a `CompletableFuture` that never completes, against a short-timeou
 
 ---
 
+### [`PaymentServiceApplication.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/PaymentServiceApplication.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #82](https://github.com/Terrence721/saga-full/issues/82))
+
+12 lines: package declaration, two imports, a single `@SpringBootApplication`-annotated class with a `main()` calling `SpringApplication.run()`. Grepping for `@Scheduled` confirms `@EnableScheduling` is genuinely needed — it turned up `OutboxPublisherService`'s real polling method in this same module. Identical in shape to `OrderServiceApplication.java`/`UserServiceApplication.java`, both already reviewed with no findings.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
