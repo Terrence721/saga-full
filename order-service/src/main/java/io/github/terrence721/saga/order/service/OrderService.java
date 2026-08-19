@@ -57,12 +57,16 @@ public class OrderService {
             log.debug("Order {} already SUCCESS; skipping duplicate approval event", event.orderId());
             return;
         }
+        if (event.ticketId() == null) {
+            throw new IllegalArgumentException("ticketId is required for order " + event.orderId());
+        }
 
         Order order = findOrder(event.orderId());
         if (order.getStatus() == OrderStatus.SUCCESS) {
             log.debug("Order {} already SUCCESS after load; skipping", event.orderId());
             return;
         }
+        validateCustomerMatches(order, event.customerId());
 
         order.setStatus(OrderStatus.SUCCESS);
         orderRepository.save(order);
@@ -81,15 +85,32 @@ public class OrderService {
             log.debug("Order {} already CANCELLED after load; skipping", event.orderId());
             return;
         }
+        validateCustomerMatches(order, event.customerId());
 
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
-        log.warn("Order {} cancelled: {}", event.orderId(), event.reason());
+        // reason carries order-service's own itemCode unmodified through payment-service and
+        // restaurant-service (both raw string-concatenate it into this field) - client-controlled,
+        // content-unrestricted, and needs the same CR/LF sanitizing as OrderController's itemCode
+        // logging (see that class) before it's safe to log.
+        String sanitizedReason = String.valueOf(event.reason()).replaceAll("[\r\n]", "_");
+        log.warn("Order {} cancelled: {}", event.orderId(), sanitizedReason);
     }
 
     private Order findOrder(UUID orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
+    }
+
+    // customerId crosses the wire on both inbound events but this instance already knows the
+    // real value from the order it just loaded - cross-checking it here catches a corrupted or
+    // mismatched message on the shared Kafka topic, the same failure mode restaurant-service's
+    // own inbound-event validation (PaymentProcessedEvent) already guards against.
+    private void validateCustomerMatches(Order order, UUID eventCustomerId) {
+        if (!order.getCustomerId().equals(eventCustomerId)) {
+            throw new IllegalArgumentException("customerId mismatch for order " + order.getId()
+                    + ": order has " + order.getCustomerId() + ", event has " + eventCustomerId);
+        }
     }
 
     private OutboxRecord buildOutboxRecord(Order order) {
