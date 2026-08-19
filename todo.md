@@ -214,7 +214,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | - | - | - | - | - |
 | `src/main/java/.../PaymentServiceApplication.java` | [`3f9e7c9`](https://github.com/Terrence721/saga-full/commit/3f9e7c9) | [#82](https://github.com/Terrence721/saga-full/issues/82) | [#83](https://github.com/Terrence721/saga-full/pull/83) | Done — no findings, merged |
 | `src/main/java/.../domain/OutboxRecord.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | [#84](https://github.com/Terrence721/saga-full/issues/84) | [#85](https://github.com/Terrence721/saga-full/pull/85) | Done — no findings, merged |
-| `src/main/java/.../domain/Payment.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | [#86](https://github.com/Terrence721/saga-full/issues/86) | [#87](https://github.com/Terrence721/saga-full/pull/87) | No findings, in review |
+| `src/main/java/.../domain/Payment.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | [#86](https://github.com/Terrence721/saga-full/issues/86) | [#87](https://github.com/Terrence721/saga-full/pull/87) | Done — no findings, merged |
 | `src/main/java/.../domain/PaymentStatus.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | — | — | Pending |
 | `src/main/java/.../dto/OrderCreatedEvent.java` | [`86f5847`](https://github.com/Terrence721/saga-full/commit/86f5847) | — | — | Pending |
 | `src/main/java/.../dto/OrderStatus.java` | [`86f5847`](https://github.com/Terrence721/saga-full/commit/86f5847) | — | — | Pending |
