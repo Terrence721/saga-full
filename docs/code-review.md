@@ -301,4 +301,12 @@ Added 1 test: a `CompletableFuture` that never completes, against a short-timeou
 
 ---
 
+### [`OutboxRecord.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/domain/OutboxRecord.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #84](https://github.com/Terrence721/saga-full/issues/84))
+
+Byte-for-byte identical to `order-service`'s `OutboxRecord.java` (already reviewed clean, #60/#61) — same fields, same `@Lob` on `payload`, same nullability constraints. A direct structural repeat, not a new design.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
