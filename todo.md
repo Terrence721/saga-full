@@ -212,7 +212,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 
 | File | Last commit SHA | Sub-issue | PR | Status |
 | - | - | - | - | - |
-| `src/main/java/.../PaymentServiceApplication.java` | [`3f9e7c9`](https://github.com/Terrence721/saga-full/commit/3f9e7c9) | — | — | Pending |
+| `src/main/java/.../PaymentServiceApplication.java` | [`3f9e7c9`](https://github.com/Terrence721/saga-full/commit/3f9e7c9) | [#82](https://github.com/Terrence721/saga-full/issues/82) | [#83](https://github.com/Terrence721/saga-full/pull/83) | No findings, in review |
 | `src/main/java/.../domain/OutboxRecord.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | — | — | Pending |
 | `src/main/java/.../domain/Payment.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | — | — | Pending |
 | `src/main/java/.../domain/PaymentStatus.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | — | — | Pending |
