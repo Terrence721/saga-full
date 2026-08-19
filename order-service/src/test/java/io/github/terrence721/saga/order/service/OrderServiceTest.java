@@ -121,6 +121,34 @@ class OrderServiceTest {
     }
 
     @Test
+    void confirmOrder_throwsIllegalArgumentException_whenTicketIdMissing() {
+        UUID orderId = UUID.randomUUID();
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
+
+        assertThatThrownBy(() -> orderService.confirmOrder(
+                new RestaurantApprovedEvent(orderId, UUID.randomUUID(), null)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(orderId.toString());
+        verify(orderRepository, never()).findById(any());
+    }
+
+    @Test
+    void confirmOrder_throwsIllegalArgumentException_whenCustomerIdDoesNotMatchOrder() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+        UUID mismatchedCustomerId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> orderService.confirmOrder(
+                new RestaurantApprovedEvent(orderId, mismatchedCustomerId, UUID.randomUUID())))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(existing.getCustomerId().toString())
+                .hasMessageContaining(mismatchedCustomerId.toString());
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
     void cancelOrder_shortCircuits_whenAlreadyCancelled() {
         UUID orderId = UUID.randomUUID();
         when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(true);
@@ -153,5 +181,40 @@ class OrderServiceTest {
         assertThatThrownBy(() -> orderService.cancelOrder(
                 new RestaurantRejectedEvent(orderId, UUID.randomUUID(), "Out of stock")))
                 .isInstanceOf(OrderNotFoundException.class);
+    }
+
+    @Test
+    void cancelOrder_throwsIllegalArgumentException_whenCustomerIdDoesNotMatchOrder() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+        UUID mismatchedCustomerId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> orderService.cancelOrder(
+                new RestaurantRejectedEvent(orderId, mismatchedCustomerId, "Out of stock")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(existing.getCustomerId().toString())
+                .hasMessageContaining(mismatchedCustomerId.toString());
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void cancelOrder_stillCancelsOrder_whenReasonContainsCrLf() {
+        // CR/LF sanitization itself is verified statically by CodeQL's java/log-injection
+        // query (the same gate that caught this vulnerability class three times already in
+        // this module - #54, #58) rather than by inspecting log output here, matching this
+        // repo's established convention. This test instead proves the sanitizing
+        // replaceAll call doesn't disturb normal processing of a reason containing CR/LF.
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+        String forgedReason = "Out of stock\r\nFAKE LOG LINE: order approved";
+
+        orderService.cancelOrder(new RestaurantRejectedEvent(orderId, existing.getCustomerId(), forgedReason));
+
+        assertThat(existing.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        verify(orderRepository).save(existing);
     }
 }

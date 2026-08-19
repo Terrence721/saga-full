@@ -84,6 +84,19 @@ class OrderConsumerConfigTest {
     }
 
     @Test
+    void kafkaErrorHandler_recoversImmediatelyForIllegalArgumentException() {
+        DefaultErrorHandler handler = consumerConfig.kafkaErrorHandler();
+        ConsumerRecord<Object, Object> record = new ConsumerRecord<>("restaurant-approved-topic", 0, 9L, "key", "payload");
+        Consumer<?, ?> consumer = mock(Consumer.class);
+        MessageListenerContainer container = mock(MessageListenerContainer.class);
+
+        boolean handled = handler.handleOne(
+                new IllegalArgumentException("customerId mismatch for order x"), record, consumer, container);
+
+        assertThat(handled).isTrue();
+    }
+
+    @Test
     void kafkaErrorHandler_retriesGenericExceptionsBeforeGivingUp() {
         DefaultErrorHandler handler = consumerConfig.kafkaErrorHandler();
         ConsumerRecord<Object, Object> record = new ConsumerRecord<>("restaurant-approved-topic", 0, 1L, "key", "payload");

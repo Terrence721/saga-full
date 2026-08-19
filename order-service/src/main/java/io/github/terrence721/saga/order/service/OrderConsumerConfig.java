@@ -41,9 +41,11 @@ public class OrderConsumerConfig {
      * Without this bean, Spring Boot's autoconfigured default (10 retries, 0ms backoff, then
      * log-and-skip) silently takes over for anything either listener above throws - a
      * malformed payload or an event referencing an order this instance doesn't recognize.
-     * Bounds the retries, skips them entirely for {@link OrderNotFoundException} (retrying
-     * can't make a missing order appear), and replaces the default's recovery log with one
-     * that actually names the topic/partition/offset.
+     * Bounds the retries, skips them entirely for exceptions retrying can't fix - a missing
+     * order ({@link OrderNotFoundException}) or event data that doesn't match what this
+     * instance already has on record ({@code IllegalArgumentException}, raised by
+     * {@link OrderService}'s own validation) - and replaces the default's recovery log with
+     * one that actually names the topic/partition/offset.
      */
     @Bean
     public DefaultErrorHandler kafkaErrorHandler() {
@@ -52,7 +54,7 @@ public class OrderConsumerConfig {
                         "Giving up on Kafka record: topic={} partition={} offset={} - {}",
                         record.topic(), record.partition(), record.offset(), exception.getMessage()),
                 new FixedBackOff(1_000L, 2L));
-        handler.addNotRetryableExceptions(OrderNotFoundException.class);
+        handler.addNotRetryableExceptions(OrderNotFoundException.class, IllegalArgumentException.class);
         return handler;
     }
 }
