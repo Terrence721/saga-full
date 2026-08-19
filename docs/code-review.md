@@ -275,4 +275,22 @@ Added 6 tests: `confirmOrder` throws on missing `ticketId` and on `customerId` m
 
 ---
 
+### [`OutboxPublisherService.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/service/OutboxPublisherService.java)
+
+**low · Reliability** — Fixed via [PR #81](https://github.com/Terrence721/saga-full/pull/81) ([issue #80](https://github.com/Terrence721/saga-full/issues/80))
+
+Last file in this module. `@Scheduled`/`@Transactional` poller: pulls a batch via the already-reviewed `SKIP LOCKED` query (#74), sends each record's raw payload to Kafka, deletes on confirmed send, leaves the record for retry next poll on failure. Cross-checked against the two sibling implementations `todo.md`'s Phase 31/36 log describes (`payment-service`/`restaurant-service` share this identical shape) — the same gap probably exists there too, out of scope until their own reviews reach this file. No log-injection surface (`record.getEventType()` is a hardcoded literal, not client input) and no ordering bug (already proven correct in #74).
+
+**Real finding**: `kafkaTemplate.send(message).get()` blocked with no explicit timeout, bounded solely by Kafka's own client default (`delivery.timeout.ms`, 120s), undocumented anywhere in this code. This method is `@Transactional` (required to hold the outbox row's `PESSIMISTIC_WRITE` lock across the batch), so an unbounded wait meant a degraded broker could hold a DB connection and row lock open for up to the full 120s per record — worst case ~20 minutes for a full batch of 10 stuck records.
+
+**Fix**: added an explicit `get(sendTimeoutMs, TimeUnit.MILLISECONDS)` bound, defaulting to 10s (`app.outbox.send-timeout-ms`, a new `application.yaml` property matching the existing `app.outbox.*` naming convention), with a new `TimeoutException` catch mirroring the existing `ExecutionException` handling. Trades a small increase in duplicate-publish likelihood on timeout (the send may still succeed server-side after the client gives up waiting) for a much shorter, bounded worst-case hold on the DB connection/lock — an acceptable tradeoff since this system already runs at-least-once, guarded by consumer-side idempotency checks that already tolerate duplicate delivery. Two rejected alternatives: leaving it as an accepted structural note (matching the `SKIP LOCKED` untested-concurrency precedent) — this repo's standard now fixes what it finds instead of documenting around it; and redesigning to avoid blocking inside the transaction entirely — a much bigger architectural change spanning all 3 sibling implementations, out of scope for a single-file review. Discussed with the repo owner before implementing.
+
+Added 1 test: a `CompletableFuture` that never completes, against a short-timeout (50ms) instance of the service, proves the explicit bound fires rather than blocking indefinitely. Existing tests use already-resolved futures, so they're unaffected by the change. Verified for real: full `order-service` suite green with the fix; reverted the production fix alone, confirmed the change fails to compile against the old constructor, restored it and confirmed green again.
+
+---
+
+**`order-service` module review complete — 15/15 files reviewed, 5 issues fixed across 5 files, 0 findings left open.** An IDOR fix and 2 CodeQL log-injection follow-ups in `OrderController.java` (#50/#54/#58), a DTO-validation fix in `CreateOrderRequest.java` (#62), a Kafka poison-pill gap fixed in `OrderConsumerConfig.java` (#76, deferred from #70), a CWE-117 log-injection fix plus `customerId`/`ticketId` validation in `OrderService.java` (#78, two findings deferred from #66/#68, both fixed), and an unbounded-Kafka-timeout fix in `OutboxPublisherService.java` (#80). Every deferred finding raised during this module's review landed as a real fix by the time the module closed — including a correction to #70's own write-up once #76's review verified Spring Kafka's actual default retry behavior differed from what was first documented. Full multi-module suite: 107/107 tests passing. See [todo.md](../todo.md) for the full per-file table and the next module in the audit.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
