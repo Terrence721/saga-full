@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 13, 2026 (`user-service` code review complete — 10/10 files, 5 real findings fixed; `order-service` up next)
+**Last Updated:** August 19, 2026 (`order-service` code review complete — 15/15 files, 5 issues fixed, 0 findings left open; `payment-service` 3/14 files in, no findings yet)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
