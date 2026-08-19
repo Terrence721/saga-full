@@ -243,7 +243,7 @@ Spring Data JPA interface, one custom query (`findByOrderByCreatedTimeAsc`, `PES
 
 ### [`OrderConsumerConfig.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/service/OrderConsumerConfig.java)
 
-**Medium · Reliability** — Reviewed, real finding fixed ([issue #76](https://github.com/Terrence721/saga-full/issues/76))
+**medium · Reliability** — Fixed via [PR #77](https://github.com/Terrence721/saga-full/pull/77) ([issue #76](https://github.com/Terrence721/saga-full/issues/76))
 
 Two `@KafkaListener` methods (`onRestaurantApproved`/`onRestaurantRejected`), each deserializing the raw JSON payload and delegating to `OrderService.confirmOrder`/`cancelOrder`. Grepped for callers: the Kafka container invokes this class; nothing else in the repo does.
 
@@ -252,6 +252,26 @@ Two `@KafkaListener` methods (`onRestaurantApproved`/`onRestaurantRejected`), ea
 **Fix**: added an explicit `DefaultErrorHandler` `@Bean` — Spring Boot auto-applies any single `CommonErrorHandler` bean to the autoconfigured listener container factory, no other wiring needed. A bounded `FixedBackOff(1000L, 2L)` (3 attempts total, 1s apart) replaces the accidental 10x/0ms default; `addNotRetryableExceptions` marks `OrderNotFoundException` non-retryable since retrying can't make a missing order appear; an explicit `ERROR`-level recoverer logs topic/partition/offset/exception on final failure, trading an invisible default for a loud, intentional one. No DLQ topic — discussed with the repo owner first, since a real DLQ has no precedent anywhere in this repo yet and would set one for three still-unreviewed sibling modules; matches this module's existing precedent (`OrderController.java`'s inline `ResponseStatusException` over a dedicated exception+handler layer, #50) of not building more infrastructure than one finding needs.
 
 Added 2 tests exercising the handler directly via `CommonErrorHandler.handleOne(...)`: the handler recovers `OrderNotFoundException` on the first call (returns `true`, confirmed by the real recovery log line firing), while a generic exception gets a retry instead of an on-the-spot give-up (first call returns `false`). Verified for real: full `order-service` suite green with the fix (including `contextLoads()` — the new bean doesn't break context startup); reverted the production fix while leaving the tests in place, confirmed both new tests genuinely fail to compile against the old code, then restored the fix and confirmed green again.
+
+---
+
+### [`OrderService.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/service/OrderService.java)
+
+**medium · Security** — Fixed via [PR #79](https://github.com/Terrence721/saga-full/pull/79) ([issue #78](https://github.com/Terrence721/saga-full/issues/78))
+
+`createOrder`/`confirmOrder`/`cancelOrder` — the saga's actual state-machine owner. Grepped every call site of both listener-facing methods: `OrderConsumerConfig` is the sole caller, confirming this file owns both findings deferred to it.
+
+**Real finding #1, closing the gap deferred from `RestaurantRejectedEvent.java`'s review (#68)**: `event.reason()` reached `cancelOrder`'s `log.warn` raw and unsanitized — a confirmed CWE-117 log-injection sink traced end-to-end through 3 service hops (client `itemCode` → `order-service` → `payment-service` → `restaurant-service`'s raw string-concatenated rejection reason → back here). Same vulnerability class already fixed twice in this module (`OrderController.java`, #50/#54/#58), reached through a different, cross-service path this time.
+
+**Real finding #2, closing the gap deferred from `RestaurantApprovedEvent.java`/`RestaurantRejectedEvent.java`'s review (#66)**: `customerId` (both events) and `ticketId` (approved event) reached `confirmOrder`/`cancelOrder` through deserialization but neither method read them — a real asymmetry against this repo's own established pattern (`restaurant-service`'s `PaymentProcessedEvent` validates every field defensively, Phase 35).
+
+**Fix**: sanitizes `event.reason()` with the exact pattern `OrderController.java` already established — `String.valueOf(event.reason()).replaceAll("[\r\n]", "_")` — before the `log.warn` call. `confirmOrder`/`cancelOrder` now cross-check `event.customerId()` against the already-loaded `order.getCustomerId()` and throw `IllegalArgumentException` on mismatch — a real integrity check against a corrupted or mismatched message on the shared topic, reusing data already in hand rather than a second lookup. `ticketId` has no field on `Order` to cross-reference, so `confirmOrder` applies a null check alone (`IllegalArgumentException` if missing), matching `restaurant-service`'s own `validate()` precedent for fields it can't cross-check either, rather than adding a column purely to store a value nothing reads. Three real options existed here — cross-check defensively, drop the fields, or persist `ticketId` for real — so the repo owner picked the approach before implementation started.
+
+Ripple-effect fix, since fixing this exposed a second gap: registered the new `IllegalArgumentException` as non-retryable in `OrderConsumerConfig.kafkaErrorHandler()` (added in #76) alongside `OrderNotFoundException` — retrying a genuine data mismatch can't fix it, so it should skip straight to the recoverer instead of wasting 3 retries.
+
+No dedicated exception type or `ticket_id` column — matches this module's existing precedent of using what's already in hand (`OrderController.java`'s inline `ResponseStatusException`, restaurant-service's plain `IllegalArgumentException` in `validate()`) over new infrastructure for a single check.
+
+Added 6 tests: `confirmOrder` throws on missing `ticketId` and on `customerId` mismatch, `cancelOrder` throws on `customerId` mismatch and still cancels the order when `reason` contains CR/LF, plus a matching non-retryable-recovery test for `IllegalArgumentException` in `OrderConsumerConfigTest`. CodeQL's `java/log-injection` query proves the CR/LF sanitization statically — the same gate that caught this exact vulnerability class twice already in this module — rather than a log-capture assertion, matching how `OrderController.java`'s identical-shaped fix got verified. Verified for real: full `order-service` suite green with the fix; reverted the production fixes alone, confirmed the 4 behavior-asserting new tests fail against the old code, restored them and confirmed green again.
 
 ---
 
