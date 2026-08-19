@@ -31,6 +31,7 @@ app:
     topic: ${OUTBOX_TOPIC:order-created-topic}
     batch-size: ${OUTBOX_BATCH_SIZE:10}
     polling-delay-ms: ${OUTBOX_POLLING_DELAY_MS:500}
+    send-timeout-ms: ${OUTBOX_SEND_TIMEOUT_MS:10000}
 
 ---
 spring:
