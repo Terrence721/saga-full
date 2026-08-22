@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -52,6 +53,7 @@ public class PaymentService {
 
         Payment payment = Payment.builder()
                 .orderId(event.orderId())
+                .customerId(event.customerId())
                 .amount(event.totalAmount())
                 .status(status)
                 .build();
@@ -85,10 +87,22 @@ public class PaymentService {
             log.debug("Payment for order {} already FAILED; nothing was captured, skipping compensation", event.orderId());
             return;
         }
+        validateCustomerMatches(payment, event.customerId());
 
         payment.setStatus(PaymentStatus.REFUNDED);
         paymentRepository.save(payment);
         log.info("Payment for order {} refunded: {}", event.orderId(), event.reason());
+    }
+
+    // customerId crosses the wire on the inbound event but this instance already knows the real
+    // value from the payment it just loaded - cross-checking it here catches a corrupted or
+    // mismatched message on the shared Kafka topic, the same failure mode order-service's own
+    // RestaurantRejectedEvent handling (OrderService.cancelOrder) already guards against.
+    private void validateCustomerMatches(Payment payment, UUID eventCustomerId) {
+        if (!payment.getCustomerId().equals(eventCustomerId)) {
+            throw new IllegalArgumentException("customerId mismatch for order " + payment.getOrderId()
+                    + ": payment has " + payment.getCustomerId() + ", event has " + eventCustomerId);
+        }
     }
 
     private OutboxRecord buildOutboxRecord(Payment payment, OrderCreatedEvent event) {
