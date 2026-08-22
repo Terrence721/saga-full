@@ -23,6 +23,7 @@ class PaymentRepositoryTest {
         UUID orderId = UUID.randomUUID();
         paymentRepository.save(Payment.builder()
                 .orderId(orderId)
+                .customerId(UUID.randomUUID())
                 .amount(new BigDecimal("19.99"))
                 .status(PaymentStatus.APPROVED)
                 .build());
