@@ -40,9 +40,11 @@ class PaymentServiceTest {
 
     private PaymentService paymentService;
 
+    private static final BigDecimal MAX_AMOUNT = new BigDecimal("500.00");
+
     @BeforeEach
     void setUp() {
-        paymentService = new PaymentService(paymentRepository, outboxRepository, new ObjectMapper());
+        paymentService = new PaymentService(paymentRepository, outboxRepository, new ObjectMapper(), MAX_AMOUNT);
     }
 
     private Payment approvedPayment(UUID orderId) {
@@ -91,6 +93,33 @@ class PaymentServiceTest {
     }
 
     @Test
+    void processPaymentSaga_declinesPayment_whenAmountExceedsMaxAmount() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                orderId, customerId, "ITEM-1", 2, new BigDecimal("500.01"), OrderStatus.PENDING);
+
+        when(paymentRepository.existsByOrderId(orderId)).thenReturn(false);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> {
+            Payment payment = invocation.getArgument(0);
+            payment.setId(UUID.randomUUID());
+            return payment;
+        });
+
+        paymentService.processPaymentSaga(event);
+
+        ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
+        verify(paymentRepository).save(paymentCaptor.capture());
+        assertThat(paymentCaptor.getValue().getStatus()).isEqualTo(PaymentStatus.FAILED);
+
+        ArgumentCaptor<OutboxRecord> outboxCaptor = ArgumentCaptor.forClass(OutboxRecord.class);
+        verify(outboxRepository).save(outboxCaptor.capture());
+        PaymentProcessedEvent deserialized = new ObjectMapper()
+                .readValue(outboxCaptor.getValue().getPayload(), PaymentProcessedEvent.class);
+        assertThat(deserialized.status()).isEqualTo(PaymentStatus.FAILED);
+    }
+
+    @Test
     void processPaymentSaga_skipsDuplicate_whenPaymentAlreadyExists() {
         UUID orderId = UUID.randomUUID();
         when(paymentRepository.existsByOrderId(orderId)).thenReturn(true);
@@ -136,6 +165,20 @@ class PaymentServiceTest {
 
         paymentService.handleOrderCompensation(new RestaurantRejectedEvent(orderId, UUID.randomUUID(), "Out of stock"));
 
+        verify(paymentRepository, never()).save(any());
+    }
+
+    @Test
+    void handleOrderCompensation_skipsRefund_whenPaymentAlreadyFailed() {
+        UUID orderId = UUID.randomUUID();
+        Payment failed = approvedPayment(orderId);
+        failed.setStatus(PaymentStatus.FAILED);
+        when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).thenReturn(false);
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(failed));
+
+        paymentService.handleOrderCompensation(new RestaurantRejectedEvent(orderId, UUID.randomUUID(), "Payment failed"));
+
+        assertThat(failed.getStatus()).isEqualTo(PaymentStatus.FAILED);
         verify(paymentRepository, never()).save(any());
     }
 

@@ -215,7 +215,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../PaymentServiceApplication.java` | [`3f9e7c9`](https://github.com/Terrence721/saga-full/commit/3f9e7c9) | [#82](https://github.com/Terrence721/saga-full/issues/82) | [#83](https://github.com/Terrence721/saga-full/pull/83) | Done — no findings, merged |
 | `src/main/java/.../domain/OutboxRecord.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | [#84](https://github.com/Terrence721/saga-full/issues/84) | [#85](https://github.com/Terrence721/saga-full/pull/85) | Done — no findings, merged |
 | `src/main/java/.../domain/Payment.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | [#86](https://github.com/Terrence721/saga-full/issues/86) | [#87](https://github.com/Terrence721/saga-full/pull/87) | Done — no findings, merged |
-| `src/main/java/.../domain/PaymentStatus.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | — | — | Pending |
+| `src/main/java/.../domain/PaymentStatus.java` | [`f9235f7`](https://github.com/Terrence721/saga-full/commit/f9235f7) | [#88](https://github.com/Terrence721/saga-full/issues/88) | — | Real finding, fixed (payment decline path added), in review |
 | `src/main/java/.../dto/OrderCreatedEvent.java` | [`86f5847`](https://github.com/Terrence721/saga-full/commit/86f5847) | — | — | Pending |
 | `src/main/java/.../dto/OrderStatus.java` | [`86f5847`](https://github.com/Terrence721/saga-full/commit/86f5847) | — | — | Pending |
 | `src/main/java/.../dto/PaymentProcessedEvent.java` | [`86f5847`](https://github.com/Terrence721/saga-full/commit/86f5847) | — | — | Pending |
@@ -225,9 +225,13 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../repository/PaymentRepository.java` | [`86f5847`](https://github.com/Terrence721/saga-full/commit/86f5847) | — | — | Pending |
 | `src/main/java/.../service/OutboxPublisherService.java` | [`e585caf`](https://github.com/Terrence721/saga-full/commit/e585caf) | — | — | Pending |
 | `src/main/java/.../service/PaymentConsumerConfig.java` | [`e585caf`](https://github.com/Terrence721/saga-full/commit/e585caf) | — | — | Pending |
-| `src/main/java/.../service/PaymentService.java` | [`86f5847`](https://github.com/Terrence721/saga-full/commit/86f5847) | — | — | Pending |
+| `src/main/java/.../service/PaymentService.java` | [`86f5847`](https://github.com/Terrence721/saga-full/commit/86f5847) | [#88](https://github.com/Terrence721/saga-full/issues/88) | — | Covered early by `PaymentStatus.java`'s review (#88) — decline path + compensation guard added there, in review |
 
 `OutboxPublisherService.java` carries a known finding, already fixed once in `order-service` (#80): `kafkaTemplate.send(message).get()` blocks with no explicit timeout, bounded solely by Kafka's own undocumented 120s client default. Same shape here (`todo.md`'s Phase 31 log confirms it's a direct structural repeat) — apply the same `get(sendTimeoutMs, TimeUnit.MILLISECONDS)` fix when this file comes up.
+
+`PaymentService.java`'s own review turn is already resolved — see the row above and [docs/code-review.md](docs/code-review.md)'s `PaymentStatus.java` entry for the actual fix (decline path + compensation guard), landed early via #88 rather than at this file's normal place in the queue.
+
+**Pre-fix note for `restaurant-service` (module not yet started)**: `RestaurantService.java` was also fixed as part of #88 — `processRestaurantStep` now checks `PaymentProcessedEvent.status()` and rejects without touching inventory when it isn't `APPROVED`. When `restaurant-service`'s audit starts and reaches this file, mark it covered by #88 rather than re-reviewing from scratch.
 
 ## 🔧 Still to do
 
