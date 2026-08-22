@@ -337,4 +337,12 @@ Plain record, no custom logic. Its sole consumer, `PaymentConsumerConfig.onOrder
 
 ---
 
+### [`OrderStatus.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/dto/OrderStatus.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #92](https://github.com/Terrence721/saga-full/issues/92))
+
+3-value enum (`PENDING`, `CANCELLED`, `SUCCESS`), used only as the type of `OrderCreatedEvent.status` (reviewed clean, #90 — a field never read by `PaymentService`, an always-`PENDING` passthrough on every real instance). Order-service's own `OrderStatus.java` review already cross-checked this exact payment-service copy across the whole repo for dead values and found none: all three values are genuinely used in order-service's real saga transitions. This copy exists purely for deserialization type-compatibility with the incoming event.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
