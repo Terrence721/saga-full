@@ -460,7 +460,7 @@
         <span class="v">41</span><span class="k">phases shipped</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">107/107</span><span class="k">tests passing</span>
+        <span class="v">111/111</span><span class="k">tests passing</span>
       </div>
       <div class="manifest-cell">
         <span class="v">6</span><span class="k">services complete</span>
@@ -469,7 +469,7 @@
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">15</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">17</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -836,6 +836,42 @@
           </div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">16</div>
+        <div>
+          <div class="file">payment-service — a payment could never actually fail</div>
+          <div class="desc">
+            <code>PaymentStatus.FAILED</code> was declared but dead code —
+            <code>processPaymentSaga</code> unconditionally approved every
+            payment, so the saga's own decline/compensation path was
+            unreachable. Added a real, deterministic decline rule (a
+            configurable authorization limit) and a guard so a declined
+            payment can never be incorrectly refunded, cascading a matching
+            fix into <code>restaurant-service</code> ahead of that module's
+            own audit turn.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · reliability</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">17</div>
+        <div>
+          <div class="file">payment-service — refund compensation never checked whose order it was refunding</div>
+          <div class="desc">
+            <code>handleOrderCompensation</code> refunded a payment using
+            only the order ID off the inbound event, never cross-checking
+            the customer ID against the payment it was refunding — unlike
+            order-service's identical compensation path, which already
+            guards against exactly this class of corrupted/mismatched Kafka
+            message. Added the same cross-check.
+          </div>
+          <div class="meta">
+            <span class="tag">low · reliability</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -854,7 +890,7 @@
     </p>
     <div class="twocol">
       <div class="card">
-        <h3>107/107 tests, real infra behind them</h3>
+        <h3>111/111 tests, real infra behind them</h3>
         <p>
           Repository tests run against embedded H2 with real Hibernate DDL,
           not mocks; Kafka/Postgres wiring is separately verified against

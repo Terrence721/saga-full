@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 22, 2026 (`payment-service` code review 5/14 files in — [#88](https://github.com/Terrence721/saga-full/issues/88)/[PR #89](https://github.com/Terrence721/saga-full/pull/89) implemented a real payment-decline path for the previously-dead `PaymentStatus.FAILED`, cascading a fix into `restaurant-service/RestaurantService.java` ahead of that module's own audit turn)
+**Last Updated:** August 22, 2026 (`payment-service` code review 11/14 files in — 2 real findings fixed so far: #88/PR #89's payment-decline path for the previously-dead `PaymentStatus.FAILED` (cascading a fix into `restaurant-service/RestaurantService.java` ahead of that module's own audit turn), and #96/PR #97's `customerId` cross-check on refund compensation, mirroring order-service's identical pattern)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
