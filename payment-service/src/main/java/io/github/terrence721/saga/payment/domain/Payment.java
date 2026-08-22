@@ -33,6 +33,9 @@ public class Payment {
     @Column(name = "order_id", unique = true, nullable = false)
     private UUID orderId;
 
+    @Column(name = "customer_id", nullable = false)
+    private UUID customerId;
+
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 

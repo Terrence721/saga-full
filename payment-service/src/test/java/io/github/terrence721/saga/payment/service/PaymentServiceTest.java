@@ -47,10 +47,11 @@ class PaymentServiceTest {
         paymentService = new PaymentService(paymentRepository, outboxRepository, new ObjectMapper(), MAX_AMOUNT);
     }
 
-    private Payment approvedPayment(UUID orderId) {
+    private Payment approvedPayment(UUID orderId, UUID customerId) {
         return Payment.builder()
                 .id(UUID.randomUUID())
                 .orderId(orderId)
+                .customerId(customerId)
                 .amount(new BigDecimal("19.99"))
                 .status(PaymentStatus.APPROVED)
                 .build();
@@ -76,6 +77,7 @@ class PaymentServiceTest {
         verify(paymentRepository).save(paymentCaptor.capture());
         Payment savedPayment = paymentCaptor.getValue();
         assertThat(savedPayment.getOrderId()).isEqualTo(orderId);
+        assertThat(savedPayment.getCustomerId()).isEqualTo(customerId);
         assertThat(savedPayment.getAmount()).isEqualByComparingTo(new BigDecimal("19.99"));
         assertThat(savedPayment.getStatus()).isEqualTo(PaymentStatus.APPROVED);
 
@@ -110,6 +112,7 @@ class PaymentServiceTest {
 
         ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
         verify(paymentRepository).save(paymentCaptor.capture());
+        assertThat(paymentCaptor.getValue().getCustomerId()).isEqualTo(customerId);
         assertThat(paymentCaptor.getValue().getStatus()).isEqualTo(PaymentStatus.FAILED);
 
         ArgumentCaptor<OutboxRecord> outboxCaptor = ArgumentCaptor.forClass(OutboxRecord.class);
@@ -145,20 +148,37 @@ class PaymentServiceTest {
     @Test
     void handleOrderCompensation_transitionsToRefunded_whenApproved() {
         UUID orderId = UUID.randomUUID();
-        Payment existing = approvedPayment(orderId);
+        UUID customerId = UUID.randomUUID();
+        Payment existing = approvedPayment(orderId, customerId);
         when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).thenReturn(false);
         when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(existing));
 
-        paymentService.handleOrderCompensation(new RestaurantRejectedEvent(orderId, UUID.randomUUID(), "Out of stock"));
+        paymentService.handleOrderCompensation(new RestaurantRejectedEvent(orderId, customerId, "Out of stock"));
 
         assertThat(existing.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
         verify(paymentRepository).save(existing);
     }
 
     @Test
+    void handleOrderCompensation_throwsIllegalArgumentException_whenCustomerIdDoesNotMatchPayment() {
+        UUID orderId = UUID.randomUUID();
+        Payment existing = approvedPayment(orderId, UUID.randomUUID());
+        when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).thenReturn(false);
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(existing));
+        UUID mismatchedCustomerId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> paymentService.handleOrderCompensation(
+                new RestaurantRejectedEvent(orderId, mismatchedCustomerId, "Out of stock")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(existing.getCustomerId().toString())
+                .hasMessageContaining(mismatchedCustomerId.toString());
+        verify(paymentRepository, never()).save(any());
+    }
+
+    @Test
     void handleOrderCompensation_shortCircuits_whenAlreadyRefundedAfterLoad() {
         UUID orderId = UUID.randomUUID();
-        Payment alreadyRefunded = approvedPayment(orderId);
+        Payment alreadyRefunded = approvedPayment(orderId, UUID.randomUUID());
         alreadyRefunded.setStatus(PaymentStatus.REFUNDED);
         when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).thenReturn(false);
         when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(alreadyRefunded));
@@ -171,7 +191,7 @@ class PaymentServiceTest {
     @Test
     void handleOrderCompensation_skipsRefund_whenPaymentAlreadyFailed() {
         UUID orderId = UUID.randomUUID();
-        Payment failed = approvedPayment(orderId);
+        Payment failed = approvedPayment(orderId, UUID.randomUUID());
         failed.setStatus(PaymentStatus.FAILED);
         when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).thenReturn(false);
         when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(failed));
