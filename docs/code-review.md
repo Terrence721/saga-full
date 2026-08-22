@@ -353,4 +353,14 @@ Plain record, no custom logic, field-for-field identical to `restaurant-service`
 
 ---
 
+### [`RestaurantRejectedEvent.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/dto/RestaurantRejectedEvent.java)
+
+**low · Reliability** — Fixed via [PR #97](https://github.com/Terrence721/saga-full/pull/97) ([issue #96](https://github.com/Terrence721/saga-full/issues/96))
+
+**Real finding, fixed**: this record's sole real consumer, `PaymentService.handleOrderCompensation`, never read `event.customerId()` — unlike order-service's identical scenario (`OrderService.cancelOrder`, consuming its own copy of this same event), which cross-checks the event's `customerId` against its already-loaded entity as defense-in-depth against a corrupted/mismatched message on the shared Kafka topic (#68). The asymmetry existed because `Payment` never persisted a `customerId` to compare against — a genuine gap, not a live money-routing bug (`orderId` alone already determines the correct `Payment` row to refund), but real enough, and cheap enough to match, that it was fixed rather than just noted.
+
+Fix: added a `customer_id` column to `Payment` (`nullable = false`), populated it in `processPaymentSaga` from `OrderCreatedEvent.customerId()`, and added `validateCustomerMatches` to `handleOrderCompensation`, mirroring `OrderService`'s exact pattern (name, message format, placement). This retroactively touches two already-closed files: `Payment.java` (#86 — its "no findings" verdict was correct as far as it went at the time, just missing a field this later review added) and `PaymentService.java` (already covered under #88). Verified via deliberate revert: the new mismatch test genuinely failed without the check, then passed once restored. Full repo suite green, 111/111.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
