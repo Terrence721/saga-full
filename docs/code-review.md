@@ -329,4 +329,12 @@ This cascaded into `restaurant-service/RestaurantService.java` (ahead of that mo
 
 ---
 
+### [`OrderCreatedEvent.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/dto/OrderCreatedEvent.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #90](https://github.com/Terrence721/saga-full/issues/90))
+
+Plain record, no custom logic. Its sole consumer, `PaymentConsumerConfig.onOrderCreated`, deserializes it and passes it straight to `PaymentService.processPaymentSaga`, which uses `orderId`/`totalAmount` directly and `customerId`/`itemCode`/`quantity` when building the outbound `PaymentProcessedEvent`. `status` is never read — always `PENDING` on every real instance, the same passthrough already reviewed and accepted on `order-service`'s identical sibling copy (#64). Its sole real producer is `order-service`'s own outbox, built from an already-Bean-Validated `CreateOrderRequest` — never bound from untrusted input directly, matching this repo's established reasoning for why no additional validation belongs on this record itself.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
