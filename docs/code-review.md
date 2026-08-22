@@ -363,4 +363,16 @@ Fix: added a `customer_id` column to `Payment` (`nullable = false`), populated i
 
 ---
 
+### [`PaymentNotFoundException.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/exception/PaymentNotFoundException.java)
+
+**n/a · Maintainability** — Reviewed, structural note recorded, not fixed here ([issue #98](https://github.com/Terrence721/saga-full/issues/98))
+
+Trivial, itself-correct `RuntimeException` subclass. Thrown exactly once (`PaymentService.handleOrderCompensation`'s `orElseThrow`), reachable only from the `onRestaurantRejected` Kafka listener. Its message interpolates `event.orderId()`, `UUID`-typed on `RestaurantRejectedEvent`, so Jackson rejects malformed values before this code runs — no log-injection surface.
+
+**Real finding, not fixed here**: the same gap already found and fixed in order-service (`OrderNotFoundException.java` review, #70, fixed at `OrderConsumerConfig.java`'s own turn, #76) — `PaymentConsumerConfig.java` has no `DefaultErrorHandler`/`CommonErrorHandler` bean at all, so an uncaught throw from either of its two `@KafkaListener` methods falls through to Spring Kafka's actual default (`FixedBackOff(0, 9)`: 10 rapid retries, zero backoff, then the record is logged and the offset committed — silently dropped, not retried forever, per #76's own correction of the original write-up). Reachable given independent producers and at-least-once delivery. `IllegalArgumentException` (from `validateCustomerMatches`, added under #97) has the identical exposure.
+
+Not fixed here — the exception type itself is blameless; the fix belongs to `PaymentConsumerConfig.java`'s own review (3 files away in this module's queue), the file that owns the listener wiring, mirroring order-service's exact precedent.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
