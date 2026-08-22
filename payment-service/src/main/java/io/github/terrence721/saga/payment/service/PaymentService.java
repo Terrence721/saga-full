@@ -12,9 +12,11 @@ import io.github.terrence721.saga.payment.exception.PaymentNotFoundException;
 import io.github.terrence721.saga.payment.repository.OutboxRepository;
 import io.github.terrence721.saga.payment.repository.PaymentRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
@@ -24,11 +26,17 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
+    private final BigDecimal maxAmount;
 
-    public PaymentService(PaymentRepository paymentRepository, OutboxRepository outboxRepository, ObjectMapper objectMapper) {
+    public PaymentService(
+            PaymentRepository paymentRepository,
+            OutboxRepository outboxRepository,
+            ObjectMapper objectMapper,
+            @Value("${app.payment.max-amount:500.00}") BigDecimal maxAmount) {
         this.paymentRepository = paymentRepository;
         this.outboxRepository = outboxRepository;
         this.objectMapper = objectMapper;
+        this.maxAmount = maxAmount;
     }
 
     @Transactional
@@ -38,14 +46,23 @@ public class PaymentService {
             return;
         }
 
+        PaymentStatus status = event.totalAmount().compareTo(maxAmount) > 0
+                ? PaymentStatus.FAILED
+                : PaymentStatus.APPROVED;
+
         Payment payment = Payment.builder()
                 .orderId(event.orderId())
                 .amount(event.totalAmount())
-                .status(PaymentStatus.APPROVED)
+                .status(status)
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
-        log.info("Payment {} approved for order {}", savedPayment.getId(), event.orderId());
+        if (status == PaymentStatus.APPROVED) {
+            log.info("Payment {} approved for order {}", savedPayment.getId(), event.orderId());
+        } else {
+            log.info("Payment {} declined for order {}: amount {} exceeds limit {}",
+                    savedPayment.getId(), event.orderId(), event.totalAmount(), maxAmount);
+        }
 
         outboxRepository.save(buildOutboxRecord(savedPayment, event));
     }
@@ -62,6 +79,10 @@ public class PaymentService {
 
         if (payment.getStatus() == PaymentStatus.REFUNDED) {
             log.debug("Payment for order {} already REFUNDED after load; skipping", event.orderId());
+            return;
+        }
+        if (payment.getStatus() == PaymentStatus.FAILED) {
+            log.debug("Payment for order {} already FAILED; nothing was captured, skipping compensation", event.orderId());
             return;
         }
 
