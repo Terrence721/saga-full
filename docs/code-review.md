@@ -345,4 +345,12 @@ Plain record, no custom logic. Its sole consumer, `PaymentConsumerConfig.onOrder
 
 ---
 
+### [`PaymentProcessedEvent.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/dto/PaymentProcessedEvent.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #94](https://github.com/Terrence721/saga-full/issues/94))
+
+Plain record, no custom logic, field-for-field identical to `restaurant-service`'s own copy of this event. Its sole construction site, `PaymentService.buildOutboxRecord`, was already reviewed and fixed under #88 (the payment-decline path) — every field is genuinely populated from a real `Payment`/`OrderCreatedEvent`, including `status`, now meaningful since `processPaymentSaga` can actually produce `FAILED`. Every field has a real downstream consumer in `restaurant-service`'s `RestaurantService` (also fixed under #88 to branch on `status`).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
