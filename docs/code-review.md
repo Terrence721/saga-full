@@ -375,4 +375,12 @@ Not fixed here — the exception type itself is blameless; the fix belongs to `P
 
 ---
 
+### [`OutboxRepository.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/repository/OutboxRepository.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #100](https://github.com/Terrence721/saga-full/issues/100))
+
+Byte-for-byte identical to `order-service`'s already-reviewed sibling (#74) — same `PESSIMISTIC_WRITE` + `lock.timeout=-2` (SKIP LOCKED) custom query. Grepped every call site: `save` (`PaymentService`), `findByOrderByCreatedTimeAsc`/`delete` (`OutboxPublisherService`) — all genuinely used. `findByOrderByCreatedTimeAsc` is tested against real embedded H2 with the same shape as order-service's own test (12 records inserted, confirms exactly the 10 oldest come back in order). The SKIP LOCKED semantic itself isn't independently proven under real concurrent transactions — same documented, deliberate scope decision already accepted for order-service's identical copy.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
