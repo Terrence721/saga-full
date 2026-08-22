@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -139,6 +140,32 @@ class RestaurantServiceTest {
         RestaurantRejectedEvent deserialized = new ObjectMapper()
                 .readValue(outboxCaptor.getValue().getPayload(), RestaurantRejectedEvent.class);
         assertThat(deserialized.reason()).contains("Out of stock");
+    }
+
+    @Test
+    void processRestaurantStep_createsRejectedTicketAndRejectedOutbox_whenPaymentFailed() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
+        when(ticketRepository.save(any(RestaurantTicket.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        PaymentProcessedEvent event = new PaymentProcessedEvent(
+                orderId, customerId, "PIZZA_01", 2, new BigDecimal("19.99"), PaymentStatus.FAILED);
+
+        restaurantService.processRestaurantStep(event);
+
+        verifyNoInteractions(inventoryService);
+
+        ArgumentCaptor<RestaurantTicket> ticketCaptor = ArgumentCaptor.forClass(RestaurantTicket.class);
+        verify(ticketRepository).save(ticketCaptor.capture());
+        assertThat(ticketCaptor.getValue().getStatus()).isEqualTo(RestaurantTicketStatus.REJECTED);
+
+        ArgumentCaptor<OutboxRecord> outboxCaptor = ArgumentCaptor.forClass(OutboxRecord.class);
+        verify(outboxRepository).save(outboxCaptor.capture());
+        assertThat(outboxCaptor.getValue().getEventType()).isEqualTo("RestaurantRejectedEvent");
+
+        RestaurantRejectedEvent deserialized = new ObjectMapper()
+                .readValue(outboxCaptor.getValue().getPayload(), RestaurantRejectedEvent.class);
+        assertThat(deserialized.reason()).contains("Payment failed");
     }
 
     @Test
