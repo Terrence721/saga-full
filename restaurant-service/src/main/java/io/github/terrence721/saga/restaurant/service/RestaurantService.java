@@ -7,6 +7,7 @@ import io.github.terrence721.saga.restaurant.domain.OutboxRecord;
 import io.github.terrence721.saga.restaurant.domain.RestaurantTicket;
 import io.github.terrence721.saga.restaurant.domain.RestaurantTicketStatus;
 import io.github.terrence721.saga.restaurant.dto.PaymentProcessedEvent;
+import io.github.terrence721.saga.restaurant.dto.PaymentStatus;
 import io.github.terrence721.saga.restaurant.dto.RestaurantApprovedEvent;
 import io.github.terrence721.saga.restaurant.dto.RestaurantEvent;
 import io.github.terrence721.saga.restaurant.dto.RestaurantRejectedEvent;
@@ -48,6 +49,14 @@ public class RestaurantService {
         }
 
         validate(event);
+
+        if (event.status() != PaymentStatus.APPROVED) {
+            createAndSaveTicket(event.orderId(), RestaurantTicketStatus.REJECTED);
+            RestaurantRejectedEvent rejectedEvent = new RestaurantRejectedEvent(
+                    event.orderId(), event.customerId(), "Payment failed for order: " + event.orderId());
+            saveRestaurantTicketOutbox(rejectedEvent, "RestaurantRejectedEvent");
+            return;
+        }
 
         InventoryStatus inventoryStatus = inventoryService.verifyAndDeductStock(event.itemCode(), event.quantity());
 

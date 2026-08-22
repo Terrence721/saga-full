@@ -317,4 +317,16 @@ JPA entity: Hibernate-native `UUID` id generation, `amount` a `BigDecimal(19,2)`
 
 ---
 
+### [`PaymentStatus.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/domain/PaymentStatus.java)
+
+**medium · Reliability** — Fixed via [PR #89](https://github.com/Terrence721/saga-full/pull/89) ([issue #88](https://github.com/Terrence721/saga-full/issues/88))
+
+**Real finding, fixed**: `PaymentStatus.FAILED` was declared but never producible or consumable anywhere in the codebase — `PaymentService.processPaymentSaga` unconditionally approved every payment, so there was no real decline path (the same dead-value shape as `user-contract`'s `ValidateToken`-no-caller structural note, #24). Per this repo's no-excused-findings policy, this was implemented rather than left as a permanent note: `processPaymentSaga` now declines (`FAILED`) any order whose `totalAmount` exceeds a configurable `app.payment.max-amount` limit (default $500, simulating a simple authorization/credit limit), still publishing `PaymentProcessedEvent` on the existing topic/eventType either way. `handleOrderCompensation` now short-circuits for a payment already `FAILED` — nothing was captured, so there's nothing to refund; without this guard a `RestaurantRejectedEvent` for a declined order would have incorrectly flipped it to `REFUNDED`.
+
+This cascaded into `restaurant-service/RestaurantService.java` (ahead of that module's own audit, which hasn't started): `processRestaurantStep` now checks `PaymentProcessedEvent.status()` and short-circuits straight to a `RestaurantRejectedEvent` (reason: "Payment failed for order: ...") without touching inventory when status isn't `APPROVED` — reusing the existing rejection/compensation pathway end-to-end with no new topics or event types. Verified for real: 3 new tests added (`PaymentServiceTest` ×2, `RestaurantServiceTest` ×1), and the fix was deliberately reverted in both files to confirm all 3 fail (two assertion failures, one `NullPointerException` from the unguarded inventory call) before being restored — full repo suite green at 110/110 afterward.
+
+`payment-service/PaymentService.java` and `restaurant-service/RestaurantService.java` are considered covered by this review; when the audit reaches them on its normal per-file schedule, they'll be marked as already reviewed here rather than re-reviewed from scratch.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
