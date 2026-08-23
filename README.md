@@ -22,10 +22,10 @@ This is an original implementation, not a fork of any existing project. The modu
 
 The rest of the [wiki](https://github.com/Terrence721/saga-full/wiki) goes deeper per-module (one page per service).
 
-- **[`todo.md`](todo.md)** — the phase-by-phase log of everything done and everything still open. This is the source of truth for progress.
+- **[`todo.md`](todo.md)** — the phase-by-phase log of everything done and everything still open, plus a [Milestones](todo.md#-milestones) section for the high-level story arc. This is the source of truth for progress.
 - **[GitHub Project board](https://github.com/users/Terrence721/projects/3)** — a Scrum-style Backlog/Planned/In Progress/Verification & QA/Done view of the same work, for a quick at-a-glance status without reading the full log. Kept in sync with [`todo.md`](todo.md).
 - **[`docs/architecture.md`](docs/architecture.md)** — the reasoning behind this repo's architectural decisions (context, alternatives, what each one actually cost), not just what changed.
-- **[`docs/code-review.md`](docs/code-review.md)** — a per-module, per-file code-review audit of the whole codebase, one real GitHub PR per file (findings or not). `user-contract`, `user-service`, and `order-service` are complete (11 real findings fixed total, including three real security issues and a Kafka poison-pill fix); `payment-service` is 3/14 files in, no findings yet — see [todo.md](todo.md) for the tracking table.
+- **[`docs/code-review.md`](docs/code-review.md)** — a per-module, per-file code-review audit of the whole codebase, one real GitHub PR per file (findings or not). `user-contract`, `user-service`, and `order-service` are complete (12 real findings fixed total, including three real security issues and a Kafka poison-pill fix); `payment-service` is 11/14 files in, 2 real findings fixed so far — see [todo.md](todo.md) for the tracking table.
 - **[`docs/case-study.md`](docs/case-study.md)** — problem, constraints, tradeoffs, and results, for anyone scanning this repo as a portfolio piece rather than reading it as documentation.
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** — development setup, testing commands, commit conventions.
 
