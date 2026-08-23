@@ -29,6 +29,8 @@ The rest of the [wiki](https://github.com/Terrence721/saga-full/wiki) goes deepe
 - **[`docs/case-study.md`](docs/case-study.md)** — problem, constraints, tradeoffs, and results, for anyone scanning this repo as a portfolio piece rather than reading it as documentation.
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** — development setup, testing commands, commit conventions.
 
+On AI-assisted development: Commits co-authored as Claude are AI-assisted implementations directed, reviewed, and merged by Terrence Daniels — same process as every other change, documented in docs/code-review.md.
+
 ## 🧭 Why This Matters
 
 Saga orchestration is a common interview-whiteboard topic and an uncommon thing to actually build end to end: compensating transactions, event ordering, idempotency, and the failure modes that only show up once services genuinely run independently. The point of this repo is working through those problems for real, one service at a time, and writing down which decisions were load-bearing and why.
