@@ -371,7 +371,7 @@ Trivial, itself-correct `RuntimeException` subclass. Thrown exactly once (`Payme
 
 **Real finding, not fixed here**: the same gap already found and fixed in order-service (`OrderNotFoundException.java` review, #70, fixed at `OrderConsumerConfig.java`'s own turn, #76) — `PaymentConsumerConfig.java` has no `DefaultErrorHandler`/`CommonErrorHandler` bean at all, so an uncaught throw from either of its two `@KafkaListener` methods falls through to Spring Kafka's actual default (`FixedBackOff(0, 9)`: 10 rapid retries, zero backoff, then the record is logged and the offset committed — silently dropped, not retried forever, per #76's own correction of the original write-up). Reachable given independent producers and at-least-once delivery. `IllegalArgumentException` (from `validateCustomerMatches`, added under #97) has the identical exposure.
 
-Not fixed here — the exception type itself is blameless; the fix belongs to `PaymentConsumerConfig.java`'s own review (3 files away in this module's queue), the file that owns the listener wiring, mirroring order-service's exact precedent.
+Not fixed here — the exception type itself is blameless; the fix belongs to `PaymentConsumerConfig.java`'s own review (2 files away in this module's queue), the file that owns the listener wiring, mirroring order-service's exact precedent.
 
 ---
 
@@ -380,6 +380,14 @@ Not fixed here — the exception type itself is blameless; the fix belongs to `P
 **n/a · Maintainability** — Reviewed, no findings ([issue #100](https://github.com/Terrence721/saga-full/issues/100))
 
 Byte-for-byte identical to `order-service`'s already-reviewed sibling (#74) — same `PESSIMISTIC_WRITE` + `lock.timeout=-2` (SKIP LOCKED) custom query. Grepped every call site: `save` (`PaymentService`), `findByOrderByCreatedTimeAsc`/`delete` (`OutboxPublisherService`) — all genuinely used. `findByOrderByCreatedTimeAsc` is tested against real embedded H2 with the same shape as order-service's own test (12 records inserted, confirms exactly the 10 oldest come back in order). The SKIP LOCKED semantic itself isn't independently proven under real concurrent transactions — same documented, deliberate scope decision already accepted for order-service's identical copy.
+
+---
+
+### [`PaymentRepository.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/repository/PaymentRepository.java)
+
+**low · Reliability** — Fixed via [PR #103](https://github.com/Terrence721/saga-full/pull/103) ([issue #102](https://github.com/Terrence721/saga-full/issues/102))
+
+**Real finding, fixed (test-coverage gap)**: 3 derived-query methods (`findByOrderId`, `existsByOrderId`, `existsByOrderIdAndStatus`), all genuinely used in `PaymentService.java`'s idempotency guards. Only `findByOrderId` had real `@DataJpaTest` coverage — `existsByOrderId`/`existsByOrderIdAndStatus` had none, unlike order-service's identical-shape `OrderRepository`, whose own `existsByIdAndStatus` already has dedicated real-database coverage (#72). Same class of gap already found and fixed twice in `user-service`'s audit (`SecurityConfig.java` #29, `UserRepository.java` #45). Fixed with 5 new `@DataJpaTest` tests mirroring `OrderRepositoryTest`'s exact shape — each derived query gets a genuine true/false pair against the real embedded H2 database, not a tautological single assertion. Full repo suite green, 116/116.
 
 ---
 

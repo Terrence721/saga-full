@@ -40,4 +40,53 @@ class PaymentRepositoryTest {
 
         assertThat(found).isEmpty();
     }
+
+    @Test
+    void existsByOrderId_returnsTrue_whenPaymentExists() {
+        UUID orderId = UUID.randomUUID();
+        paymentRepository.save(Payment.builder()
+                .orderId(orderId)
+                .customerId(UUID.randomUUID())
+                .amount(new BigDecimal("19.99"))
+                .status(PaymentStatus.APPROVED)
+                .build());
+
+        assertThat(paymentRepository.existsByOrderId(orderId)).isTrue();
+    }
+
+    @Test
+    void existsByOrderId_returnsFalse_whenNoneExists() {
+        assertThat(paymentRepository.existsByOrderId(UUID.randomUUID())).isFalse();
+    }
+
+    @Test
+    void existsByOrderIdAndStatus_returnsTrue_whenStatusMatches() {
+        UUID orderId = UUID.randomUUID();
+        paymentRepository.save(Payment.builder()
+                .orderId(orderId)
+                .customerId(UUID.randomUUID())
+                .amount(new BigDecimal("19.99"))
+                .status(PaymentStatus.REFUNDED)
+                .build());
+
+        assertThat(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).isTrue();
+    }
+
+    @Test
+    void existsByOrderIdAndStatus_returnsFalse_whenStatusDoesNotMatch() {
+        UUID orderId = UUID.randomUUID();
+        paymentRepository.save(Payment.builder()
+                .orderId(orderId)
+                .customerId(UUID.randomUUID())
+                .amount(new BigDecimal("19.99"))
+                .status(PaymentStatus.APPROVED)
+                .build());
+
+        assertThat(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).isFalse();
+    }
+
+    @Test
+    void existsByOrderIdAndStatus_returnsFalse_whenOrderIdDoesNotExist() {
+        assertThat(paymentRepository.existsByOrderIdAndStatus(UUID.randomUUID(), PaymentStatus.REFUNDED)).isFalse();
+    }
 }
