@@ -399,4 +399,14 @@ Byte-for-byte identical to `order-service`'s already-reviewed sibling (#74) — 
 
 ---
 
+### [`PaymentConsumerConfig.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/service/PaymentConsumerConfig.java) — last file in `payment-service`
+
+**low · Reliability** — Fixed via [PR #107](https://github.com/Terrence721/saga-full/pull/107) ([issue #106](https://github.com/Terrence721/saga-full/issues/106))
+
+**Known finding, fixed**: pre-flagged during `PaymentNotFoundException.java`'s review (#98), mirroring order-service's identical `OrderConsumerConfig.java` fix (#76) — no `DefaultErrorHandler`/`CommonErrorHandler` bean existed anywhere in this module, so an uncaught throw from either `@KafkaListener` method fell through to Spring Kafka's default (10 rapid retries, zero backoff, then silently dropped). Reachable given independent producers and at-least-once Kafka delivery — a missing payment (`PaymentNotFoundException`) or a `customerId` mismatch (`IllegalArgumentException`, added under #96) would previously retry 10 times for nothing before being silently dropped. Fixed identically to order-service's #76: an explicit `DefaultErrorHandler` `@Bean`, bounded `FixedBackOff(1000L, 2L)`, `addNotRetryableExceptions(PaymentNotFoundException.class, IllegalArgumentException.class)`, and an explicit `ERROR`-level recoverer naming topic/partition/offset. Grepped for a log-injection surface too — both listeners log only `UUID`-typed `event.orderId()`, no risk. Verified via deliberate revert: removing `addNotRetryableExceptions` makes both new non-retryable tests genuinely fail; a third new test proves generic exceptions still retry (not accidentally swallowed). Full repo suite green, 120/120.
+
+**Module review complete — `payment-service`, 14/14 files reviewed, 4 real findings fixed** (a payment-decline path that never existed in `PaymentStatus.java`/#88, a refund compensation that never checked whose order it was refunding in `RestaurantRejectedEvent.java`/#96, a test-coverage gap on two idempotency-guard queries in `PaymentRepository.java`/#102, and an unbounded Kafka-send timeout in `OutboxPublisherService.java`/#104 — plus this file's known-finding fix), 0 findings left open. See [todo.md](../todo.md) for the full per-file table and [#21](https://github.com/Terrence721/saga-full/issues/21) for the closed tracking issue.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
