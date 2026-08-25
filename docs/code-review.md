@@ -409,4 +409,12 @@ Byte-for-byte identical to `order-service`'s already-reviewed sibling (#74) — 
 
 ---
 
+### [`RestaurantServiceApplication.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/RestaurantServiceApplication.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #108](https://github.com/Terrence721/saga-full/issues/108))
+
+Byte-for-byte identical to the already-reviewed `order-service`/`payment-service` entry points (#48, #82). Grepping for `@Scheduled` confirms `@EnableScheduling` is genuinely needed — it turned up `OutboxPublisherService`'s real polling method in this same module. A real `RestaurantServiceApplicationTests.contextLoads()` exists and boots the module.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._

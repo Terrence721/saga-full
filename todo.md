@@ -253,7 +253,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 
 | File | Last commit SHA | Sub-issue | PR | Status |
 | - | - | - | - | - |
-| `src/main/java/.../RestaurantServiceApplication.java` | [`348f7ba`](https://github.com/Terrence721/saga-full/commit/348f7ba) | — | — | Pending |
+| `src/main/java/.../RestaurantServiceApplication.java` | [`348f7ba`](https://github.com/Terrence721/saga-full/commit/348f7ba) | [#108](https://github.com/Terrence721/saga-full/issues/108) | — | No findings, in review |
 | `src/main/java/.../domain/InventoryItem.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | — | — | Pending |
 | `src/main/java/.../domain/InventoryStatus.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | — | — | Pending |
 | `src/main/java/.../domain/OutboxRecord.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | — | — | Pending |
