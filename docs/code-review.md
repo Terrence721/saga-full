@@ -391,4 +391,12 @@ Byte-for-byte identical to `order-service`'s already-reviewed sibling (#74) — 
 
 ---
 
+### [`OutboxPublisherService.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/service/OutboxPublisherService.java)
+
+**low · Reliability** — Fixed via [PR #105](https://github.com/Terrence721/saga-full/pull/105) ([issue #104](https://github.com/Terrence721/saga-full/issues/104))
+
+**Known finding, fixed**: pre-flagged before this file's review even started — the same unbounded `kafkaTemplate.send(message).get()` timeout gap already found and fixed in order-service (#80). This method is `@Transactional`, holding the outbox row's `PESSIMISTIC_WRITE` lock open for as long as the send blocks — an unbounded wait relies solely on Kafka's own undocumented 120s `delivery.timeout.ms` default, meaning a degraded broker could hold a DB connection and lock open per record for up to 120s, times up to `batchSize` records in the worst case. Fixed identically to order-service's #80: a configurable `app.outbox.send-timeout-ms` (default 10000ms), bounding the `.get()` call and catching `TimeoutException` alongside the existing `InterruptedException`/`ExecutionException` handling. Verified via deliberate revert: reverting to the unbounded `.get()` makes the new timeout test's `TimeoutException` catch block unreachable — a compile-time proof, not just a runtime one, that the fix is load-bearing. Full repo suite green, 117/117.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
