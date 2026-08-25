@@ -254,7 +254,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | File | Last commit SHA | Sub-issue | PR | Status |
 | - | - | - | - | - |
 | `src/main/java/.../RestaurantServiceApplication.java` | [`348f7ba`](https://github.com/Terrence721/saga-full/commit/348f7ba) | [#108](https://github.com/Terrence721/saga-full/issues/108) | [#109](https://github.com/Terrence721/saga-full/pull/109) | Done — no findings, merged |
-| `src/main/java/.../domain/InventoryItem.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | [#110](https://github.com/Terrence721/saga-full/issues/110) | — | Real finding, fixed (no way to ever seed inventory in a real deployment — added data.sql), in review |
+| `src/main/java/.../domain/InventoryItem.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | [#110](https://github.com/Terrence721/saga-full/issues/110) | [#111](https://github.com/Terrence721/saga-full/pull/111) | Done — real finding fixed (no way to ever seed inventory in a real deployment — added data.sql), merged |
 | `src/main/java/.../domain/InventoryStatus.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | — | — | Pending |
 | `src/main/java/.../domain/OutboxRecord.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | — | — | Pending |
 | `src/main/java/.../domain/RestaurantTicket.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | — | — | Pending |
