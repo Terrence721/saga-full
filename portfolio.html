@@ -460,7 +460,7 @@
         <span class="v">41</span><span class="k">phases shipped</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">111/111</span><span class="k">tests passing</span>
+        <span class="v">121/121</span><span class="k">tests passing</span>
       </div>
       <div class="manifest-cell">
         <span class="v">6</span><span class="k">services complete</span>
@@ -469,7 +469,7 @@
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">17</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">18</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -872,6 +872,24 @@
           </div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">18</div>
+        <div>
+          <div class="file">restaurant-service — no way to ever seed inventory in a real run</div>
+          <div class="desc">
+            No path anywhere in the repo could create an
+            <code>InventoryItem</code> row outside of tests — no seed
+            script, no replenishment endpoint. Every real order would hit
+            <code>ITEM_NOT_FOUND</code> unconditionally, the module's core
+            function unreachable in any actual deployment. Added seed data
+            covering all three outcomes, and caught a genuine H2/Postgres
+            SQL portability bug while verifying it.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · reliability</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -890,7 +908,7 @@
     </p>
     <div class="twocol">
       <div class="card">
-        <h3>111/111 tests, real infra behind them</h3>
+        <h3>121/121 tests, real infra behind them</h3>
         <p>
           Repository tests run against embedded H2 with real Hibernate DDL,
           not mocks; Kafka/Postgres wiring is separately verified against
