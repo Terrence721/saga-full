@@ -417,4 +417,18 @@ Byte-for-byte identical to the already-reviewed `order-service`/`payment-service
 
 ---
 
+### [`InventoryItem.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/domain/InventoryItem.java)
+
+**medium · Reliability** — Fixed via [PR #111](https://github.com/Terrence721/saga-full/pull/111) ([issue #110](https://github.com/Terrence721/saga-full/issues/110))
+
+**Real finding, fixed**: this entity (`itemCode`/`stockCount`) had no path anywhere in the repo to ever get a row created in a real deployment. `InventoryItem.builder()` was used only in tests — the sole production `save()` call is inside `RestaurantInventoryService.verifyAndDeductStock`, which only updates a row that already exists (found via `findById`). No `data.sql`, no seed script, no admin/replenishment endpoint anywhere. In any real run (`bootRun`, docker-compose, a manual end-to-end test), `findById(itemCode)` would always return empty — every order would hit `ITEM_NOT_FOUND` and get rejected, unconditionally. This is the module's core function, unreachable in practice.
+
+Fixed with a real `data.sql` seed (10 items, `PIZZA_01`–`PIZZA_10`, matching the item code already used throughout this module's own test fixtures), covering all three `InventoryStatus` outcomes for real manual testing: most well-stocked (`ALLOCATED`), two deliberately low-stock (`INSUFFICIENT_STOCK` on demand), any unlisted code still hits `ITEM_NOT_FOUND`. `application.yaml` gained `spring.jpa.defer-datasource-initialization: true` and `spring.sql.init.mode: always` so the seed actually runs, after table creation, on both profiles.
+
+**Real portability bug found and fixed while verifying**: the first attempt used `ON CONFLICT (item_code) DO NOTHING` for idempotent re-runs against a persistent Postgres database. A real `./gradlew :restaurant-service:test` run failed with a genuine H2 syntax error — `@DataJpaTest`'s auto-configured embedded H2 swaps out the explicitly-configured `MODE=PostgreSQL` datasource for its own plain H2, which doesn't recognize `ON CONFLICT`. Rewrote using `INSERT ... SELECT ... WHERE NOT EXISTS`, portable across both H2 configurations and real Postgres.
+
+Added a new real-boot test, `RestaurantServiceApplicationTests.dataSqlSeedsInventory_onARealBoot`, asserting all 10 seeded rows exist with correct stock counts against the actual `MODE=PostgreSQL` H2 context — proof this works end-to-end, not just that the YAML is plausible. Verified via deliberate revert: emptied `data.sql`, confirmed the new test genuinely fails, restored it. Full repo suite green, 121/121.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
