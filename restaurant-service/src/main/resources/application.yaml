@@ -6,6 +6,10 @@ spring:
       enabled: true
   jpa:
     show-sql: false
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
