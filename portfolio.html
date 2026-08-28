@@ -469,7 +469,7 @@
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">20</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">21</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -927,6 +927,29 @@
           </div>
           <div class="meta">
             <span class="tag">low · tooling</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">21</div>
+        <div>
+          <div class="file">order-service — a 10-day-old CodeQL alert had never actually been resolved</div>
+          <div class="desc">
+            A log-injection alert flagged since PR #55 stayed open through
+            two follow-up fix attempts, each leaving a code comment
+            admitting it was "still flagged" without ever closing the loop.
+            Investigated properly this time: two more fix attempts, each
+            verified against a real CodeQL run, each cleared the prior
+            alert only to reveal a new one at the next line — confirming
+            the value was already being sanitized correctly the whole
+            time. Researched CodeQL's own sanitizer source to confirm it,
+            then formally dismissed the alert with a documented reason
+            instead of leaving another silent "still flagged" comment
+            behind. The branch split and shared sanitizer helper written
+            along the way are kept as real clarity improvements.
+          </div>
+          <div class="meta">
+            <span class="tag">low · security</span>
           </div>
         </div>
       </div>

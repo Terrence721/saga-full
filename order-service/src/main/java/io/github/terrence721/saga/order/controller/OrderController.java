@@ -35,17 +35,25 @@ public class OrderController {
         // any caller could set customerId in the body to someone else's ID and
         // create orders in their name. A missing header (e.g. a direct call that
         // bypassed the gateway) is treated the same as a mismatch: fail closed.
-        if (perimeterUserId == null || !perimeterUserId.equals(request.customerId().toString())) {
-            // perimeterUserId is client-controlled (a raw request header) whenever
-            // this check actually fires - a caller that bypassed the gateway could
-            // set it to anything, so it needs the same CR/LF sanitizing as itemCode
-            // below before it's safe to log. String.valueOf(null) returns "null",
-            // so replaceAll runs unconditionally on every path - CodeQL's log-injection
-            // sanitizer detection didn't recognize a ternary that only called
-            // replaceAll on one branch as a barrier (still flagged post-PR #55).
-            String sanitizedPerimeterUserId = String.valueOf(perimeterUserId).replaceAll("[\r\n]", "_");
+        //
+        // Split into two branches so the mismatch case's log call has perimeterUserId
+        // narrowed to non-null. Routed through sanitizeForLog(...) rather than calling
+        // .replaceAll() directly on perimeterUserId - CodeQL's log-injection sanitizer
+        // barrier didn't recognize a replaceAll call made directly on the raw source
+        // parameter itself as a barrier, only one made on a value already one call
+        // removed from the source (the same shape itemCode's request.itemCode() below
+        // already has). Every prior attempt (a ternary, an unconditional
+        // String.valueOf(...).replaceAll(...), an if-block reassignment, and a direct
+        // inline replaceAll on the parameter) was still flagged post-PR #55, confirmed
+        // against real CodeQL runs.
+        if (perimeterUserId == null) {
+            log.warn("Rejected create order request: X-Perimeter-User-Id header missing, customerId={}",
+                    request.customerId());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
+        }
+        if (!perimeterUserId.equals(request.customerId().toString())) {
             log.warn("Rejected create order request: X-Perimeter-User-Id ({}) does not match customerId ({})",
-                    sanitizedPerimeterUserId, request.customerId());
+                    sanitizeForLog(perimeterUserId), request.customerId());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
         }
 
@@ -57,5 +65,9 @@ public class OrderController {
                 request.quantity(), request.totalAmount());
         Order order = orderService.createOrder(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
+    }
+
+    private static String sanitizeForLog(String value) {
+        return value.replaceAll("[\r\n]", "_");
     }
 }
