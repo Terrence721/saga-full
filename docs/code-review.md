@@ -439,4 +439,12 @@ Added a new real-boot test, `RestaurantServiceApplicationTests.dataSqlSeedsInven
 
 ---
 
+### [`OutboxRecord.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/domain/OutboxRecord.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #114](https://github.com/Terrence721/saga-full/issues/114))
+
+Byte-for-byte identical (package declaration aside) to the already-reviewed `order-service`/`payment-service` copies (#74, #84) — same `UUID` id, `aggregateId`/`eventType`/`payload`/`createdTime` columns, same `@Lob` payload. Consumers (`RestaurantService.saveRestaurantTicketOutbox`, `OutboxPublisherService`, `OutboxRepository`) match the identical shape already reviewed in the sibling modules.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
