@@ -460,7 +460,7 @@
         <span class="v">41</span><span class="k">phases shipped</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">121/121</span><span class="k">tests passing</span>
+        <span class="v">122/122</span><span class="k">tests passing</span>
       </div>
       <div class="manifest-cell">
         <span class="v">6</span><span class="k">services complete</span>
@@ -469,7 +469,7 @@
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">18</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">20</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -890,6 +890,46 @@
           </div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">19</div>
+        <div>
+          <div class="file">restaurant-service — duplicate Kafka delivery could create two tickets for one order</div>
+          <div class="desc">
+            <code>RestaurantService</code> uses an <code>existsByOrderId</code>
+            check-then-act idempotency guard against duplicate
+            <code>PaymentProcessedEvent</code> delivery — a real occurrence
+            under Kafka's default at-least-once semantics, not theoretical —
+            but the <code>order_id</code> column itself had no unique
+            constraint backstopping it, unlike <code>payment-service</code>'s
+            identical guard. Fixed by matching that existing precedent, plus
+            a test proving a duplicate insert is genuinely rejected.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · reliability</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">20</div>
+        <div>
+          <div class="file">build tooling — the consolidated test report could fail to generate</div>
+          <div class="desc">
+            Running <code>./gradlew test aggregateTestReport</code> in one
+            invocation could intermittently fail Gradle's own safety
+            validation: the report task read each module's test-results
+            directory without any declared ordering relationship to the
+            <code>test</code> task that writes it, so a same-run schedule
+            could read a directory before it was ready. Reproduced reliably,
+            then fixed with an explicit ordering hint that doesn't force
+            tests to run or block the report on a failure — preserving the
+            task's deliberate "merge whatever results exist, pass or fail"
+            design.
+          </div>
+          <div class="meta">
+            <span class="tag">low · tooling</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -908,7 +948,7 @@
     </p>
     <div class="twocol">
       <div class="card">
-        <h3>121/121 tests, real infra behind them</h3>
+        <h3>122/122 tests, real infra behind them</h3>
         <p>
           Repository tests run against embedded H2 with real Hibernate DDL,
           not mocks; Kafka/Postgres wiring is separately verified against
