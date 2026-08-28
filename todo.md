@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 28, 2026 (`payment-service` code review complete — 14/14 files, 4 real findings fixed, 0 left open; `restaurant-service` 6/18 files in — real findings on `InventoryItem.java` (no way to ever seed inventory in a real deployment) and `RestaurantTicket.java` (missing `order_id` unique constraint backstopping its idempotency guard, plus an unrelated `aggregateTestReport` build-ordering bug found while verifying), both fixed)
+**Last Updated:** August 28, 2026 (`payment-service` code review complete — 14/14 files, 4 real findings fixed, 0 left open; `restaurant-service` 6/18 files in — real findings on `InventoryItem.java` (no way to ever seed inventory in a real deployment) and `RestaurantTicket.java` (missing `order_id` unique constraint backstopping its idempotency guard, plus an unrelated `aggregateTestReport` build-ordering bug found while verifying), both fixed; `cleanLogs` task added, Phase 42)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -200,6 +200,12 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | Phase | Date | What |
 | - | - | - |
 | 41 | 2026-08-13 | GitHub CodeQL flagged a real Medium-severity log-injection finding (CWE-117) in `OrderController.createOrder` (Phase 23): `log.info("...: {}", request)` interpolated the whole `CreateOrderRequest` record, and `itemCode` — a `@NotBlank String` with no length cap or character restriction, taken straight off the public `POST /orders` body — flows into that `toString()` unsanitized, letting a client forge fake log lines with embedded `\r`/`\n`. Checked every other `log.info`/`log.warn` call site across all five modules for the same pattern: everywhere else already logs individual, type-safe fields, confirming this was the one call site that slipped through, not a repo-wide issue. Fixed by logging `customerId`/`itemCode`/`quantity`/`totalAmount` individually, with `itemCode` passed through `.replaceAll("[\r\n]", "_")` — the only field with actual string-injection surface, since the other three are `UUID`/`BigDecimal`/`int`. `./gradlew :order-service:test` verified green with no regressions. Full reasoning in [docs/architecture.md](docs/architecture.md) |
+
+### Repo hygiene
+
+| Phase | Date | What |
+| - | - | - |
+| 42 | 2026-08-28 | `cleanLogs`, a new root `build.gradle.kts` task, removes every untracked `.log` file in the repo — found via `git ls-files` rather than a hand-maintained list of directories/filenames to skip, so it respects `.gitignore` automatically (this repo's own `.gitignore` has a blanket `*.log` rule, so `--exclude-standard` alone would always return nothing here — unioned with an `--ignored` pass to still find them) and stays correct for any future `.log` file with zero changes needed. No `node_modules`/`vendor`-style exclusion needed, unlike the equivalent scripts added the same day to the conduit-full/coolify-full sibling repos — Gradle's dependency cache lives entirely outside this repo, in `~/.gradle`. Wired as a `dependsOn` for every subproject's `bootRun` task (matched by task name, not the Spring Boot plugin's `BootRun` class, since that plugin is applied per-service, not at the root), so it runs automatically before the actual per-service startup command this repo documents in [CONTRIBUTING.md](CONTRIBUTING.md). Verified for real, not just by inspection: `./gradlew cleanLogs` correctly found and removed both root-level and nested `.log` files and reported "No log files found" on a clean tree; `--dry-run` on all 5 real services' `bootRun` confirmed `:cleanLogs` runs first in each task graph every time |
 
 ## 🔍 Code review — per-file tracking
 
