@@ -37,13 +37,15 @@ public class OrderController {
         // bypassed the gateway) is treated the same as a mismatch: fail closed.
         //
         // Split into two branches so the mismatch case's log call has perimeterUserId
-        // narrowed to non-null and can call .replaceAll() on it directly inline, with
-        // no intermediate variable - CodeQL's log-injection sanitizer barrier only
-        // recognizes a replaceAll call made directly inline as the log argument (the
-        // same shape that already works for itemCode below); every prior attempt that
-        // routed the sanitized value through a local variable first (a ternary, an
-        // unconditional String.valueOf(...).replaceAll(...), an if-block reassignment)
-        // was still flagged post-PR #55, confirmed against real CodeQL runs.
+        // narrowed to non-null. Routed through sanitizeForLog(...) rather than calling
+        // .replaceAll() directly on perimeterUserId - CodeQL's log-injection sanitizer
+        // barrier didn't recognize a replaceAll call made directly on the raw source
+        // parameter itself as a barrier, only one made on a value already one call
+        // removed from the source (the same shape itemCode's request.itemCode() below
+        // already has). Every prior attempt (a ternary, an unconditional
+        // String.valueOf(...).replaceAll(...), an if-block reassignment, and a direct
+        // inline replaceAll on the parameter) was still flagged post-PR #55, confirmed
+        // against real CodeQL runs.
         if (perimeterUserId == null) {
             log.warn("Rejected create order request: X-Perimeter-User-Id header missing, customerId={}",
                     request.customerId());
@@ -51,7 +53,7 @@ public class OrderController {
         }
         if (!perimeterUserId.equals(request.customerId().toString())) {
             log.warn("Rejected create order request: X-Perimeter-User-Id ({}) does not match customerId ({})",
-                    perimeterUserId.replaceAll("[\r\n]", "_"), request.customerId());
+                    sanitizeForLog(perimeterUserId), request.customerId());
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
         }
 
@@ -63,5 +65,9 @@ public class OrderController {
                 request.quantity(), request.totalAmount());
         Order order = orderService.createOrder(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
+    }
+
+    private static String sanitizeForLog(String value) {
+        return value.replaceAll("[\r\n]", "_");
     }
 }
