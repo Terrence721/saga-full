@@ -1,6 +1,66 @@
 import org.w3c.dom.Element
 import javax.xml.parsers.DocumentBuilderFactory
 
+// Removes every untracked .log file in the repo, found via git ls-files
+// rather than a hand-maintained list of directories/filenames to skip -
+// respects .gitignore automatically, and stays correct for any future
+// .log file without this task needing changes.
+//
+// --exclude-standard alone drops any .log file that already matches a
+// .gitignore pattern - and this repo's .gitignore has a blanket "*.log"
+// rule, so on its own that call would always return nothing at all.
+// Pairing it with --ignored flips to the opposite, ignored-only set;
+// neither call alone covers every .log file, so both are unioned.
+//
+// Unlike the equivalent script in the conduit-full/coolify-full sibling
+// repos, no vendor-directory exclusion is needed here: Gradle's
+// dependency cache lives in ~/.gradle, outside this repo entirely, so
+// there's no node_modules/vendor-style checked-in dependency tree to
+// avoid reaching into.
+tasks.register("cleanLogs") {
+    group = "verification"
+    description = "Removes every untracked .log file in the repo."
+
+    doLast {
+        fun gitLsFiles(ignoredOnly: Boolean): List<String> {
+            val args = mutableListOf("git", "ls-files", "--others", "--exclude-standard")
+            if (ignoredOnly) args.add("--ignored")
+            args.add("*.log")
+
+            val process = ProcessBuilder(args)
+                .directory(rootDir)
+                .start()
+            val output = process.inputStream.bufferedReader().readText()
+            process.waitFor()
+            return output.lines().filter { it.isNotBlank() }
+        }
+
+        val logFiles = (gitLsFiles(false) + gitLsFiles(true)).distinct()
+
+        if (logFiles.isEmpty()) {
+            println("No log files found.")
+        } else {
+            logFiles.forEach { relativePath ->
+                if (File(rootDir, relativePath).delete()) {
+                    println("Removed $relativePath")
+                }
+            }
+        }
+    }
+}
+
+// Every service's bootRun (the actual "start this service" command
+// documented in CONTRIBUTING.md) cleans stray logs first. Matched by task
+// name rather than importing the Spring Boot plugin's BootRun class here
+// in the root script - that plugin is applied per-service, not at the
+// root, so referencing its class directly would need the root build
+// script to carry that dependency too just to name a type.
+subprojects {
+    tasks.matching { it.name == "bootRun" }.configureEach {
+        dependsOn(rootProject.tasks.named("cleanLogs"))
+    }
+}
+
 // Gradle's own test-report-aggregation plugin needs to resolve every
 // subproject's full dependency graph at the root (Spring Boot's BOM,
 // the Spring gRPC BOM, and whatever future modules add) just to merge
