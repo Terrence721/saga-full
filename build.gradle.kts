@@ -26,11 +26,22 @@ tasks.register("aggregateTestReport") {
     // declare it as an input once it actually exists. Re-evaluated fresh on
     // every invocation, so a module gains input tracking the first time its
     // test-results directory shows up.
+    //
+    // mustRunAfter each module's `test` task (ordering only, not a real
+    // dependsOn - doesn't force `test` to run and doesn't fail if it does):
+    // without this, running `test` and `aggregateTestReport` in the same
+    // invocation lets Gradle schedule this task before a module's `test`
+    // task has actually written its results directory, which this task then
+    // reads without any declared relationship to the task that produced it -
+    // exactly the unsafe "implicit dependency" Gradle's own validation
+    // flags, and it reproduces as a real, occasional build failure, not
+    // just a warning.
     subprojects.forEach { sub ->
         val resultsDir = sub.layout.buildDirectory.dir("test-results/test").get().asFile
         if (resultsDir.exists()) {
             inputs.dir(resultsDir)
         }
+        mustRunAfter(sub.tasks.named("test"))
     }
 
     val outputFile = layout.buildDirectory.file("reports/tests/aggregate/index.html")

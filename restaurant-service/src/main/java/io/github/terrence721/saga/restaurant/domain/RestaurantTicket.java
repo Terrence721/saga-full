@@ -29,7 +29,7 @@ public class RestaurantTicket {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "order_id", nullable = false)
+    @Column(name = "order_id", unique = true, nullable = false)
     private UUID orderId;
 
     @Enumerated(EnumType.STRING)
