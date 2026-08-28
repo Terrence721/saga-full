@@ -431,4 +431,12 @@ Added a new real-boot test, `RestaurantServiceApplicationTests.dataSqlSeedsInven
 
 ---
 
+### [`InventoryStatus.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/domain/InventoryStatus.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #112](https://github.com/Terrence721/saga-full/issues/112))
+
+3-value enum (`ALLOCATED`, `INSUFFICIENT_STOCK`, `ITEM_NOT_FOUND`). Grepped every reference: all 3 values are genuinely produced by `RestaurantInventoryService.verifyAndDeductStock` and exhaustively consumed by `RestaurantService.processRestaurantStep`'s switch, no dead values. Purely a transient service-return type — not a JPA-persisted field on any entity (`RestaurantTicket.status` uses the separate `RestaurantTicketStatus`), so there's no `@Enumerated` storage-compatibility concern like `order-service`'s/`payment-service`'s `OrderStatus.java` copies.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
