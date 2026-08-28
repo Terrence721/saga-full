@@ -5,10 +5,12 @@ import io.github.terrence721.saga.restaurant.domain.RestaurantTicketStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DataJpaTest
 class RestaurantTicketRepositoryTest {
@@ -30,5 +32,20 @@ class RestaurantTicketRepositoryTest {
     @Test
     void existsByOrderId_returnsFalse_whenNoTicketExists() {
         assertThat(restaurantTicketRepository.existsByOrderId(UUID.randomUUID())).isFalse();
+    }
+
+    @Test
+    void save_rejectsDuplicateOrderId() {
+        UUID orderId = UUID.randomUUID();
+        restaurantTicketRepository.saveAndFlush(RestaurantTicket.builder()
+                .orderId(orderId)
+                .status(RestaurantTicketStatus.PREPARING)
+                .build());
+
+        assertThrows(DataIntegrityViolationException.class, () ->
+                restaurantTicketRepository.saveAndFlush(RestaurantTicket.builder()
+                        .orderId(orderId)
+                        .status(RestaurantTicketStatus.REJECTED)
+                        .build()));
     }
 }

@@ -447,4 +447,16 @@ Byte-for-byte identical (package declaration aside) to the already-reviewed `ord
 
 ---
 
+### [`RestaurantTicket.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/domain/RestaurantTicket.java)
+
+**medium · Reliability** — Fixed via [PR #117](https://github.com/Terrence721/saga-full/pull/117) ([issue #116](https://github.com/Terrence721/saga-full/issues/116))
+
+**Real finding, fixed**: the `order_id` column had no unique constraint, but `RestaurantService.processRestaurantStep` uses `ticketRepository.existsByOrderId(event.orderId())` as a check-then-act idempotency guard against duplicate `PaymentProcessedEvent` delivery — the same shape as `Payment.java`'s already-fixed `unique = true` constraint on its own `order_id` column (#86), added specifically to backstop that exact idempotency-guard pattern. `RestaurantConsumerConfig` is a plain `@KafkaListener` (default at-least-once semantics), so a redelivered/duplicate event is a real, expected occurrence, not a theoretical one. Without the constraint, two near-simultaneous deliveries could both pass the `existsByOrderId` check before either commits, producing two `RestaurantTicket` rows for one order.
+
+Fixed by adding `unique = true` to the `order_id` `@Column`, matching `Payment.java`'s precedent. Added a new test, `RestaurantTicketRepositoryTest.save_rejectsDuplicateOrderId`, asserting a `DataIntegrityViolationException` on a second `saveAndFlush` with the same `orderId` — more rigorous than `Payment.java`'s own constraint, which had no dedicated test anywhere in the repo. Verified via deliberate revert: removed `unique = true`, confirmed the new test genuinely fails, restored it.
+
+**Second, unrelated real bug found and fixed while verifying**: running the full suite as `./gradlew test aggregateTestReport` in one invocation failed intermittently with Gradle's "implicit dependency" validation error on every module — `aggregateTestReport` reads each module's `test-results/test` directory without any declared ordering relationship to the `test` task that writes it, so when Gradle happened to schedule `aggregateTestReport` before a module's `test` task had finished writing its output in the same build, the read was flagged as unsafe. Reproduced reliably: ran `:restaurant-service:test` alone first (so its results were freshly written but other modules' were untouched this Gradle daemon session), then `./gradlew test aggregateTestReport` — failed every time with that exact input/output ordering violation. Fixed in `build.gradle.kts` by adding `mustRunAfter(sub.tasks.named("test"))` per subproject — ordering only, not a real `dependsOn`, so it doesn't force `test` to run and doesn't fail if a module's tests fail, preserving the task's deliberate "merge whatever results exist, pass or fail" design. Verified by reproducing the exact failing sequence again after the fix — now succeeds. Full repo suite green, 122/122 (up from 121/121 — the one new duplicate-`orderId` test).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
