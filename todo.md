@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** August 25, 2026 (`payment-service` code review complete — 14/14 files, 4 real findings fixed, 0 left open; `restaurant-service` 3/18 files in — a real finding on `InventoryItem.java`: no way to ever seed inventory in a real deployment, fixed with real seed data)
+**Last Updated:** August 28, 2026 (`payment-service` code review complete — 14/14 files, 4 real findings fixed, 0 left open; `restaurant-service` 6/18 files in — real findings on `InventoryItem.java` (no way to ever seed inventory in a real deployment) and `RestaurantTicket.java` (missing `order_id` unique constraint backstopping its idempotency guard, plus an unrelated `aggregateTestReport` build-ordering bug found while verifying), both fixed)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
@@ -257,7 +257,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../domain/InventoryItem.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | [#110](https://github.com/Terrence721/saga-full/issues/110) | [#111](https://github.com/Terrence721/saga-full/pull/111) | Done — real finding fixed (no way to ever seed inventory in a real deployment — added data.sql), merged |
 | `src/main/java/.../domain/InventoryStatus.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | [#112](https://github.com/Terrence721/saga-full/issues/112) | [#113](https://github.com/Terrence721/saga-full/pull/113) | Done — no findings, merged |
 | `src/main/java/.../domain/OutboxRecord.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | [#114](https://github.com/Terrence721/saga-full/issues/114) | [#115](https://github.com/Terrence721/saga-full/pull/115) | Done — no findings, merged |
-| `src/main/java/.../domain/RestaurantTicket.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | — | — | Pending |
+| `src/main/java/.../domain/RestaurantTicket.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | [#116](https://github.com/Terrence721/saga-full/issues/116) | — | In review |
 | `src/main/java/.../domain/RestaurantTicketStatus.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | — | — | Pending |
 | `src/main/java/.../dto/PaymentProcessedEvent.java` | [`fce5e93`](https://github.com/Terrence721/saga-full/commit/fce5e93) | — | — | Pending |
 | `src/main/java/.../dto/PaymentStatus.java` | [`fce5e93`](https://github.com/Terrence721/saga-full/commit/fce5e93) | — | — | Pending |
