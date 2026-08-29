@@ -465,4 +465,12 @@ Fixed by adding `unique = true` to the `order_id` `@Column`, matching `Payment.j
 
 ---
 
+### [`RestaurantTicketStatus.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/domain/RestaurantTicketStatus.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #123](https://github.com/Terrence721/saga-full/issues/123))
+
+2-value enum (`PREPARING`, `REJECTED`). Grepped every reference: both values are genuinely produced by `RestaurantService.processRestaurantStep`'s branches (`PREPARING` on `ALLOCATED`, `REJECTED` on every rejection path — payment failure, `INSUFFICIENT_STOCK`, `ITEM_NOT_FOUND`), no dead values. Persisted via `@Enumerated(EnumType.STRING)` on `RestaurantTicket.status` (reviewed in #116), so storage is name-based — reordering is safe.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
