@@ -473,4 +473,12 @@ Fixed by adding `unique = true` to the `order_id` `@Column`, matching `Payment.j
 
 ---
 
+### [`PaymentProcessedEvent.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/dto/PaymentProcessedEvent.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #125](https://github.com/Terrence721/saga-full/issues/125))
+
+Field-for-field identical (package/import aside) to `payment-service`'s already-reviewed copy (#94). All 6 fields are genuinely used: `RestaurantService.validate` checks every one (defense-in-depth against a corrupted or malformed message on shared Kafka infrastructure, the same pattern already established for `itemCode`/`customerId` elsewhere in this repo), and `orderId`/`status`/`itemCode`/`quantity`/`customerId` are each consumed further in `processRestaurantStep` — `status` specifically gates the payment-approval branch added under #88. `amount` is validated but not otherwise read, matching the same not-dead-just-defensive shape already accepted for other cross-service DTO fields in this audit.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._

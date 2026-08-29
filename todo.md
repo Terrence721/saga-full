@@ -265,7 +265,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../domain/OutboxRecord.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | [#114](https://github.com/Terrence721/saga-full/issues/114) | [#115](https://github.com/Terrence721/saga-full/pull/115) | Done — no findings, merged |
 | `src/main/java/.../domain/RestaurantTicket.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | [#116](https://github.com/Terrence721/saga-full/issues/116) | [#117](https://github.com/Terrence721/saga-full/pull/117) | Done — real finding fixed (missing order_id unique constraint), merged |
 | `src/main/java/.../domain/RestaurantTicketStatus.java` | [`c887140`](https://github.com/Terrence721/saga-full/commit/c887140) | [#123](https://github.com/Terrence721/saga-full/issues/123) | [#124](https://github.com/Terrence721/saga-full/pull/124) | Done — no findings, merged |
-| `src/main/java/.../dto/PaymentProcessedEvent.java` | [`fce5e93`](https://github.com/Terrence721/saga-full/commit/fce5e93) | — | — | Pending |
+| `src/main/java/.../dto/PaymentProcessedEvent.java` | [`fce5e93`](https://github.com/Terrence721/saga-full/commit/fce5e93) | [#125](https://github.com/Terrence721/saga-full/issues/125) | — | In review |
 | `src/main/java/.../dto/PaymentStatus.java` | [`fce5e93`](https://github.com/Terrence721/saga-full/commit/fce5e93) | — | — | Pending |
 | `src/main/java/.../dto/RestaurantApprovedEvent.java` | [`fce5e93`](https://github.com/Terrence721/saga-full/commit/fce5e93) | — | — | Pending |
 | `src/main/java/.../dto/RestaurantEvent.java` | [`fce5e93`](https://github.com/Terrence721/saga-full/commit/fce5e93) | — | — | Pending |
