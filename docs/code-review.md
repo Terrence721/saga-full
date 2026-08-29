@@ -481,4 +481,12 @@ Field-for-field identical (package/import aside) to `payment-service`'s already-
 
 ---
 
+### [`PaymentStatus.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/dto/PaymentStatus.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #127](https://github.com/Terrence721/saga-full/issues/127))
+
+3-value enum (`APPROVED`, `REFUNDED`, `FAILED`), matching `payment-service`'s own domain enum shape. Traced `PaymentProcessedEvent`'s sole construction site in `payment-service` (`PaymentService.buildOutboxRecord`, called only from `processPaymentSaga`): `payment.getStatus()` there is only ever `APPROVED` or `FAILED` (set at the top of `processPaymentSaga`, #88) — `REFUNDED` is set exclusively inside the separate `handleOrderCompensation` method, which never constructs or publishes a new `PaymentProcessedEvent`. So `REFUNDED` is structurally unreachable through this specific DTO, even though it's a real, actively-used value in `payment-service`'s own `Payment.status` column. Same shape as `OrderStatus.java`'s already-accepted precedent (#56/#92) — a shared-shape DTO enum that needs to match the broader domain type even though only a subset of values is reachable via this particular event. `RestaurantService.processRestaurantStep`'s `!= APPROVED` check already treats `REFUNDED` the same as `FAILED` (reject, fail-closed) if it ever somehow arrived, so there's no mishandling risk either way — kept as-is, not a finding.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
