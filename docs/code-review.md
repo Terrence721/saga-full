@@ -489,4 +489,12 @@ Field-for-field identical (package/import aside) to `payment-service`'s already-
 
 ---
 
+### [`RestaurantApprovedEvent.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/dto/RestaurantApprovedEvent.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #129](https://github.com/Terrence721/saga-full/issues/129))
+
+3-field record (`orderId`, `customerId`, `ticketId`), field-for-field identical to `order-service`'s already-reviewed consuming copy (#66) except implementing this module's own `RestaurantEvent` sealed interface for `saveRestaurantTicketOutbox`'s polymorphism. All 3 fields are genuinely populated at the sole construction site (`RestaurantService.processRestaurantStep`'s `ALLOCATED` branch: `event.orderId()`, `event.customerId()`, `ticket.getId()` — a real, just-generated `RestaurantTicket` id, not a placeholder) and all 3 are consumed on the receiving end in `OrderService.confirmOrder` (`orderId` for the idempotency guard and lookup, `ticketId` null-checked as required, `customerId` cross-checked against the loaded order).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
