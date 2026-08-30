@@ -60,7 +60,7 @@ The big checkpoints, distinct from the phase-by-phase log below — the story ar
 | `api-gateway-service` | Reactive WebFlux/Spring Cloud Gateway module (Spring Cloud 2025.0.0, this repo's first non-servlet stack) — `AuthenticationController`/`UserGrpcClient` proxy `POST /auth/login` to `user-service`'s real `Login` gRPC RPC, `JwtPerimeterGuardGatewayFilterFactory` guards `POST /orders` using the same signing secret as `user-service`'s `JwtTokenProvider`, a Resilience4j circuit breaker falls back to `GatewayFallbackController` on downstream failure. Found and fixed a real bug in the source's own filter test (asserted a response status the filter never sets). 7 new tests, `./gradlew :api-gateway-service:test` verified green; full 88-test multi-module suite also green. **Completes all five originally-planned backend modules.** Reasoning in [docs/architecture.md](docs/architecture.md) | Phase 37-40 |
 | `portfolio.html` | Case-study page for the portfolio site, written from this repo's own real test/architecture numbers (test-coverage ledger, the At-a-glance table's labeled real-bug findings) | (standalone, between Phase 36 and 37) |
 
-**Actually still open, right now:** a register/POS frontend, a `reservation-service` addition, and the code-review audit (`user-contract`, `user-service`, `order-service` done, `payment-service` in progress, 3 modules left — see the **Code review — per-file tracking** section below). See the **Still to do** table below.
+**Actually still open, right now:** a register/POS frontend, a `reservation-service` addition, and the code-review audit (`user-contract`, `user-service`, `order-service`, and `payment-service` done, `restaurant-service` 17/18 files in, `api-gateway-service` not started — see the **Code review — per-file tracking** section below). See the **Still to do** table below.
 
 ## 🧪 Test Coverage Ledger
 
@@ -71,30 +71,32 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `user-contract` | `UserContractSerializationTest` | 6 | ✅ passing | Phase 9 | 2026-08-10 |
 | `user-service` | `JwtTokenProviderTest` | 5 | ✅ passing | Phase 11 | 2026-08-10 |
 | `user-service` | `UserGrpcServiceImplTest` | 2 | ✅ passing | Phase 12 | 2026-08-10 |
-| `user-service` | `UserGrpcServiceImplErrorTest` | 4 | ✅ passing | Phase 14 | 2026-08-10 |
+| `user-service` | `UserGrpcServiceImplErrorTest` | 6 | ✅ passing | [#41](https://github.com/Terrence721/saga-full/pull/41) | 2026-08-13 |
 | `user-service` | `UserGrpcServiceIntegrationTest` | 3 | ✅ passing | Phase 15 | 2026-08-10 |
 | `user-service` | `UserServiceApplicationTests` | 1 | ✅ passing | Phase 17 | 2026-08-10 |
+| `user-service` | `SecurityConfigTest` | 2 | ✅ passing | [#29](https://github.com/Terrence721/saga-full/pull/29) | 2026-08-13 |
+| `user-service` | `UserRepositoryTest` | 3 | ✅ passing | [#45](https://github.com/Terrence721/saga-full/pull/45) | 2026-08-13 |
 | `order-service` | `OrderServiceApplicationTests` | 1 | ✅ passing | Phase 16-17 | 2026-08-10 |
 | `order-service` | `OrderRepositoryTest` | 3 | ✅ passing | Phase 19 | 2026-08-10 |
 | `order-service` | `OutboxRepositoryTest` | 2 | ✅ passing | Phase 19 | 2026-08-10 |
-| `order-service` | `OrderServiceTest` | 7 | ✅ passing | Phase 21 | 2026-08-12 |
-| `order-service` | `OutboxPublisherServiceTest` | 4 | ✅ passing | Phase 22 | 2026-08-12 |
-| `order-service` | `OrderControllerTest` | 2 | ✅ passing | Phase 23 | 2026-08-12 |
-| `order-service` | `OrderConsumerConfigTest` | 2 | ✅ passing | Phase 24 | 2026-08-12 |
+| `order-service` | `OrderServiceTest` | 11 | ✅ passing | [#79](https://github.com/Terrence721/saga-full/pull/79) | 2026-08-19 |
+| `order-service` | `OutboxPublisherServiceTest` | 5 | ✅ passing | [#81](https://github.com/Terrence721/saga-full/pull/81) | 2026-08-19 |
+| `order-service` | `OrderControllerTest` | 6 | ✅ passing | [#59](https://github.com/Terrence721/saga-full/pull/59) | 2026-08-18 |
+| `order-service` | `OrderConsumerConfigTest` | 5 | ✅ passing | [#77](https://github.com/Terrence721/saga-full/pull/77) | 2026-08-19 |
 | `payment-service` | `PaymentServiceApplicationTests` | 1 | ✅ passing | Phase 27 | 2026-08-12 |
-| `payment-service` | `PaymentRepositoryTest` | 2 | ✅ passing | Phase 29 | 2026-08-12 |
+| `payment-service` | `PaymentRepositoryTest` | 7 | ✅ passing | [#103](https://github.com/Terrence721/saga-full/pull/103) | 2026-08-25 |
 | `payment-service` | `OutboxRepositoryTest` | 2 | ✅ passing | Phase 29 | 2026-08-12 |
-| `payment-service` | `PaymentServiceTest` | 6 | ✅ passing | Phase 30 | 2026-08-12 |
-| `payment-service` | `OutboxPublisherServiceTest` | 4 | ✅ passing | Phase 31 | 2026-08-12 |
-| `payment-service` | `PaymentConsumerConfigTest` | 2 | ✅ passing | Phase 31 | 2026-08-12 |
-| `restaurant-service` | `RestaurantServiceApplicationTests` | 1 | ✅ passing | Phase 32 | 2026-08-12 |
+| `payment-service` | `PaymentServiceTest` | 9 | ✅ passing | [#97](https://github.com/Terrence721/saga-full/pull/97) | 2026-08-22 |
+| `payment-service` | `OutboxPublisherServiceTest` | 5 | ✅ passing | [#105](https://github.com/Terrence721/saga-full/pull/105) | 2026-08-25 |
+| `payment-service` | `PaymentConsumerConfigTest` | 5 | ✅ passing | [#107](https://github.com/Terrence721/saga-full/pull/107) | 2026-08-25 |
+| `restaurant-service` | `RestaurantServiceApplicationTests` | 2 | ✅ passing | [#111](https://github.com/Terrence721/saga-full/pull/111) | 2026-08-25 |
 | `restaurant-service` | `InventoryItemRepositoryTest` | 2 | ✅ passing | Phase 34 | 2026-08-12 |
-| `restaurant-service` | `RestaurantTicketRepositoryTest` | 2 | ✅ passing | Phase 34 | 2026-08-12 |
+| `restaurant-service` | `RestaurantTicketRepositoryTest` | 3 | ✅ passing | [#117](https://github.com/Terrence721/saga-full/pull/117) | 2026-08-28 |
 | `restaurant-service` | `OutboxRepositoryTest` | 2 | ✅ passing | Phase 34 | 2026-08-12 |
-| `restaurant-service` | `RestaurantServiceTest` | 6 | ✅ passing | Phase 35 | 2026-08-12 |
+| `restaurant-service` | `RestaurantServiceTest` | 7 | ✅ passing | [#89](https://github.com/Terrence721/saga-full/pull/89) | 2026-08-22 |
 | `restaurant-service` | `RestaurantInventoryServiceTest` | 3 | ✅ passing | Phase 35 | 2026-08-12 |
-| `restaurant-service` | `OutboxPublisherServiceTest` | 5 | ✅ passing | Phase 36 | 2026-08-12 |
-| `restaurant-service` | `RestaurantConsumerConfigTest` | 1 | ✅ passing | Phase 36 | 2026-08-12 |
+| `restaurant-service` | `OutboxPublisherServiceTest` | 6 | ✅ passing | [#142](https://github.com/Terrence721/saga-full/pull/142) | 2026-08-30 |
+| `restaurant-service` | `RestaurantConsumerConfigTest` | 3 | ✅ passing | [#144](https://github.com/Terrence721/saga-full/pull/144) | 2026-08-30 |
 | `api-gateway-service` | `ApiGatewayServiceApplicationTests` | 1 | ✅ passing | Phase 37-40 | 2026-08-13 |
 | `api-gateway-service` | `AuthenticationControllerTest` | 3 | ✅ passing | Phase 38, 40 | 2026-08-13 |
 | `api-gateway-service` | `JwtPerimeterGuardGatewayFilterFactoryTest` | 3 | ✅ passing | Phase 39-40 | 2026-08-13 |
