@@ -513,4 +513,12 @@ Sealed interface, `permits RestaurantApprovedEvent, RestaurantRejectedEvent` —
 
 ---
 
+### [`InventoryItemRepository.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/repository/InventoryItemRepository.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #135](https://github.com/Terrence721/saga-full/issues/135))
+
+Pure `JpaRepository<InventoryItem, String>` passthrough, zero custom query methods declared. Both methods actually used in production (`RestaurantInventoryService.verifyAndDeductStock`'s `findById`/`save`) have real `@DataJpaTest` coverage against a genuine embedded H2, including a true/false pair for `findById` (found vs. unknown item code).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
