@@ -521,4 +521,12 @@ Pure `JpaRepository<InventoryItem, String>` passthrough, zero custom query metho
 
 ---
 
+### [`OutboxRepository.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/repository/OutboxRepository.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #137](https://github.com/Terrence721/saga-full/issues/137))
+
+Byte-for-byte identical (module naming in comments/package aside) to both `order-service`'s (#74) and `payment-service`'s (#100) already-reviewed copies — same `SKIP LOCKED` pessimistic-lock hint on `findByOrderByCreatedTimeAsc`. Real test coverage: an empty-case test plus a genuine ordering+page-limit test (12 records inserted, verifies exactly the oldest 10 come back in chronological order).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
