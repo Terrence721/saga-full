@@ -537,4 +537,14 @@ Byte-for-byte identical (module naming in comments/package aside) to both `order
 
 ---
 
+### [`OutboxPublisherService.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/service/OutboxPublisherService.java)
+
+**medium · Reliability** — Fixed via [PR #142](https://github.com/Terrence721/saga-full/pull/142) ([issue #141](https://github.com/Terrence721/saga-full/issues/141))
+
+**Real finding, fixed — the third occurrence of the same gap**: `kafkaTemplate.send(message).get()` blocked unbounded, implicitly relying on Kafka's own undocumented 120s `delivery.timeout.ms` default, while `@Transactional` held the outbox row's `PESSIMISTIC_WRITE` lock open the entire time — a degraded broker could hold that lock for up to 20 minutes across a full 10-record batch. Identical structural gap already fixed in `order-service` (#80) and `payment-service` (#104/PR #105); pre-flagged before this file's own review even started (see `todo.md`'s Phase 31 log and the payment-service audit notes).
+
+Fixed with the identical pattern: a new `app.outbox.send-timeout-ms` config property (default 10000ms, `application.yaml`), `.get(sendTimeoutMs, TimeUnit.MILLISECONDS)` replacing the unbounded call, and a `TimeoutException` catch that logs and leaves the record for the next poll. New test `publishPendingOutboxRecords_leavesRecordForRetry_onTimeout` (a service instance with a 50ms timeout against a `CompletableFuture` that never completes). Verified via deliberate revert — reverting to the unbounded `.get()` makes the new test's `TimeoutException` catch block unreachable, so the module fails to *compile*, not just fails a test, a genuine compile-time proof. Full repo suite green, 123/123 (up from 122/122).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
