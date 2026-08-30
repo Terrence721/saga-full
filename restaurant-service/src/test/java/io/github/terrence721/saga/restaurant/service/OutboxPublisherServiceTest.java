@@ -44,7 +44,7 @@ class OutboxPublisherServiceTest {
     @BeforeEach
     void setUp() {
         publisherService = new OutboxPublisherService(
-                outboxRepository, kafkaTemplate, "restaurant-approved-topic", "restaurant-rejected-topic", 10);
+                outboxRepository, kafkaTemplate, "restaurant-approved-topic", "restaurant-rejected-topic", 10, 10_000L);
     }
 
     private OutboxRecord outboxRecord(String aggregateId, String eventType) {
@@ -125,6 +125,22 @@ class OutboxPublisherServiceTest {
         when(kafkaTemplate.send(any(Message.class))).thenReturn(failed);
 
         publisherService.publishPendingOutboxRecords();
+
+        verify(outboxRepository, never()).delete(any());
+    }
+
+    @Test
+    void publishPendingOutboxRecords_leavesRecordForRetry_onTimeout() {
+        OutboxPublisherService shortTimeoutService = new OutboxPublisherService(
+                outboxRepository, kafkaTemplate, "restaurant-approved-topic", "restaurant-rejected-topic", 10, 50L);
+        OutboxRecord record = outboxRecord("order-slow", "RestaurantApprovedEvent");
+        when(outboxRepository.findByOrderByCreatedTimeAsc(PageRequest.of(0, 10)))
+                .thenReturn(List.of(record));
+        // Never completes - proves the explicit get(timeout) bound fires rather than blocking
+        // indefinitely on Kafka's own delivery.timeout.ms default.
+        when(kafkaTemplate.send(any(Message.class))).thenReturn(new CompletableFuture<>());
+
+        shortTimeoutService.publishPendingOutboxRecords();
 
         verify(outboxRepository, never()).delete(any());
     }
