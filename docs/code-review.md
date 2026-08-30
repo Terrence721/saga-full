@@ -529,4 +529,12 @@ Byte-for-byte identical (module naming in comments/package aside) to both `order
 
 ---
 
+### [`RestaurantTicketRepository.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/repository/RestaurantTicketRepository.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #139](https://github.com/Terrence721/saga-full/issues/139))
+
+`existsByOrderId` is the fast-path idempotency guard used in `RestaurantService.processRestaurantStep`, correctly paired with `RestaurantTicket.order_id`'s unique constraint (#116) as a defense-in-depth DB-level backstop — the same shape already established for `Payment`/`PaymentRepository`. Both the `existsByOrderId` true/false behavior and the constraint-rejection behavior already have real test coverage, verified via deliberate revert as part of #116/PR #117's own review — not re-verified here since nothing about this interface changed since then.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
