@@ -497,4 +497,12 @@ Field-for-field identical (package/import aside) to `payment-service`'s already-
 
 ---
 
+### [`RestaurantEvent.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/dto/RestaurantEvent.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #131](https://github.com/Terrence721/saga-full/issues/131))
+
+Sealed interface, `permits RestaurantApprovedEvent, RestaurantRejectedEvent` — checked both implement it for real (grepped both files), so the seal is accurate and exhaustive, not stale. Its sole use is `RestaurantService.saveRestaurantTicketOutbox(RestaurantEvent event, ...)`, which only calls `event.orderId()` polymorphically (three times — the exception message, `aggregateId`, and the log line); `event.customerId()`, also declared on the interface, is never invoked through a `RestaurantEvent`-typed reference anywhere in the codebase. Not a finding — `customerId` is still a genuinely used field on both concrete records (constructed with real values, serialized into the outbox payload via Jackson's record reflection, and read by real consumers in `order-service`/`payment-service`), it's just accessed through the concrete types rather than the interface. Removing it from the interface wouldn't fix anything, only shrink the documented shared shape.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
