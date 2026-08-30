@@ -505,4 +505,12 @@ Sealed interface, `permits RestaurantApprovedEvent, RestaurantRejectedEvent` —
 
 ---
 
+### [`RestaurantRejectedEvent.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/dto/RestaurantRejectedEvent.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #133](https://github.com/Terrence721/saga-full/issues/133))
+
+3-field record (`orderId`, `customerId`, `reason`), field-for-field identical to both `payment-service`'s (#96) and `order-service`'s (#68) already-reviewed copies. All 3 fields are genuinely populated at all 3 real construction sites in `RestaurantService.processRestaurantStep` (payment-failure rejection, `INSUFFICIENT_STOCK`, `ITEM_NOT_FOUND`, each with a distinct, real descriptive `reason` string) and consumed on both receiving ends — `payment-service`'s `handleOrderCompensation` (`orderId`/`customerId` cross-check, `reason` logged) and `order-service`'s `cancelOrder` (same shape, plus the CWE-117 sanitization already fixed under #78).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
