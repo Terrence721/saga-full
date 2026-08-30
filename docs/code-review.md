@@ -547,4 +547,14 @@ Fixed with the identical pattern: a new `app.outbox.send-timeout-ms` config prop
 
 ---
 
+### [`RestaurantConsumerConfig.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/service/RestaurantConsumerConfig.java)
+
+**medium · Reliability** — Fixed via [PR #144](https://github.com/Terrence721/saga-full/pull/144) ([issue #143](https://github.com/Terrence721/saga-full/issues/143))
+
+**Real finding, fixed**: no `DefaultErrorHandler` bean anywhere in this module — an uncaught exception from `onPaymentProcessed` (a malformed payload, or `RestaurantService.validate`'s `IllegalArgumentException`) fell through to Spring Boot's autoconfigured default (10 retries at 0ms backoff, then silent log-and-skip). Identical gap already fixed in `order-service`'s (#76) and `payment-service`'s (#106) own `*ConsumerConfig` files, expected here per the audit's own precedent.
+
+Fixed with the identical pattern: a `kafkaErrorHandler()` `@Bean` with a bounded `FixedBackOff(1000L, 2L)` (3 attempts total, 1s apart), `IllegalArgumentException` marked non-retryable (retrying can't fix a permanently malformed message — restaurant-service has no custom "not found"-style exception the way `order-service`/`payment-service` do, since `processRestaurantStep` never loads an existing entity by id), and an explicit `ERROR`-level recoverer naming the topic/partition/offset. Two new tests mirroring the sibling modules' exact shape. Verified via deliberate revert: removed `addNotRetryableExceptions(...)`, confirmed the new test genuinely fails, restored it. Full repo suite green, 125/125 (up from 123/123).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
