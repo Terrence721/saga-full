@@ -475,7 +475,7 @@
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">23</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">24</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -993,6 +993,28 @@
           </div>
           <div class="meta">
             <span class="tag">medium · reliability</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">24</div>
+        <div>
+          <div class="file">restaurant-service — unlocked stock-deduction race</div>
+          <div class="desc">
+            <code>verifyAndDeductStock</code> read an item's stock with a
+            plain <code>findById</code>, then wrote the deduction back with
+            no locking — two concurrent orders for the same item could both
+            read the same stock count, both pass the check, and both get
+            allocated. Reachable once the service scales past one instance,
+            since the Kafka message key is <code>orderId</code>, not
+            <code>itemCode</code>. Proved with a real
+            <code>@SpringBootTest</code> firing two genuinely concurrent
+            calls — <code>[ALLOCATED, ALLOCATED]</code> without the fix,
+            <code>[ALLOCATED, INSUFFICIENT_STOCK]</code> with it. Fixed with
+            a pessimistic-write row lock.
+          </div>
+          <div class="meta">
+            <span class="tag">high · concurrency</span>
           </div>
         </div>
       </div>
