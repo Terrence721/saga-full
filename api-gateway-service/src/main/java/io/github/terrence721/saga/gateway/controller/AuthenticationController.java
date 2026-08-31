@@ -12,6 +12,7 @@ import io.github.terrence721.saga.gateway.infra.grpc.UserGrpcClient;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @RestController
 @RequestMapping("/auth")
@@ -24,10 +25,12 @@ public class AuthenticationController {
     public Mono<ResponseEntity<WebTokenResponse>> login(
                 @Valid @RequestBody AuthRequest request) {
 
-        // With virtual threads enabled globally, the blocking gRPC call can run
-        // inside Mono.fromCallable() without a manual scheduler override - WebFlux's
-        // Netty event loop is never occupied by it.
+        // userGrpcClient.login() is a blocking gRPC call. spring.threads.virtual.enabled
+        // does not touch Reactor Netty's event-loop group, so without subscribeOn here
+        // it would run directly on a webflux-http-nio-* thread and block it for the
+        // call's duration - boundedElastic isolates it instead.
         return Mono.fromCallable(() -> userGrpcClient.login(request))
+                .subscribeOn(Schedulers.boundedElastic())
                 .map(grpcResponse ->
                     ResponseEntity.ok(
                             new WebTokenResponse(

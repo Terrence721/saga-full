@@ -589,4 +589,16 @@ This file's only job — wiring a `UserIdentityServiceBlockingStub` bean off the
 
 ---
 
+### [`AuthenticationController.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/controller/AuthenticationController.java)
+
+**medium · Reliability** — Fixed via [PR #152](https://github.com/Terrence721/saga-full/pull/152) ([issue #151](https://github.com/Terrence721/saga-full/issues/151))
+
+**Real finding, fixed — carried over, already verified, from #149's review of `CommonAppConfig.java`**: `login`'s blocking gRPC call was wrapped in `Mono.fromCallable(...)` with no scheduler override, on the strength of a comment claiming `spring.threads.virtual.enabled=true` kept it off Reactor Netty's event loop. That claim was already disproved during #149's review — a real running server showed the call executing on `webflux-http-nio-2`.
+
+Fixed by adding `.subscribeOn(Schedulers.boundedElastic())` to the `Mono.fromCallable(...)` chain, the standard interop pattern for isolating a genuinely blocking call from a reactive pipeline, and correcting the comment to state the real mechanism rather than the disproved one.
+
+Verified with a new `AuthenticationControllerThreadingTest` (`@SpringBootTest(webEnvironment = RANDOM_PORT)`, not `@WebFluxTest` — the event-loop group only exists once Netty is actually running): captures `Thread.currentThread().getName()` inside the mocked gRPC call through a real HTTP round-trip and asserts it's not a `webflux-http-nio-*`/`reactor-http-nio-*` thread. Verified via deliberate revert: with `subscribeOn` removed, the test genuinely failed (the captured thread name matched the event-loop pattern); restored, and it passes. Full repo suite green, 127/127 (up from 126/126).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._

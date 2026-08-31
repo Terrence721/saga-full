@@ -288,7 +288,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | - | - | - | - | - |
 | `src/main/java/.../ApiGatewayServiceApplication.java` | [`e27264a`](https://github.com/Terrence721/saga-full/commit/e27264a) | [#147](https://github.com/Terrence721/saga-full/issues/147) | [#148](https://github.com/Terrence721/saga-full/pull/148) | Done — no findings, merged |
 | `src/main/java/.../config/CommonAppConfig.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#149](https://github.com/Terrence721/saga-full/issues/149) | [#150](https://github.com/Terrence721/saga-full/pull/150) | Done — no findings in its own code, real bug found deferred to AuthenticationController.java, merged |
-| `src/main/java/.../controller/AuthenticationController.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | — | — | Pending |
+| `src/main/java/.../controller/AuthenticationController.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#151](https://github.com/Terrence721/saga-full/issues/151) | — | In Progress |
 | `src/main/java/.../controller/GatewayFallbackController.java` | [`660f24e`](https://github.com/Terrence721/saga-full/commit/660f24e) | — | — | Pending |
 | `src/main/java/.../dto/AuthRequest.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | — | — | Pending |
 | `src/main/java/.../dto/WebTokenResponse.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | — | — | Pending |
