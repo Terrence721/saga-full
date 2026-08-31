@@ -1,8 +1,7 @@
 # Code Review Results
 
 <!-- markdownlint-disable-next-line MD036 -->
-
-**Last Updated: August 25, 2026**
+**Last Updated: August 31, 2026**
 
 > [!CAUTION]
 > This is a simulation of real-world code review.
@@ -649,4 +648,4 @@ Plain output record, no validation needed. The shared error body across the whol
 
 ---
 
-_More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
+*More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress.*
