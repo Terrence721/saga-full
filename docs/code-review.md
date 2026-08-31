@@ -631,4 +631,14 @@ Plain output record, no validation needed since it's a response, not a request. 
 
 ---
 
+### [`DependencyUnavailableException.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/exception/DependencyUnavailableException.java)
+
+**n/a · Maintainability** — Reviewed, no findings in this file's own shape ([issue #159](https://github.com/Terrence721/saga-full/issues/159))
+
+Plain `RuntimeException` subclass, matching every other custom exception in this repo (`PaymentNotFoundException.java`, `OrderNotFoundException.java`, etc.). Genuinely thrown from `UserGrpcExceptionTranslator.translate` (both `UNAVAILABLE`/`DEADLINE_EXCEEDED`/`INTERNAL` and the `default` gRPC status branches, always via the `(message, cause)` constructor) and caught by `GlobalExceptionHandler.handleDependencyFailure`, which returns `503 SERVICE_UNAVAILABLE`.
+
+**Real finding discovered while checking real usages, deferred to `GlobalExceptionHandler.java`'s own turn**: no test anywhere exercises `handleDependencyFailure`, or this exception's handling at all — same class of gap as `GatewayFallbackController.java` (#153/#154), a real production error-handling path with zero coverage. Since the untested behavior actually lives in `GlobalExceptionHandler.java` (an `@ExceptionHandler` method, not anything defined in this file), the fix belongs there — coming up in 2 files, where the whole exception-handling matrix can be assessed at once rather than piecemeal per exception class.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
