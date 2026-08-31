@@ -104,10 +104,15 @@ public class RestaurantService {
     }
 
     private RestaurantTicket createAndSaveTicket(UUID orderId, RestaurantTicketStatus status) {
-        return ticketRepository.save(RestaurantTicket.builder()
+        RestaurantTicket newTicket = RestaurantTicket.builder()
                 .orderId(orderId)
                 .status(status)
-                .build());
+                .build();
+        RestaurantTicket savedTicket = ticketRepository.save(newTicket);
+        if (savedTicket == null) {
+            throw new IllegalStateException("Saved restaurant ticket must not be null");
+        }
+        return savedTicket;
     }
 
     private void saveRestaurantTicketOutbox(RestaurantEvent event, String eventType) {
