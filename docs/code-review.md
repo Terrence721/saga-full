@@ -557,4 +557,16 @@ Fixed with the identical pattern: a `kafkaErrorHandler()` `@Bean` with a bounded
 
 ---
 
+### [`RestaurantInventoryService.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/service/RestaurantInventoryService.java)
+
+**medium · Reliability** — Fixed via [PR #146](https://github.com/Terrence721/saga-full/pull/146) ([issue #145](https://github.com/Terrence721/saga-full/issues/145))
+
+**Real finding, fixed**: `verifyAndDeductStock`'s read-modify-write on `InventoryItem.stockCount` (`findById` → check → `setStockCount` → `save`) issued no lock. Two concurrent deductions against the same `itemCode` — a real occurrence once `restaurant-service` scales past one instance, since the Kafka message key on `payment-processed-topic` is `orderId`, not `itemCode`, so two different orders for the same item can land on different partitions/instances — could both read the same pre-deduction `stockCount` before either wrote back, both return `ALLOCATED`, and both save a decrement: a classic lost update that oversells stock below zero.
+
+Fixed by adding `InventoryItemRepository.findByItemCodeForUpdate` (`@Lock(PESSIMISTIC_WRITE)` + a JPQL `@Query`, the same locking primitive this repo already uses on `OutboxRepository`) and switching `verifyAndDeductStock` to call it instead of plain `findById`. This blocks a second transaction reading the same row until the first commits, so it always sees the real post-deduction count rather than a stale one.
+
+Verified with a new `RestaurantInventoryServiceConcurrencyTest` (`@SpringBootTest`, not `@DataJpaTest` — needs the real transaction manager and connection pool so two threads can each hold a genuine, independent transaction against the same row): seeds one item with exactly enough stock for one request, fires two real concurrent calls via an `ExecutorService` released together off a `CountDownLatch`, and asserts exactly one comes back `ALLOCATED` and the other `INSUFFICIENT_STOCK`, with the row landing on exactly 0, never negative. Verified via deliberate revert, run 3 times to rule out flakiness in both directions: with the fix, 4/4 real runs green; reverted to plain `findById`, 3/3 real runs failed with the exact predicted bug (`[ALLOCATED, ALLOCATED]` — both threads wrongly allocated against stock for one), restored. Full repo suite green, 126/126 (up from 125/125).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
