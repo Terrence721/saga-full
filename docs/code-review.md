@@ -613,4 +613,14 @@ Added `GatewayFallbackControllerTest` (`@WebFluxTest`, matching `AuthenticationC
 
 ---
 
+### [`AuthRequest.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/dto/AuthRequest.java)
+
+**n/a · Maintainability** — Reviewed, no findings in this file's own code ([issue #155](https://github.com/Terrence721/saga-full/issues/155))
+
+`@NotBlank`-only validation on both `email` and `password` is the right call for a login DTO — this is a credential *check*, not an account-creation flow, so format/complexity constraints don't belong here; malformed input just fails authentication normally further downstream, not a real bug.
+
+**Real finding discovered while checking this record's real consumers, deferred to `UserGrpcClient.java`'s own turn (later in this module's file order)**: `email` is unrestricted free text (no `@Email` format check) and `UserGrpcClient.login` logs it raw, twice, at `log.info` level (`"Initiating gRPC login call for email: {}"` / `"Authenticated user successfully for email: {}"`) — on `/auth/login`, an unauthenticated endpoint, so any caller controls this value entirely. A classic CWE-117 log-injection vector: embedded CR/LF can forge fake log lines. Same class of gap already fixed in this repo's `order-service` (`OrderService.java`'s `sanitizedReason`, stripped via `.replaceAll("[\r\n]", "_")` for the same reason — "content-unrestricted" free text reaching a log call), and exactly the class of finding CodeQL's own precision gap won't catch here (see [`project-codeql-log-injection-header-source-gap`](../docs/code-review.md) — record accessors sourced from `@RequestBody` don't clear CodeQL's `java/log-injection` taint tracking the way `@RequestHeader` strings do, but this repo's own audit process still needs to catch them). Pre-flagged here so it isn't lost; fix (the same `.replaceAll("[\r\n]", "_")` pattern) lands on `UserGrpcClient.java`'s own review.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
