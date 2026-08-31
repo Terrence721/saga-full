@@ -24,6 +24,7 @@ replay_pid*
 *.iml
 *.iws
 .vscode/
+*.code-workspace
 .settings/
 .project
 .classpath
