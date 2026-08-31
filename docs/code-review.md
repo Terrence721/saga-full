@@ -571,4 +571,12 @@ Verified with a new `RestaurantInventoryServiceConcurrencyTest` (`@SpringBootTes
 
 ---
 
+### [`ApiGatewayServiceApplication.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/ApiGatewayServiceApplication.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #147](https://github.com/Terrence721/saga-full/issues/147))
+
+13 lines: package declaration, two imports, a single `@SpringBootApplication`-annotated class with a `main()` calling `SpringApplication.run()`. Identical in shape to `OrderServiceApplication.java`/`PaymentServiceApplication.java`/`UserServiceApplication.java`, all already reviewed with no findings. A real `ApiGatewayServiceApplicationTests.contextLoads` boots the actual `ApplicationContext` (not a sliced/mocked test), so this class's only real responsibility — wiring the app up at all — has genuine coverage.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
