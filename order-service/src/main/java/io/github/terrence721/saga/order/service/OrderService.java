@@ -43,6 +43,7 @@ public class OrderService {
                 .status(OrderStatus.PENDING)
                 .build();
 
+        @SuppressWarnings("null") // Spring Data's save() never returns null; it throws on failure instead.
         Order savedOrder = orderRepository.save(order);
         log.info("Order {} saved with status {}", savedOrder.getId(), savedOrder.getStatus());
 

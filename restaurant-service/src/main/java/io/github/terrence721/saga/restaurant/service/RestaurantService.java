@@ -108,10 +108,8 @@ public class RestaurantService {
                 .orderId(orderId)
                 .status(status)
                 .build();
+        @SuppressWarnings("null") // Spring Data's save() never returns null; it throws on failure instead.
         RestaurantTicket savedTicket = ticketRepository.save(newTicket);
-        if (savedTicket == null) {
-            throw new IllegalStateException("Saved restaurant ticket must not be null");
-        }
         return savedTicket;
     }
 

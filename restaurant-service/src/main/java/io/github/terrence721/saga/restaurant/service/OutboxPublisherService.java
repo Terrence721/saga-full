@@ -65,10 +65,8 @@ public class OutboxPublisherService {
     private void publish(OutboxRecord record) {
         String topic = resolveTopic(record.getEventType());
 
+        @SuppressWarnings("null") // payload is a NOT NULL DB column; never null once loaded.
         String payload = record.getPayload();
-        if (payload == null) {
-            throw new IllegalStateException("Outbox record payload must not be null");
-        }
         Message<String> message = MessageBuilder.withPayload(payload)
                 .setHeader(KafkaHeaders.TOPIC, topic)
                 .setHeader(KafkaHeaders.KEY, record.getAggregateId())

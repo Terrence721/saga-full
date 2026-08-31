@@ -41,10 +41,8 @@ public class UserGrpcServiceImpl extends UserIdentityServiceGrpc.UserIdentitySer
     @Override
     public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
         GrpcExecutor.execute(responseObserver, () -> {
+            @SuppressWarnings("null") // Protobuf string getters never return null, only "" for unset fields.
             String email = request.getEmail();
-            if (email == null) {
-                throw new IllegalArgumentException("email must not be null");
-            }
             Optional<User> maybeUser = userRepository.findByEmail(email);
 
             // Runs exactly once on every path - found or not, active or not - so none of
