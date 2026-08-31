@@ -579,4 +579,14 @@ Verified with a new `RestaurantInventoryServiceConcurrencyTest` (`@SpringBootTes
 
 ---
 
+### [`CommonAppConfig.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/config/CommonAppConfig.java)
+
+**n/a · Maintainability** — Reviewed, no findings in this file's own code ([issue #149](https://github.com/Terrence721/saga-full/issues/149))
+
+This file's only job — wiring a `UserIdentityServiceBlockingStub` bean off the named `userService` gRPC channel — is correct and matches its own `application.yaml` config. Choosing a *blocking* stub here isn't itself wrong; it's a legitimate pattern as long as its caller isolates the blocking call off Reactor Netty's event-loop threads.
+
+**Real finding discovered while reviewing this file's only consumer, deferred to `AuthenticationController.java`'s own turn (the very next file)**: `AuthenticationController.login` wraps the blocking `userGrpcClient.login(...)` call in `Mono.fromCallable(...)` with a comment claiming that, since `spring.threads.virtual.enabled=true` is set repo-wide, the call runs on a virtual thread and "WebFlux's Netty event loop is never occupied by it." Verified this claim empirically with a real `@SpringBootTest(webEnvironment = RANDOM_PORT)` hitting `/auth/login` through an actual running Netty server and capturing `Thread.currentThread().getName()` inside the mocked gRPC call: it ran on `webflux-http-nio-2`, a genuine Reactor Netty event-loop thread, not a virtual thread. `spring.threads.virtual.enabled` retargets Spring's own servlet/Tomcat-style executors and `@Async`/scheduling — it has no effect on Reactor Netty's independently-managed event-loop group. Every `/auth/login` call currently blocks one of a small, fixed pool of event-loop threads shared by the entire gateway (including the reactive `order-service` proxy route) for the duration of the gRPC call — not visible under today's light, single-request testing, but a real concurrency bug at production traffic levels, the same class of "real but not-yet-triggered" finding as `restaurant-service`'s stock-deduction race. Pre-flagged here so it isn't lost or re-discovered as fresh; fix lands on `AuthenticationController.java`'s own review, immediately next.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
