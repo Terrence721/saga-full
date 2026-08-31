@@ -641,4 +641,12 @@ Plain `RuntimeException` subclass, matching every other custom exception in this
 
 ---
 
+### [`ErrorResponse.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/exception/ErrorResponse.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #161](https://github.com/Terrence721/saga-full/issues/161))
+
+Plain output record, no validation needed. The shared error body across the whole module's failure surface — every `GlobalExceptionHandler` handler builds one via `buildResponse`, and `GatewayFallbackController.orderFallback` constructs one directly. Already has real coverage via `GatewayFallbackControllerTest` and `AuthenticationControllerTest`'s UNAUTHORIZED-path assertions.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
