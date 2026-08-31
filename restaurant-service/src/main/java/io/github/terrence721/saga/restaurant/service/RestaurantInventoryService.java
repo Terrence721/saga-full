@@ -16,7 +16,7 @@ public class RestaurantInventoryService {
 
     @Transactional
     public InventoryStatus verifyAndDeductStock(String itemCode, int quantity) {
-        return inventoryItemRepository.findById(itemCode)
+        return inventoryItemRepository.findByItemCodeForUpdate(itemCode)
                 .map(item -> {
                     if (item.getStockCount() < quantity) {
                         return InventoryStatus.INSUFFICIENT_STOCK;
