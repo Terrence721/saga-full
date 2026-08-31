@@ -184,6 +184,7 @@ tasks.register("aggregateTestReport") {
         <html>
         <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>saga-full - Aggregated Test Report</title>
         <style>
             body { font-family: -apple-system, "Segoe UI", sans-serif; margin: 2rem; color: #1f2328; }
