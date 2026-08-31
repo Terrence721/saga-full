@@ -59,6 +59,9 @@ public class PaymentService {
                 .build();
 
         Payment savedPayment = paymentRepository.save(payment);
+        if (savedPayment == null) {
+            throw new IllegalStateException("Saved payment must not be null");
+        }
         if (status == PaymentStatus.APPROVED) {
             log.info("Payment {} approved for order {}", savedPayment.getId(), event.orderId());
         } else {
