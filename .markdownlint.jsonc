@@ -1,0 +1,9 @@
+{
+  // This repo's docs deliberately use long single-line paragraphs throughout
+  // (README.md, todo.md, docs/*.md) rather than hard-wrapping at 80 columns -
+  // MD013 flags every one of them (473 of 477 total violations repo-wide as
+  // of 2026-08-31), which is noise against an intentional style choice, not
+  // a real defect. Every other rule stays on.
+  "default": true,
+  "MD013": false
+}
