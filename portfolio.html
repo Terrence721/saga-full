@@ -466,7 +466,7 @@
         <span class="v">42</span><span class="k">phases shipped</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">126/126</span><span class="k">tests passing</span>
+        <span class="v">128/128</span><span class="k">tests passing</span>
       </div>
       <div class="manifest-cell">
         <span class="v">6</span><span class="k">services complete</span>
@@ -475,7 +475,7 @@
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">24</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">25</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -1018,6 +1018,28 @@
           </div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">25</div>
+        <div>
+          <div class="file">api-gateway-service — blocking login call on the Netty event loop</div>
+          <div class="desc">
+            The login endpoint's blocking gRPC call was wrapped in
+            <code>Mono.fromCallable(...)</code> with no scheduler
+            override, on a comment's mistaken claim that
+            <code>spring.threads.virtual.enabled</code> kept it off
+            Reactor Netty's event loop — it doesn't; that setting only
+            retargets servlet-style executors. Verified empirically
+            with a real running server: the call executed on
+            <code>webflux-http-nio-2</code>, a genuine event-loop
+            thread, meaning every login could block one of a handful
+            of threads shared by the whole gateway. Fixed with
+            <code>subscribeOn(Schedulers.boundedElastic())</code>.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · reliability</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1036,7 +1058,7 @@
     </p>
     <div class="twocol">
       <div class="card">
-        <h3>126/126 tests, real infra behind them</h3>
+        <h3>128/128 tests, real infra behind them</h3>
         <p>
           Repository tests run against embedded H2 with real Hibernate DDL,
           not mocks; Kafka/Postgres wiring is separately verified against
