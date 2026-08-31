@@ -34,7 +34,7 @@ class RestaurantInventoryServiceTest {
     @Test
     void verifyAndDeductStock_returnsAllocatedAndDeducts_whenEnoughStock() {
         InventoryItem item = InventoryItem.builder().itemCode("PIZZA_01").stockCount(10).build();
-        when(inventoryItemRepository.findById("PIZZA_01")).thenReturn(Optional.of(item));
+        when(inventoryItemRepository.findByItemCodeForUpdate("PIZZA_01")).thenReturn(Optional.of(item));
 
         InventoryStatus status = inventoryService.verifyAndDeductStock("PIZZA_01", 3);
 
@@ -47,7 +47,7 @@ class RestaurantInventoryServiceTest {
     @Test
     void verifyAndDeductStock_returnsInsufficientStock_whenNotEnough() {
         InventoryItem item = InventoryItem.builder().itemCode("PIZZA_01").stockCount(2).build();
-        when(inventoryItemRepository.findById("PIZZA_01")).thenReturn(Optional.of(item));
+        when(inventoryItemRepository.findByItemCodeForUpdate("PIZZA_01")).thenReturn(Optional.of(item));
 
         InventoryStatus status = inventoryService.verifyAndDeductStock("PIZZA_01", 3);
 
@@ -57,7 +57,7 @@ class RestaurantInventoryServiceTest {
 
     @Test
     void verifyAndDeductStock_returnsItemNotFound_whenItemCodeUnknown() {
-        when(inventoryItemRepository.findById("UNKNOWN")).thenReturn(Optional.empty());
+        when(inventoryItemRepository.findByItemCodeForUpdate("UNKNOWN")).thenReturn(Optional.empty());
 
         InventoryStatus status = inventoryService.verifyAndDeductStock("UNKNOWN", 1);
 
