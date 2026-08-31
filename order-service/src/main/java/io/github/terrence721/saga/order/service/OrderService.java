@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -45,13 +44,10 @@ public class OrderService {
                 .build();
 
         Order savedOrder = orderRepository.save(order);
-        if (savedOrder == null) {
-            throw new IllegalStateException("Saved order must not be null");
-        }
         log.info("Order {} saved with status {}", savedOrder.getId(), savedOrder.getStatus());
 
         OutboxRecord outboxRecord = buildOutboxRecord(savedOrder);
-        Objects.requireNonNull(outboxRepository.save(outboxRecord), "Saved outbox record must not be null");
+        outboxRepository.save(outboxRecord);
 
         return savedOrder;
     }

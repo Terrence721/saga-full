@@ -64,7 +64,6 @@ class OrderServiceTest {
             order.setId(UUID.randomUUID());
             return order;
         });
-        when(outboxRepository.save(any(OutboxRecord.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Order saved = orderService.createOrder(request);
 
