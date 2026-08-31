@@ -601,4 +601,16 @@ Verified with a new `AuthenticationControllerThreadingTest` (`@SpringBootTest(we
 
 ---
 
+### [`GatewayFallbackController.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/controller/GatewayFallbackController.java)
+
+**medium · Test coverage** — Fixed via [PR #154](https://github.com/Terrence721/saga-full/pull/154) ([issue #153](https://github.com/Terrence721/saga-full/issues/153))
+
+**Real finding, fixed (test-coverage gap)**: this is the actual fallback target Resilience4j routes to when `orderServiceCircuitBreaker` trips (`application.yaml`'s `order-service-route`, `fallbackUri: forward:/fallback/orders`) — the concrete implementation behind the README's own "circuit breaker on the downstream hop" claim — yet had zero test coverage anywhere in the repo. No test verified the endpoint actually returns `503 SERVICE_UNAVAILABLE` with a well-formed `ErrorResponse` body, the exact behavior the whole circuit-breaker story depends on when the real `order-service` is unreachable. Same class of gap as `PaymentRepository.java`'s missing `existsByOrderId` coverage (#102) earlier in this audit — a real production code path with no test proving it does what it claims.
+
+The controller's own logic checked out otherwise: `@RequestMapping("/orders")` with no method restriction means it also answers non-`POST` requests, but since it's a static, side-effect-free informational response with no auth bypass or data exposure, that's a legitimate, intentional choice for a fallback endpoint, not a finding.
+
+Added `GatewayFallbackControllerTest` (`@WebFluxTest`, matching `AuthenticationControllerTest`'s existing pattern) asserting the real response shape: status `503`, `error` = `"SERVICE_UNAVAILABLE"`, non-empty `message`, numeric `timestamp` — three genuine field checks, not a tautological single assertion. No deliberate-revert step needed (test-only addition, no production code changed), matching the same precedent set at #102. Full repo suite green, 128/128 (up from 127/127).
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
