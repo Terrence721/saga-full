@@ -557,7 +557,7 @@ Fixed with the identical pattern: a `kafkaErrorHandler()` `@Bean` with a bounded
 
 ---
 
-### [`RestaurantInventoryService.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/service/RestaurantInventoryService.java)
+### [`RestaurantInventoryService.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/service/RestaurantInventoryService.java) — last file in `restaurant-service`
 
 **medium · Reliability** — Fixed via [PR #146](https://github.com/Terrence721/saga-full/pull/146) ([issue #145](https://github.com/Terrence721/saga-full/issues/145))
 
@@ -566,6 +566,8 @@ Fixed with the identical pattern: a `kafkaErrorHandler()` `@Bean` with a bounded
 Fixed by adding `InventoryItemRepository.findByItemCodeForUpdate` (`@Lock(PESSIMISTIC_WRITE)` + a JPQL `@Query`, the same locking primitive this repo already uses on `OutboxRepository`) and switching `verifyAndDeductStock` to call it instead of plain `findById`. This blocks a second transaction reading the same row until the first commits, so it always sees the real post-deduction count rather than a stale one.
 
 Verified with a new `RestaurantInventoryServiceConcurrencyTest` (`@SpringBootTest`, not `@DataJpaTest` — needs the real transaction manager and connection pool so two threads can each hold a genuine, independent transaction against the same row): seeds one item with exactly enough stock for one request, fires two real concurrent calls via an `ExecutorService` released together off a `CountDownLatch`, and asserts exactly one comes back `ALLOCATED` and the other `INSUFFICIENT_STOCK`, with the row landing on exactly 0, never negative. Verified via deliberate revert, run 3 times to rule out flakiness in both directions: with the fix, 4/4 real runs green; reverted to plain `findById`, 3/3 real runs failed with the exact predicted bug (`[ALLOCATED, ALLOCATED]` — both threads wrongly allocated against stock for one), restored. Full repo suite green, 126/126 (up from 125/125).
+
+**Module review complete — `restaurant-service`, 18/18 files reviewed, 5 real findings fixed, 0 findings left open** (an unreachable inventory-seeding gap in `InventoryItem.java`/#110, a missing `order_id` unique constraint in `RestaurantTicket.java`/#116, an unbounded Kafka-send timeout in `OutboxPublisherService.java`/#141 — the third occurrence of a gap already fixed in `order-service`/`payment-service` — a missing `DefaultErrorHandler` in `RestaurantConsumerConfig.java`/#143 — likewise the third occurrence — and an unlocked stock-deduction race in this file). `RestaurantService.java` was covered early under `payment-service`'s `PaymentStatus.java` review (#88), ahead of this module's own audit turn. Full multi-module suite: 126/126 tests passing. See [todo.md](../todo.md) for the full per-file table and [#22](https://github.com/Terrence721/saga-full/issues/22) for the closed tracking issue.
 
 ---
 
