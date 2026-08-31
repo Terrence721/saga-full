@@ -623,4 +623,12 @@ Added `GatewayFallbackControllerTest` (`@WebFluxTest`, matching `AuthenticationC
 
 ---
 
+### [`WebTokenResponse.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/dto/WebTokenResponse.java)
+
+**n/a · Maintainability** — Reviewed, no findings ([issue #157](https://github.com/Terrence721/saga-full/issues/157))
+
+Plain output record, no validation needed since it's a response, not a request. Sole construction site is the already-reviewed `AuthenticationController.login` (#151/#152); all 3 fields (`token`, `type`, `expiresIn`) are genuinely populated from the real gRPC response and already have real coverage via `AuthenticationControllerTest`'s existing JSON-path assertions.
+
+---
+
 _More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress._
