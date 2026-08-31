@@ -5,13 +5,13 @@
 
 **[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)**
 
-Last updated: August 31, 2026 (code-review audit: `user-contract` + `user-service` + `order-service` + `payment-service` + `restaurant-service` modules complete, 19 real findings fixed total; `api-gateway-service`'s audit now in progress, the last of the 6 modules)
+Last updated: August 31, 2026 (code-review audit: `api-gateway-service`'s audit in progress, 8/15 files done — a real event-loop-blocking concurrency bug found and fixed in `AuthenticationController.java`, plus a real test-coverage gap fixed in `GatewayFallbackController.java`; 22 real findings fixed audit-wide so far)
 
 This repository is a from-scratch demonstration of the Distributed Saga pattern for coordinating long-running business transactions across independent microservices — order placement, payment settlement, and fulfillment, each owned by its own service, coordinated without a shared database transaction.
 
 This is an original implementation, not a fork of any existing project. The module boundaries and general shape of the problem (order → payment → fulfillment, with compensation on failure) are common territory for this class of system; the code, design decisions, and tradeoffs recorded here are this repo's own.
 
-**At a glance:** 126/126 tests passing across `user-contract` + `user-service` + `order-service` + `payment-service` + `restaurant-service` + `api-gateway-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
+**At a glance:** 128/128 tests passing across `user-contract` + `user-service` + `order-service` + `payment-service` + `restaurant-service` + `api-gateway-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
 
 ## 🧭 Start Here
 
@@ -25,7 +25,7 @@ The rest of the [wiki](https://github.com/Terrence721/saga-full/wiki) goes deepe
 - **[`todo.md`](todo.md)** — the phase-by-phase log of everything done and everything still open, plus a [Milestones](todo.md#-milestones) section for the high-level story arc. This is the source of truth for progress.
 - **[GitHub Project board](https://github.com/users/Terrence721/projects/3)** — a Scrum-style Backlog/Planned/In Progress/Verification & QA/Done view of the same work, for a quick at-a-glance status without reading the full log. Kept in sync with [`todo.md`](todo.md).
 - **[`docs/architecture.md`](docs/architecture.md)** — the reasoning behind this repo's architectural decisions (context, alternatives, what each one actually cost), not just what changed.
-- **[`docs/code-review.md`](docs/code-review.md)** — a per-module, per-file code-review audit of the whole codebase, one real GitHub PR per file (findings or not). `user-contract`, `user-service`, `order-service`, `payment-service`, and `restaurant-service` are complete (19 real findings fixed total, including three real security issues, a Kafka poison-pill fix, a payment-decline path that never existed, and an unlocked stock-deduction race that could oversell inventory once the service scales past one replica); `api-gateway-service` is now in progress, the last of the 6 modules — see [todo.md](todo.md) for the tracking table.
+- **[`docs/code-review.md`](docs/code-review.md)** — a per-module, per-file code-review audit of the whole codebase, one real GitHub PR per file (findings or not). `user-contract`, `user-service`, `order-service`, `payment-service`, and `restaurant-service` are complete; `api-gateway-service` is now in progress, the last of the 6 modules, 8/15 files done — a real event-loop-blocking concurrency bug found and fixed in `AuthenticationController.java`, plus a real test-coverage gap in `GatewayFallbackController.java`. 22 real findings fixed audit-wide so far, including three real security issues, a Kafka poison-pill fix, a payment-decline path that never existed, and an unlocked stock-deduction race that could oversell inventory once the service scales past one replica — see [todo.md](todo.md) for the tracking table.
 - **[`docs/case-study.md`](docs/case-study.md)** — problem, constraints, tradeoffs, and results, for anyone scanning this repo as a portfolio piece rather than reading it as documentation.
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** — development setup, testing commands, commit conventions.
 
