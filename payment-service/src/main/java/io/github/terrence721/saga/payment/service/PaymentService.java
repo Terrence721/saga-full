@@ -40,6 +40,7 @@ public class PaymentService {
         this.maxAmount = maxAmount;
     }
 
+    @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void processPaymentSaga(OrderCreatedEvent event) {
         if (paymentRepository.existsByOrderId(event.orderId())) {
@@ -70,6 +71,7 @@ public class PaymentService {
         outboxRepository.save(buildOutboxRecord(savedPayment, event));
     }
 
+    @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void handleOrderCompensation(RestaurantRejectedEvent event) {
         if (paymentRepository.existsByOrderIdAndStatus(event.orderId(), PaymentStatus.REFUNDED)) {
@@ -123,11 +125,12 @@ public class PaymentService {
             throw new IllegalStateException("Failed to serialize PaymentProcessedEvent for order " + payment.getOrderId(), e);
         }
 
-        return OutboxRecord.builder()
+        OutboxRecord outboxRecord = OutboxRecord.builder()
                 .aggregateId(payment.getOrderId().toString())
                 .eventType("PaymentProcessedEvent")
                 .payload(payload)
                 .createdTime(LocalDateTime.now())
                 .build();
+        return outboxRecord;
     }
 }

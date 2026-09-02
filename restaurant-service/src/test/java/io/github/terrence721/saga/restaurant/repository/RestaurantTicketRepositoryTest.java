@@ -21,10 +21,11 @@ class RestaurantTicketRepositoryTest {
     @Test
     void existsByOrderId_returnsTrue_whenTicketExists() {
         UUID orderId = UUID.randomUUID();
-        restaurantTicketRepository.save(RestaurantTicket.builder()
+        RestaurantTicket ticket = RestaurantTicket.builder()
                 .orderId(orderId)
                 .status(RestaurantTicketStatus.PREPARING)
-                .build());
+                .build();
+        restaurantTicketRepository.save(ticket);
 
         assertThat(restaurantTicketRepository.existsByOrderId(orderId)).isTrue();
     }
@@ -37,15 +38,17 @@ class RestaurantTicketRepositoryTest {
     @Test
     void save_rejectsDuplicateOrderId() {
         UUID orderId = UUID.randomUUID();
-        restaurantTicketRepository.saveAndFlush(RestaurantTicket.builder()
+        RestaurantTicket firstTicket = RestaurantTicket.builder()
                 .orderId(orderId)
                 .status(RestaurantTicketStatus.PREPARING)
-                .build());
+                .build();
+        restaurantTicketRepository.saveAndFlush(firstTicket);
 
+        RestaurantTicket duplicateTicket = RestaurantTicket.builder()
+                .orderId(orderId)
+                .status(RestaurantTicketStatus.REJECTED)
+                .build();
         assertThrows(DataIntegrityViolationException.class, () ->
-                restaurantTicketRepository.saveAndFlush(RestaurantTicket.builder()
-                        .orderId(orderId)
-                        .status(RestaurantTicketStatus.REJECTED)
-                        .build()));
+                restaurantTicketRepository.saveAndFlush(duplicateTicket));
     }
 }

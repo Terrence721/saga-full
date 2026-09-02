@@ -47,13 +47,14 @@ class OutboxPublisherServiceTest {
     }
 
     private OutboxRecord outboxRecord(String aggregateId, String payload) {
-        return OutboxRecord.builder()
+        OutboxRecord record = OutboxRecord.builder()
                 .id(UUID.randomUUID())
                 .aggregateId(aggregateId)
                 .eventType("PaymentProcessedEvent")
                 .payload(payload)
                 .createdTime(LocalDateTime.now())
                 .build();
+        return record;
     }
 
     @Test

@@ -24,7 +24,8 @@ class UserRepositoryTest {
 
     @Test
     void findByEmail_returnsUser_whenEmailExists() {
-        User saved = userRepository.save(sampleUser().build());
+        User newUser = sampleUser().build();
+        User saved = userRepository.save(newUser);
 
         assertThat(userRepository.findByEmail("user@example.com"))
                 .isPresent()
@@ -40,9 +41,11 @@ class UserRepositoryTest {
 
     @Test
     void save_rejectsADuplicateEmail_becauseTheColumnIsGenuinelyUnique() {
-        userRepository.saveAndFlush(sampleUser().build());
+        User firstUser = sampleUser().build();
+        userRepository.saveAndFlush(firstUser);
 
-        assertThatThrownBy(() -> userRepository.saveAndFlush(sampleUser().passwordHash("different-hash").build()))
+        User duplicateEmailUser = sampleUser().passwordHash("different-hash").build();
+        assertThatThrownBy(() -> userRepository.saveAndFlush(duplicateEmailUser))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 }

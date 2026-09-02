@@ -14,6 +14,7 @@ public class RestaurantInventoryService {
         this.inventoryItemRepository = inventoryItemRepository;
     }
 
+    @SuppressWarnings("null") // itemCode is always a real, non-null String from a real caller.
     @Transactional
     public InventoryStatus verifyAndDeductStock(String itemCode, int quantity) {
         return inventoryItemRepository.findByItemCodeForUpdate(itemCode)

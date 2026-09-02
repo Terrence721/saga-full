@@ -39,12 +39,13 @@ class UserGrpcServiceImplTest {
     private UserGrpcServiceImpl service;
 
     private User activeUser(UUID id) {
-        return User.builder()
+        User user = User.builder()
                 .id(id)
                 .email("user@example.com")
                 .passwordHash("hashed-password")
                 .active(true)
                 .build();
+        return user;
     }
 
     @Test

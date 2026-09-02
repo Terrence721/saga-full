@@ -17,10 +17,11 @@ class InventoryItemRepositoryTest {
 
     @Test
     void findById_returnsItem_whenItExists() {
-        inventoryItemRepository.save(InventoryItem.builder()
+        InventoryItem item = InventoryItem.builder()
                 .itemCode("PIZZA_01")
                 .stockCount(10)
-                .build());
+                .build();
+        inventoryItemRepository.save(item);
 
         Optional<InventoryItem> found = inventoryItemRepository.findById("PIZZA_01");
 

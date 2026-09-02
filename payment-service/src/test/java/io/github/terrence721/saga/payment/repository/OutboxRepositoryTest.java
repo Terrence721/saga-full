@@ -29,12 +29,13 @@ class OutboxRepositoryTest {
         LocalDateTime base = LocalDateTime.now().minusMinutes(2);
 
         for (int i = 0; i < 12; i++) {
-            outboxRepository.save(OutboxRecord.builder()
+            OutboxRecord record = OutboxRecord.builder()
                     .aggregateId("order-" + i)
                     .eventType("PaymentProcessed")
                     .payload("{\"index\":" + i + "}")
                     .createdTime(base.plusSeconds(i))
-                    .build());
+                    .build();
+            outboxRepository.save(record);
         }
 
         List<OutboxRecord> batch = outboxRepository.findByOrderByCreatedTimeAsc(PageRequest.of(0, 10));

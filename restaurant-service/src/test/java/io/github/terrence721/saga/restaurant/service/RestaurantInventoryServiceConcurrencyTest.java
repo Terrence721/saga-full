@@ -33,7 +33,8 @@ class RestaurantInventoryServiceConcurrencyTest {
     @Test
     void verifyAndDeductStock_serializesConcurrentRequestsForTheSameItem_soStockNeverOversells() throws Exception {
         String itemCode = "CONCURRENCY_TEST_ITEM";
-        inventoryItemRepository.saveAndFlush(InventoryItem.builder().itemCode(itemCode).stockCount(5).build());
+        InventoryItem newItem = InventoryItem.builder().itemCode(itemCode).stockCount(5).build();
+        inventoryItemRepository.saveAndFlush(newItem);
 
         // Only enough stock for one request of 5 - if the two concurrent calls both
         // read the same pre-deduction count (the bug this guards against), both would

@@ -41,6 +41,7 @@ public class RestaurantService {
         this.objectMapper = objectMapper;
     }
 
+    @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void processRestaurantStep(PaymentProcessedEvent event) {
         if (ticketRepository.existsByOrderId(event.orderId())) {

@@ -21,12 +21,13 @@ class PaymentRepositoryTest {
     @Test
     void findByOrderId_returnsPayment_whenOneExists() {
         UUID orderId = UUID.randomUUID();
-        paymentRepository.save(Payment.builder()
+        Payment newPayment = Payment.builder()
                 .orderId(orderId)
                 .customerId(UUID.randomUUID())
                 .amount(new BigDecimal("19.99"))
                 .status(PaymentStatus.APPROVED)
-                .build());
+                .build();
+        paymentRepository.save(newPayment);
 
         Optional<Payment> found = paymentRepository.findByOrderId(orderId);
 
@@ -44,12 +45,13 @@ class PaymentRepositoryTest {
     @Test
     void existsByOrderId_returnsTrue_whenPaymentExists() {
         UUID orderId = UUID.randomUUID();
-        paymentRepository.save(Payment.builder()
+        Payment newPayment = Payment.builder()
                 .orderId(orderId)
                 .customerId(UUID.randomUUID())
                 .amount(new BigDecimal("19.99"))
                 .status(PaymentStatus.APPROVED)
-                .build());
+                .build();
+        paymentRepository.save(newPayment);
 
         assertThat(paymentRepository.existsByOrderId(orderId)).isTrue();
     }
@@ -62,12 +64,13 @@ class PaymentRepositoryTest {
     @Test
     void existsByOrderIdAndStatus_returnsTrue_whenStatusMatches() {
         UUID orderId = UUID.randomUUID();
-        paymentRepository.save(Payment.builder()
+        Payment newPayment = Payment.builder()
                 .orderId(orderId)
                 .customerId(UUID.randomUUID())
                 .amount(new BigDecimal("19.99"))
                 .status(PaymentStatus.REFUNDED)
-                .build());
+                .build();
+        paymentRepository.save(newPayment);
 
         assertThat(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).isTrue();
     }
@@ -75,12 +78,13 @@ class PaymentRepositoryTest {
     @Test
     void existsByOrderIdAndStatus_returnsFalse_whenStatusDoesNotMatch() {
         UUID orderId = UUID.randomUUID();
-        paymentRepository.save(Payment.builder()
+        Payment newPayment = Payment.builder()
                 .orderId(orderId)
                 .customerId(UUID.randomUUID())
                 .amount(new BigDecimal("19.99"))
                 .status(PaymentStatus.APPROVED)
-                .build());
+                .build();
+        paymentRepository.save(newPayment);
 
         assertThat(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).isFalse();
     }
