@@ -39,13 +39,12 @@ public class UserGrpcServiceImpl extends UserIdentityServiceGrpc.UserIdentitySer
     }
 
     @Override
+    @SuppressWarnings("null") // Protobuf string getters never return null; User is never absent when User::getPasswordHash runs, since Optional.map only invokes it when present.
     public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
         GrpcExecutor.execute(responseObserver, () -> {
-            @SuppressWarnings("null") // Protobuf string getters never return null, only "" for unset fields.
             String email = request.getEmail();
             Optional<User> maybeUser = userRepository.findByEmail(email);
 
-            @SuppressWarnings("null") // Protobuf string getters never return null, only "" for unset fields.
             String password = request.getPassword();
             // Runs exactly once on every path - found or not, active or not - so none of
             // them can be told apart by how long the response takes.

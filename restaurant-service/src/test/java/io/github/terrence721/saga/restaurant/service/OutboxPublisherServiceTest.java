@@ -77,7 +77,7 @@ class OutboxPublisherServiceTest {
         when(kafkaTemplate.send(any(Message.class)))
                 .thenReturn(CompletableFuture.completedFuture(mock(SendResult.class)));
 
-        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+        ArgumentCaptor<Message<String>> messageCaptor = ArgumentCaptor.forClass(Message.class);
 
         publisherService.publishPendingOutboxRecords();
 
@@ -94,7 +94,7 @@ class OutboxPublisherServiceTest {
         when(kafkaTemplate.send(any(Message.class)))
                 .thenReturn(CompletableFuture.completedFuture(mock(SendResult.class)));
 
-        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+        ArgumentCaptor<Message<String>> messageCaptor = ArgumentCaptor.forClass(Message.class);
 
         publisherService.publishPendingOutboxRecords();
 
