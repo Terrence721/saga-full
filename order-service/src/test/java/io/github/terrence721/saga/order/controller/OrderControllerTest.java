@@ -22,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(OrderController.class)
+@SuppressWarnings("null") // test fixtures/mocks here are always real, non-null values.
 class OrderControllerTest {
 
     @Autowired

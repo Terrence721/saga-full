@@ -114,6 +114,7 @@ public class RestaurantService {
         return savedTicket;
     }
 
+    @SuppressWarnings("null") // Lombok's generated build() never returns null.
     private void saveRestaurantTicketOutbox(RestaurantEvent event, String eventType) {
         String payload;
         try {

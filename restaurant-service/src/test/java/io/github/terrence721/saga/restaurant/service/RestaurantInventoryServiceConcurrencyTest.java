@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 // transaction against the same row - @DataJpaTest wraps the whole test method in one
 // shared transaction, which can't reproduce the race this is testing for.
 @SpringBootTest
+@SuppressWarnings("null") // test fixtures/mocks here are always real, non-null values.
 class RestaurantInventoryServiceConcurrencyTest {
 
     @Autowired

@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SuppressWarnings("null") // test fixtures/mocks here are always real, non-null values.
 class JwtTokenProviderTest {
 
     private User sampleUser() {

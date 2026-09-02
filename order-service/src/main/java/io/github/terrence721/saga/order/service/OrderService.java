@@ -118,6 +118,7 @@ public class OrderService {
         }
     }
 
+    @SuppressWarnings("null") // Lombok's generated build() never returns null.
     private OutboxRecord buildOutboxRecord(Order order) {
         OrderCreatedEvent event = new OrderCreatedEvent(
                 order.getId(),

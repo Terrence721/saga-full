@@ -11,6 +11,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
+@SuppressWarnings("null") // test fixtures/mocks here are always real, non-null values.
 class RestaurantServiceApplicationTests {
 
     @Autowired
