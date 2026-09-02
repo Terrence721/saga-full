@@ -674,4 +674,12 @@ This is **not a bug** — the CWE-203 collapse is a correct, deliberate security
 
 ---
 
+### [`UserInactiveException.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/exception/UserInactiveException.java)
+
+**Reviewed via [PR #168](https://github.com/Terrence721/saga-full/pull/168) ([issue #167](https://github.com/Terrence721/saga-full/issues/167))**
+
+No findings — same shape as `InvalidCredentialsException.java` (a plain `RuntimeException` subclass), correctly mapped by `GlobalExceptionHandler.handleForbidden` to `403 FORBIDDEN`, with real coverage already added in #163/#164's `AuthenticationControllerTest`. Same `PERMISSION_DENIED`-branch reachability nuance already documented on `InvalidCredentialsException.java`'s entry above applies here too — not re-litigated per file, this is its one canonical writeup. No code change made.
+
+---
+
 *More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress.*
