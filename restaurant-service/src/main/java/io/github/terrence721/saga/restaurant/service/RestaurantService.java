@@ -104,12 +104,12 @@ public class RestaurantService {
         }
     }
 
+    @SuppressWarnings("null") // Spring Data's save() never returns null; it throws on failure instead.
     private RestaurantTicket createAndSaveTicket(UUID orderId, RestaurantTicketStatus status) {
         RestaurantTicket newTicket = RestaurantTicket.builder()
                 .orderId(orderId)
                 .status(status)
                 .build();
-        @SuppressWarnings("null") // Spring Data's save() never returns null; it throws on failure instead.
         RestaurantTicket savedTicket = ticketRepository.save(newTicket);
         return savedTicket;
     }

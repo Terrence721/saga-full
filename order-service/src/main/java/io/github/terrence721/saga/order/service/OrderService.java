@@ -33,6 +33,7 @@ public class OrderService {
         this.objectMapper = objectMapper;
     }
 
+    @SuppressWarnings("null") // Spring Data's save() never returns null; it throws on failure instead.
     @Transactional
     public Order createOrder(CreateOrderRequest request) {
         Order order = Order.builder()
@@ -43,7 +44,6 @@ public class OrderService {
                 .status(OrderStatus.PENDING)
                 .build();
 
-        @SuppressWarnings("null") // Spring Data's save() never returns null; it throws on failure instead.
         Order savedOrder = orderRepository.save(order);
         log.info("Order {} saved with status {}", savedOrder.getId(), savedOrder.getStatus());
 

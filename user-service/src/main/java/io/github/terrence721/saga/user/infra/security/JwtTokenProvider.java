@@ -32,9 +32,9 @@ public class JwtTokenProvider {
         this.verifier = JWT.require(algorithm).withIssuer(issuer).build();
     }
 
+    @SuppressWarnings("null") // User.email is a NOT NULL DB column; never null once loaded.
     public IssuedToken createToken(User user) {
         Date now = new Date();
-        @SuppressWarnings("null") // User.email is a NOT NULL DB column; never null once loaded.
         String email = user.getEmail();
         String token = JWT.create()
                 .withIssuer(issuer)
