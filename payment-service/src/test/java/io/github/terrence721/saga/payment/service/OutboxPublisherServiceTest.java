@@ -76,12 +76,12 @@ class OutboxPublisherServiceTest {
         when(kafkaTemplate.send(any(Message.class)))
                 .thenReturn(CompletableFuture.completedFuture(mock(SendResult.class)));
 
-        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+        ArgumentCaptor<Message<String>> messageCaptor = ArgumentCaptor.forClass(Message.class);
 
         publisherService.publishPendingOutboxRecords();
 
         verify(kafkaTemplate).send(messageCaptor.capture());
-        Message sent = messageCaptor.getValue();
+        Message<String> sent = messageCaptor.getValue();
         assertThat(sent.getPayload()).isEqualTo(record.getPayload());
         assertThat(sent.getHeaders().get(KafkaHeaders.TOPIC)).isEqualTo("payment-processed-topic");
         assertThat(sent.getHeaders().get(KafkaHeaders.KEY)).isEqualTo("order-123");
