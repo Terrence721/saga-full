@@ -10,6 +10,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
+@SuppressWarnings("null") // test fixtures/mocks here are always real, non-null values.
 class InventoryItemRepositoryTest {
 
     @Autowired

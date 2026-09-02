@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null") // test fixtures/mocks here are always real, non-null values.
 class UserGrpcServiceImplTest {
 
     @Mock
