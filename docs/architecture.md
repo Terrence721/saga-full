@@ -1,6 +1,6 @@
 # Architecture Decisions
 
-Last updated: September 2, 2026 (all six backend modules complete through `api-gateway-service`, Phase 40; a CodeQL-flagged log-injection fix, Phase 41; the code-review audit has closed out `user-contract`, `user-service`, `order-service`, `payment-service`, and `restaurant-service`, `api-gateway-service`'s audit in progress, 10/15 files done — see [`docs/code-review.md`](code-review.md))
+Last updated: September 2, 2026 (all six backend modules complete through `api-gateway-service`, Phase 40; a CodeQL-flagged log-injection fix, Phase 41; the code-review audit has closed out `user-contract`, `user-service`, `order-service`, `payment-service`, and `restaurant-service`, `api-gateway-service`'s audit in progress, 11/15 files done — see [`docs/code-review.md`](code-review.md))
 
 This document records the architectural decisions made in this repo — context, alternatives considered, what each decision actually cost — not a general tutorial on the Saga pattern. For the phase-by-phase build log, see [todo.md](../todo.md). For the portfolio-facing summary, see [case-study.md](case-study.md).
 
