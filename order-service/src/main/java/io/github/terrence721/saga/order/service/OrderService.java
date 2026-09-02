@@ -53,6 +53,7 @@ public class OrderService {
         return savedOrder;
     }
 
+    @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void confirmOrder(RestaurantApprovedEvent event) {
         if (orderRepository.existsByIdAndStatus(event.orderId(), OrderStatus.SUCCESS)) {
@@ -75,6 +76,7 @@ public class OrderService {
         log.info("Order {} marked SUCCESS", event.orderId());
     }
 
+    @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void cancelOrder(RestaurantRejectedEvent event) {
         if (orderRepository.existsByIdAndStatus(event.orderId(), OrderStatus.CANCELLED)) {
@@ -99,6 +101,7 @@ public class OrderService {
         log.warn("Order {} cancelled: {}", event.orderId(), sanitizedReason);
     }
 
+    @SuppressWarnings("null") // orderId is always a real, non-null UUID from a real caller.
     private Order findOrder(UUID orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
@@ -132,11 +135,12 @@ public class OrderService {
             throw new IllegalStateException("Failed to serialize OrderCreatedEvent for order " + order.getId(), e);
         }
 
-        return OutboxRecord.builder()
+        OutboxRecord outboxRecord = OutboxRecord.builder()
                 .aggregateId(order.getId().toString())
                 .eventType("OrderCreatedEvent")
                 .payload(payload)
                 .createdTime(LocalDateTime.now())
                 .build();
+        return outboxRecord;
     }
 }

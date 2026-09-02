@@ -48,13 +48,14 @@ class PaymentServiceTest {
     }
 
     private Payment approvedPayment(UUID orderId, UUID customerId) {
-        return Payment.builder()
+        Payment payment = Payment.builder()
                 .id(UUID.randomUUID())
                 .orderId(orderId)
                 .customerId(customerId)
                 .amount(new BigDecimal("19.99"))
                 .status(PaymentStatus.APPROVED)
                 .build();
+        return payment;
     }
 
     @Test

@@ -19,26 +19,28 @@ class OrderRepositoryTest {
 
     @Test
     void existsByIdAndStatus_returnsTrue_whenStatusMatches() {
-        Order saved = orderRepository.save(Order.builder()
+        Order newOrder = Order.builder()
                 .customerId(UUID.randomUUID())
                 .totalAmount(new BigDecimal("19.99"))
                 .itemCode("ITEM-1")
                 .quantity(2)
                 .status(OrderStatus.PENDING)
-                .build());
+                .build();
+        Order saved = orderRepository.save(newOrder);
 
         assertThat(orderRepository.existsByIdAndStatus(saved.getId(), OrderStatus.PENDING)).isTrue();
     }
 
     @Test
     void existsByIdAndStatus_returnsFalse_whenStatusDoesNotMatch() {
-        Order saved = orderRepository.save(Order.builder()
+        Order newOrder = Order.builder()
                 .customerId(UUID.randomUUID())
                 .totalAmount(new BigDecimal("19.99"))
                 .itemCode("ITEM-1")
                 .quantity(2)
                 .status(OrderStatus.PENDING)
-                .build());
+                .build();
+        Order saved = orderRepository.save(newOrder);
 
         assertThat(orderRepository.existsByIdAndStatus(saved.getId(), OrderStatus.SUCCESS)).isFalse();
     }

@@ -41,12 +41,13 @@ class UserGrpcServiceImplErrorTest {
     private UserGrpcServiceImpl service;
 
     private User userWithActive(boolean active) {
-        return User.builder()
+        User user = User.builder()
                 .id(UUID.randomUUID())
                 .email("user@example.com")
                 .passwordHash("hashed-password")
                 .active(active)
                 .build();
+        return user;
     }
 
     private LoginRequest loginRequest(String password) {

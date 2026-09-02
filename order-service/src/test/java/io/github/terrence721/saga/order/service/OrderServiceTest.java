@@ -46,7 +46,7 @@ class OrderServiceTest {
     }
 
     private Order pendingOrder(UUID id) {
-        return Order.builder()
+        Order order = Order.builder()
                 .id(id)
                 .customerId(UUID.randomUUID())
                 .totalAmount(new BigDecimal("19.99"))
@@ -54,6 +54,7 @@ class OrderServiceTest {
                 .quantity(2)
                 .status(OrderStatus.PENDING)
                 .build();
+        return order;
     }
 
     @Test

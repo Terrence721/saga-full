@@ -12,12 +12,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 class JwtTokenProviderTest {
 
     private User sampleUser() {
-        return User.builder()
+        User user = User.builder()
                 .id(UUID.randomUUID())
                 .email("user@example.com")
                 .passwordHash("irrelevant-for-this-test")
                 .active(true)
                 .build();
+        return user;
     }
 
     @Test
