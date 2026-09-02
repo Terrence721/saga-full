@@ -34,9 +34,11 @@ public class JwtTokenProvider {
 
     public IssuedToken createToken(User user) {
         Date now = new Date();
+        @SuppressWarnings("null") // User.email is a NOT NULL DB column; never null once loaded.
+        String email = user.getEmail();
         String token = JWT.create()
                 .withIssuer(issuer)
-                .withSubject(user.getEmail())
+                .withSubject(email)
                 .withClaim("user-id", user.getId().toString())
                 .withIssuedAt(now)
                 .withExpiresAt(new Date(now.getTime() + expirationMs))

@@ -45,10 +45,12 @@ public class UserGrpcServiceImpl extends UserIdentityServiceGrpc.UserIdentitySer
             String email = request.getEmail();
             Optional<User> maybeUser = userRepository.findByEmail(email);
 
+            @SuppressWarnings("null") // Protobuf string getters never return null, only "" for unset fields.
+            String password = request.getPassword();
             // Runs exactly once on every path - found or not, active or not - so none of
             // them can be told apart by how long the response takes.
             boolean passwordMatches = passwordEncoder.matches(
-                    request.getPassword(),
+                    password,
                     maybeUser.map(User::getPasswordHash).orElse(DUMMY_PASSWORD_HASH));
 
             User user = maybeUser.orElseThrow(
