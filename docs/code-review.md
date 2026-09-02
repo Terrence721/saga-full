@@ -648,4 +648,18 @@ Plain output record, no validation needed. The shared error body across the whol
 
 ---
 
+### [`GlobalExceptionHandler.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/exception/GlobalExceptionHandler.java)
+
+**medium · Test coverage** — Fixed via [PR #164](https://github.com/Terrence721/saga-full/pull/164) ([issue #163](https://github.com/Terrence721/saga-full/issues/163))
+
+**Real finding, fixed — carried over, already flagged, from #159's review of `DependencyUnavailableException.java`**: of this class's 9 `@ExceptionHandler` methods, only `handleInvalidCredentials` and `handleReactiveValidationExceptions` had any real coverage (indirectly, via `AuthenticationControllerTest`). The other 7 — `handleNotFound`, `handleForbidden`, `handleDependencyFailure`, `handleTokenExpired`, `handleJwtFailure`, `handleBadRequest`, `handleGenericException` — had none.
+
+Two of those (`handleTokenExpired`/`handleJwtFailure`) carried a real, unverified architectural assumption, stated as fact in `JwtPerimeterGuardGatewayFilterFactoryTest`'s own comment: that `@RestControllerAdvice` catches exceptions thrown inside a Spring Cloud Gateway filter's reactive chain at all. `@RestControllerAdvice` is fundamentally an MVC/WebFlux *controller*-dispatch mechanism, and Spring Cloud Gateway's filter chain is a separate reactive pipeline — the assumption was reasonable but never actually proven. Verified empirically with a new `JwtPerimeterGuardIntegrationTest` (`@SpringBootTest(webEnvironment = RANDOM_PORT)`, hitting the real `/orders` route through a real running server, not a filter-only unit test): it does apply — a missing token produces a real `401`/`UNAUTHORIZED` body, a genuinely expired one a real `403`/`FORBIDDEN` body, both matching `GlobalExceptionHandler`'s documented contract exactly.
+
+The remaining 5 handlers are all realistically reachable through `AuthenticationController`'s real flow, since `UserGrpcExceptionTranslator` genuinely produces each of these exception types from a real gRPC status code. Added 5 new tests to `AuthenticationControllerTest`, mirroring its existing `InvalidCredentialsException` test's exact pattern (mock `userGrpcClient.login` to throw, assert the real HTTP status and body): `UserNotFoundException` → 404, `UserInactiveException` → 403, `DependencyUnavailableException` → 503, `IllegalArgumentException` → 400, and a generic `RuntimeException` → 500 (the catch-all).
+
+No production code changed — test-only addition, matching the same precedent set at #102/#153. Full repo suite green, 135/135 (up from 128/128).
+
+---
+
 *More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress.*

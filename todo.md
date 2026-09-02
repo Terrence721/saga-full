@@ -99,8 +99,9 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `restaurant-service` | `OutboxPublisherServiceTest` | 6 | ✅ passing | [#142](https://github.com/Terrence721/saga-full/pull/142) | 2026-08-30 |
 | `restaurant-service` | `RestaurantConsumerConfigTest` | 3 | ✅ passing | [#144](https://github.com/Terrence721/saga-full/pull/144) | 2026-08-30 |
 | `api-gateway-service` | `ApiGatewayServiceApplicationTests` | 1 | ✅ passing | Phase 37-40 | 2026-08-13 |
-| `api-gateway-service` | `AuthenticationControllerTest` | 3 | ✅ passing | Phase 38, 40 | 2026-08-13 |
+| `api-gateway-service` | `AuthenticationControllerTest` | 8 | ✅ passing | [#164](https://github.com/Terrence721/saga-full/pull/164) | 2026-09-02 |
 | `api-gateway-service` | `JwtPerimeterGuardGatewayFilterFactoryTest` | 3 | ✅ passing | Phase 39-40 | 2026-08-13 |
+| `api-gateway-service` | `JwtPerimeterGuardIntegrationTest` | 2 | ✅ passing | [#164](https://github.com/Terrence721/saga-full/pull/164) | 2026-09-02 |
 | `api-gateway-service` | `AuthenticationControllerThreadingTest` | 1 | ✅ passing | [#152](https://github.com/Terrence721/saga-full/pull/152) | 2026-08-31 |
 | `api-gateway-service` | `GatewayFallbackControllerTest` | 1 | ✅ passing | [#154](https://github.com/Terrence721/saga-full/pull/154) | 2026-08-31 |
 
@@ -297,7 +298,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../dto/WebTokenResponse.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#157](https://github.com/Terrence721/saga-full/issues/157) | [#158](https://github.com/Terrence721/saga-full/pull/158) | Done — no findings, merged |
 | `src/main/java/.../exception/DependencyUnavailableException.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#159](https://github.com/Terrence721/saga-full/issues/159) | [#160](https://github.com/Terrence721/saga-full/pull/160) | Done — no findings in its own shape, coverage gap found deferred to GlobalExceptionHandler.java, merged |
 | `src/main/java/.../exception/ErrorResponse.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#161](https://github.com/Terrence721/saga-full/issues/161) | [#162](https://github.com/Terrence721/saga-full/pull/162) | Done — no findings, merged |
-| `src/main/java/.../exception/GlobalExceptionHandler.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | — | — | Pending |
+| `src/main/java/.../exception/GlobalExceptionHandler.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#163](https://github.com/Terrence721/saga-full/issues/163) | — | In Progress |
 | `src/main/java/.../exception/InvalidCredentialsException.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | — | — | Pending |
 | `src/main/java/.../exception/UserInactiveException.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | — | — | Pending |
 | `src/main/java/.../exception/UserNotFoundException.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | — | — | Pending |
