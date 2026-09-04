@@ -789,3 +789,15 @@ No production code changed. Full repo suite green, 151/151 (up from 150/150).
 Same gap as `order-service`'s and `payment-service`'s copies: `publish(...)`'s `InterruptedException` catch block (`Thread.currentThread().interrupt()`) was untested. Fixed identically. The third and last occurrence of this exact pattern.
 
 No production code changed. Full repo suite green, 152/152 (up from 151/151).
+
+---
+
+### [`RestaurantService.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/service/RestaurantService.java) — test-coverage gap found in the same sweep
+
+**low · Test coverage** — Fixed via [PR #189](https://github.com/Terrence721/saga-full/pull/189) ([issue #183](https://github.com/Terrence721/saga-full/issues/183))
+
+`validate()`'s 6 null/invalid-field guards only had direct test coverage for 2 of them (`quantity`, `amount`). The other 4 — `orderId`/`customerId`/`itemCode`/`status` all-null checks — were completely untested, asymmetric with `order-service`'s and `payment-service`'s analogous customer-mismatch/missing-field guards, both of which are thoroughly tested.
+
+Added 4 tests, one per missing guard, matching the file's own existing `quantityNotPositive`/`amountNotPositive` sibling tests' shape exactly. Verified via deliberate revert on the trickiest one (`orderId`, since `processRestaurantStep` calls `ticketRepository.existsByOrderId(event.orderId())` *before* `validate()` runs — order-of-operations matters here): removed the guard, confirmed the new test genuinely fails, restored it.
+
+No production code changed. Full repo suite green, 156/156 (up from 152/152).
