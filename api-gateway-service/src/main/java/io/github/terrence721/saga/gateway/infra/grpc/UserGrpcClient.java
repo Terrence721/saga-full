@@ -20,7 +20,12 @@ public class UserGrpcClient {
 
     public LoginResponse login(AuthRequest webAuthRequest) {
 
-        log.info("Initiating gRPC login call for email: {}", webAuthRequest.email());
+        // email is a client-controlled, content-unrestricted @RequestBody field logged on
+        // an unauthenticated endpoint - needs the same CR/LF sanitizing as OrderController's
+        // itemCode logging (see that class) before it's safe to log.
+        String sanitizedEmail = webAuthRequest.email().replaceAll("[\r\n]", "_");
+
+        log.info("Initiating gRPC login call for email: {}", sanitizedEmail);
 
         try {
             LoginRequest grpcRequest = LoginRequest.newBuilder()
@@ -30,7 +35,7 @@ public class UserGrpcClient {
 
             LoginResponse response = userIdentityServiceStub.login(grpcRequest);
 
-            log.info("Authenticated user successfully for email: {}", webAuthRequest.email());
+            log.info("Authenticated user successfully for email: {}", sanitizedEmail);
 
             return response;
         } catch (StatusRuntimeException e) {
