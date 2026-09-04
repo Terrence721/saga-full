@@ -30,12 +30,12 @@ dependencies {
     // never needed at runtime.
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
 
-    // Pinned to 5.11.4 to match the JUnit Jupiter version Spring Boot 3.4.1's
-    // BOM manages for user-service, rather than adopting JUnit 6.1.3 (three
-    // days old at time of writing) here and splitting the repo across two
-    // JUnit major versions.
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
-    testImplementation("org.assertj:assertj-core:3.26.3")
+    // Pinned to match the JUnit Jupiter/AssertJ versions Spring Boot's BOM
+    // manages for the other 5 modules (bumped alongside Spring Boot 3.5.16),
+    // rather than adopting a newer JUnit major version here and splitting
+    // the repo across two.
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    testImplementation("org.assertj:assertj-core:3.27.7")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
