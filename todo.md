@@ -100,7 +100,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `restaurant-service` | `RestaurantConsumerConfigTest` | 3 | ✅ passing | [#144](https://github.com/Terrence721/saga-full/pull/144) | 2026-08-30 |
 | `api-gateway-service` | `ApiGatewayServiceApplicationTests` | 1 | ✅ passing | Phase 37-40 | 2026-08-13 |
 | `api-gateway-service` | `AuthenticationControllerTest` | 8 | ✅ passing | [#164](https://github.com/Terrence721/saga-full/pull/164) | 2026-09-02 |
-| `api-gateway-service` | `JwtPerimeterGuardGatewayFilterFactoryTest` | 3 | ✅ passing | Phase 39-40 | 2026-08-13 |
+| `api-gateway-service` | `JwtPerimeterGuardGatewayFilterFactoryTest` | 4 | ✅ passing | [#172](https://github.com/Terrence721/saga-full/pull/172) | 2026-09-04 |
 | `api-gateway-service` | `JwtPerimeterGuardIntegrationTest` | 2 | ✅ passing | [#164](https://github.com/Terrence721/saga-full/pull/164) | 2026-09-02 |
 | `api-gateway-service` | `AuthenticationControllerThreadingTest` | 1 | ✅ passing | [#152](https://github.com/Terrence721/saga-full/pull/152) | 2026-08-31 |
 | `api-gateway-service` | `GatewayFallbackControllerTest` | 1 | ✅ passing | [#154](https://github.com/Terrence721/saga-full/pull/154) | 2026-08-31 |
@@ -302,7 +302,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../exception/InvalidCredentialsException.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#165](https://github.com/Terrence721/saga-full/issues/165) | [#166](https://github.com/Terrence721/saga-full/pull/166) | Done — no findings in its own code, a real structural nuance found in `UserGrpcExceptionTranslator`'s reachability (documented, not a bug), merged |
 | `src/main/java/.../exception/UserInactiveException.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#167](https://github.com/Terrence721/saga-full/issues/167) | [#168](https://github.com/Terrence721/saga-full/pull/168) | Done — no findings, same shape as `InvalidCredentialsException.java`, merged |
 | `src/main/java/.../exception/UserNotFoundException.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#169](https://github.com/Terrence721/saga-full/issues/169) | [#170](https://github.com/Terrence721/saga-full/pull/170) | Done — no findings, same shape as `InvalidCredentialsException.java`/`UserInactiveException.java`, merged |
-| `src/main/java/.../filter/JwtPerimeterGuardGatewayFilterFactory.java` | [`660f24e`](https://github.com/Terrence721/saga-full/commit/660f24e) | — | — | Pending |
+| `src/main/java/.../filter/JwtPerimeterGuardGatewayFilterFactory.java` | [`660f24e`](https://github.com/Terrence721/saga-full/commit/660f24e) | [#171](https://github.com/Terrence721/saga-full/issues/171) | [#172](https://github.com/Terrence721/saga-full/pull/172) | In Progress |
 | `src/main/java/.../infra/grpc/UserGrpcClient.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | — | — | Pending |
 | `src/main/java/.../infra/grpc/UserGrpcExceptionTranslator.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | — | — | Pending |
 

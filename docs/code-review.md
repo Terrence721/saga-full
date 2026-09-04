@@ -690,4 +690,14 @@ No findings — same shape as `InvalidCredentialsException.java`/`UserInactiveEx
 
 ---
 
+### [`JwtPerimeterGuardGatewayFilterFactory.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/filter/JwtPerimeterGuardGatewayFilterFactory.java)
+
+**high · CWE-117 log injection** — Fixed via [PR #172](https://github.com/Terrence721/saga-full/pull/172) ([issue #171](https://github.com/Terrence721/saga-full/issues/171))
+
+**Real finding, fixed**: the filter's catch-all error handler logged `e.getMessage()` raw (`log.error("JWT verification failed for request path: {}. Error: {}", path, e.getMessage())`). For a malformed token, that exception is `JWTDecodeException`, and auth0's `java-jwt` (`JWTParser.parsePayload`/`parseHeader`) embeds the raw, already-base64url-decoded token segment verbatim into its own message via `String.format("The string '%s' doesn't have a valid JSON format.", json)` — confirmed by extracting and reading the library's actual sources (`java-jwt-4.4.0-sources.jar`), not assumed from its Javadoc. That decoded segment is entirely attacker-controlled and content-unrestricted: an `Authorization: Bearer <header>.<payload>.<sig>` where `<payload>` base64url-decodes to non-JSON text containing literal `\r\n` reaches this log line unsanitized, letting an unauthenticated caller forge fake log lines on every request — no valid token or secret needed, since verification fails (and the message is built) before signature checking ever runs.
+
+Fixed with the same pattern already used for `OrderService.cancelOrder`'s identical CWE-117 class (`String.valueOf(e.getMessage()).replaceAll("[\r\n]", "_")` before logging). Verified the vulnerability was real by extracting `java-jwt`'s actual source jar from the Gradle cache and reading `JWTParser.java` directly, rather than assuming from behavior alone. Added `apply_ShouldStillEmitJwtVerificationError_WhenDecodedPayloadContainsCrLf`, mirroring `OrderServiceTest`'s established convention for this exact fix class: proves the sanitizing `replaceAll` doesn't disturb normal error handling (still a real `JWTDecodeException`, chain never invoked) for a token whose decoded payload carries forged CR/LF content; the sanitization itself is verified statically by CodeQL's `java/log-injection` query, not by inspecting log output, matching every prior fix of this class in this repo. Full repo suite green, 136/136 (up from 135/135).
+
+---
+
 *More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress.*
