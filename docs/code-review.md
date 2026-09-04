@@ -714,7 +714,7 @@ Full repo suite green, 139/139 (up from 136/136).
 
 ### [`UserGrpcExceptionTranslator.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/infra/grpc/UserGrpcExceptionTranslator.java)
 
-**Reviewed via [PR #176](https://github.com/Terrence721/saga-full/pull/176) ([issue #175](https://github.com/Terrence721/saga-full/issues/175)) — the last file in `api-gateway-service`**
+**medium · Test coverage** — Fixed via [PR #176](https://github.com/Terrence721/saga-full/pull/176) ([issue #175](https://github.com/Terrence721/saga-full/issues/175)) — the last file in `api-gateway-service`
 
 No findings in the translation logic itself — confirmed correct against `user-service`'s real behavior across `InvalidCredentialsException.java`'s and `UserGrpcClient.java`'s reviews (the `UNAUTHENTICATED`/`UNAVAILABLE`/`DEADLINE_EXCEEDED`/`INTERNAL`/`default` branches are the ones a real `Login` call can actually reach today; `NOT_FOUND`/`PERMISSION_DENIED`/`INVALID_ARGUMENT` are correct, deliberate, forward-compatible dead code given `GrpcExecutor`'s CWE-203 status collapse, not a bug — see `InvalidCredentialsException.java`'s entry above for the full reasoning).
 
@@ -722,8 +722,12 @@ No findings in the translation logic itself — confirmed correct against `user-
 
 No production code changed. Full repo suite green, 147/147 (up from 139/139).
 
-**`api-gateway-service`'s code-review audit is now closed — 15/15 files, all six modules of this repo's audit complete.** See the module-completion note below.
+**Module review complete — `api-gateway-service`, 15/15 files reviewed, 6 real findings fixed across 6 files, 0 findings left open** (an event-loop-blocking gRPC login call in `AuthenticationController.java`/#151, a test-coverage gap on the real circuit-breaker fallback target in `GatewayFallbackController.java`/#153, a test-coverage gap across 7 of 9 exception handlers plus a proven-not-assumed `@RestControllerAdvice`/gateway-filter-chain fact in `GlobalExceptionHandler.java`/#163, a CWE-117 log-injection fix in `JwtPerimeterGuardGatewayFilterFactory.java`/#171 confirmed by reading auth0's actual `java-jwt` source, a second CWE-117 log-injection fix plus a zero-test-coverage gap in `UserGrpcClient.java`/#173 — pre-flagged from #155's review of `AuthRequest.java` — and a zero-test-coverage gap in `UserGrpcExceptionTranslator.java`/#175, the last file, with no findings in its translation logic itself). See [todo.md](../todo.md) for the full per-file table and [#23](https://github.com/Terrence721/saga-full/issues/23) for the closed tracking issue.
 
 ---
+
+## Audit complete: all 6 modules reviewed
+
+Every file across `user-contract`, `user-service`, `order-service`, `payment-service`, `restaurant-service`, and `api-gateway-service` has now gone through this file-by-file review — 73 files, 26 real findings fixed across 26 files (0 left open), verified via real GitHub issues, real PRs, and real test runs throughout, never assumed. See [#17](https://github.com/Terrence721/saga-full/issues/17) for the closed parent tracking issue and [todo.md](../todo.md)'s Milestones section for the full timeline. Full multi-module suite: 147/147 tests passing.
 
 *More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress.*
