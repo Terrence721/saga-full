@@ -779,3 +779,13 @@ No production code changed. Full repo suite green, 150/150 (up from 149/149).
 Same gap as `order-service`'s copy: `publish(...)`'s `InterruptedException` catch block (`Thread.currentThread().interrupt()`) was untested. Fixed identically.
 
 No production code changed. Full repo suite green, 151/151 (up from 150/150).
+
+---
+
+### [`restaurant-service/OutboxPublisherService.java`](https://github.com/Terrence721/saga-full/blob/main/restaurant-service/src/main/java/io/github/terrence721/saga/restaurant/service/OutboxPublisherService.java) — test-coverage gap found in the same sweep, third of three occurrences
+
+**low · Test coverage** — Fixed via [PR #188](https://github.com/Terrence721/saga-full/pull/188) ([issue #182](https://github.com/Terrence721/saga-full/issues/182))
+
+Same gap as `order-service`'s and `payment-service`'s copies: `publish(...)`'s `InterruptedException` catch block (`Thread.currentThread().interrupt()`) was untested. Fixed identically. The third and last occurrence of this exact pattern.
+
+No production code changed. Full repo suite green, 152/152 (up from 151/151).
