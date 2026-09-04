@@ -466,7 +466,7 @@
         <span class="v">42</span><span class="k">phases shipped</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">135/135</span><span class="k">tests passing</span>
+        <span class="v">136/136</span><span class="k">tests passing</span>
       </div>
       <div class="manifest-cell">
         <span class="v">6</span><span class="k">services complete</span>
@@ -475,7 +475,7 @@
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">25</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">26</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -1040,6 +1040,29 @@
           </div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">26</div>
+        <div>
+          <div class="file">api-gateway-service — CWE-117 log injection via a malformed JWT's decoded payload</div>
+          <div class="desc">
+            The JWT filter's catch-all handler logged a failed
+            token's exception message raw. Extracting auth0's
+            <code>java-jwt</code> source jar confirmed
+            <code>JWTDecodeException</code> embeds the raw,
+            attacker-controlled, base64url-decoded token segment
+            verbatim into its own message — so a
+            <code>Bearer</code> token whose payload decoded to
+            non-JSON text containing literal CR/LF could forge fake
+            log lines, unauthenticated, before signature
+            verification ever ran. Fixed by sanitizing the message
+            before logging, the same pattern already used for
+            <code>OrderService</code>'s identical finding.
+          </div>
+          <div class="meta">
+            <span class="tag">high · security</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1058,7 +1081,7 @@
     </p>
     <div class="twocol">
       <div class="card">
-        <h3>135/135 tests, real infra behind them</h3>
+        <h3>136/136 tests, real infra behind them</h3>
         <p>
           Repository tests run against embedded H2 with real Hibernate DDL,
           not mocks; Kafka/Postgres wiring is separately verified against
