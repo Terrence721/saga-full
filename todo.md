@@ -99,7 +99,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `restaurant-service` | `RestaurantServiceTest` | 7 | ✅ passing | [#89](https://github.com/Terrence721/saga-full/pull/89) | 2026-08-22 |
 | `restaurant-service` | `RestaurantInventoryServiceTest` | 3 | ✅ passing | Phase 35 | 2026-08-12 |
 | `restaurant-service` | `RestaurantInventoryServiceConcurrencyTest` | 1 | ✅ passing | [#146](https://github.com/Terrence721/saga-full/pull/146) | 2026-08-31 |
-| `restaurant-service` | `OutboxPublisherServiceTest` | 6 | ✅ passing | [#142](https://github.com/Terrence721/saga-full/pull/142) | 2026-08-30 |
+| `restaurant-service` | `OutboxPublisherServiceTest` | 7 | ✅ passing | [#188](https://github.com/Terrence721/saga-full/pull/188) | 2026-09-04 |
 | `restaurant-service` | `RestaurantConsumerConfigTest` | 3 | ✅ passing | [#144](https://github.com/Terrence721/saga-full/pull/144) | 2026-08-30 |
 | `api-gateway-service` | `ApiGatewayServiceApplicationTests` | 1 | ✅ passing | Phase 37-40 | 2026-08-13 |
 | `api-gateway-service` | `AuthenticationControllerTest` | 8 | ✅ passing | [#164](https://github.com/Terrence721/saga-full/pull/164) | 2026-09-02 |
