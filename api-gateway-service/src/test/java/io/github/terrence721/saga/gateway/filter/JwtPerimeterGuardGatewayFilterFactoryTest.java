@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -100,6 +102,38 @@ class JwtPerimeterGuardGatewayFilterFactoryTest {
     void apply_ShouldEmitJwtVerificationError_WhenTokenSignatureIsInvalidOrTampered() {
         MockServerHttpRequest request = MockServerHttpRequest.post("/orders")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer invalid.tampered.token.string")
+                .build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        GatewayFilter filter = filterFactory.apply(new JwtPerimeterGuardGatewayFilterFactory.Config());
+
+        StepVerifier.create(filter.filter(exchange, filterChain))
+                .expectError(JWTVerificationException.class)
+                .verify();
+
+        verifyNoInteractions(filterChain);
+    }
+
+    /**
+     * CR/LF sanitization itself is verified statically by CodeQL's java/log-injection
+     * query, matching this repo's established convention (see OrderService's
+     * cancelOrder_stillCancelsOrder_whenReasonContainsCrLf). This test instead proves
+     * the sanitizing replaceAll call doesn't disturb normal error handling: a token
+     * whose base64url-decoded payload is invalid JSON containing forged CR/LF content
+     * still surfaces as a real JWTDecodeException with the chain never invoked, exactly
+     * like any other malformed token.
+     */
+    @Test
+    void apply_ShouldStillEmitJwtVerificationError_WhenDecodedPayloadContainsCrLf() {
+        String headerB64 = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("{\"alg\":\"HS256\",\"typ\":\"JWT\"}".getBytes(StandardCharsets.UTF_8));
+        String forgedPayload = "not json\r\nFAKE LOG LINE: user 9999 authenticated successfully";
+        String payloadB64 = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(forgedPayload.getBytes(StandardCharsets.UTF_8));
+        String maliciousToken = headerB64 + "." + payloadB64 + ".fakesignature";
+
+        MockServerHttpRequest request = MockServerHttpRequest.post("/orders")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + maliciousToken)
                 .build();
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
