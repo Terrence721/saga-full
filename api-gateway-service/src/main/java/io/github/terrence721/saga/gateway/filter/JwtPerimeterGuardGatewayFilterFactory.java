@@ -74,7 +74,12 @@ public class JwtPerimeterGuardGatewayFilterFactory
                 return chain.filter(exchange.mutate().request(mutatedRequest).build());
             } catch (Exception e) {
 
-                log.error("JWT verification failed for request path: {}. Error: {}", path, e.getMessage());
+                // A malformed token's base64url-decoded payload/header is client-controlled,
+                // content-unrestricted, and lands verbatim in JWTDecodeException's own message
+                // (see JWTParser) - needs the same CR/LF sanitizing as OrderService's cancelOrder
+                // logging (see that class) before it's safe to log.
+                String sanitizedMessage = String.valueOf(e.getMessage()).replaceAll("[\r\n]", "_");
+                log.error("JWT verification failed for request path: {}. Error: {}", path, sanitizedMessage);
 
                 return Mono.error(e);
             }
