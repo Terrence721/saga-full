@@ -318,6 +318,8 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 
 Every file across `user-contract`, `user-service`, `order-service`, `payment-service`, `restaurant-service`, and `api-gateway-service` has now gone through this file-by-file review — **73/73 files, 26 real findings fixed across 26 files, 0 findings left open.** See [docs/code-review.md](docs/code-review.md) for the full write-up and [#17](https://github.com/Terrence721/saga-full/issues/17) for the closed parent tracking issue.
 
+**Post-audit findings, same day**: a systematic post-audit sweep (72 main-source classes cross-referenced against every test class, direct or indirect) surfaced 7 more real findings across 7 files that the original per-file review had missed — a test-coverage gap on `CommonAppConfig.java`'s gRPC channel-name wiring, `GrpcExecutor.java`'s untested catch-all safety net, the identical `InterruptedException`-handling gap independently repeated across all three `OutboxPublisherService.java` copies (order/payment/restaurant-service, 3 separate fixes), `RestaurantService.java`'s 4 untested `validate()` null-guards, and one dead constructor removed from `DependencyUnavailableException.java`. All fixed the same way as the audit itself — real issue, real branch, real test, real PR. See [docs/code-review.md](docs/code-review.md#post-audit-findings) for the full write-up.
+
 ## 🔧 Still to do
 
 | Item | Detail |
