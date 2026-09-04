@@ -740,8 +740,20 @@ Real findings caught after the audit's formal closure — a different lens than 
 
 **medium · Test coverage** — Fixed via [PR #178](https://github.com/Terrence721/saga-full/pull/178) ([issue #177](https://github.com/Terrence721/saga-full/issues/177))
 
-Found via a systematic cross-reference of every main-source class against every test class (direct or indirect) across all 6 modules — the one genuine gap out of 78 classes checked. `userIdentityServiceStub(...)` wires `UserIdentityServiceBlockingStub` against a hardcoded channel name, `"userService"`, which must exactly match `application.yaml`'s `spring.grpc.client.channels.userService` key — confirmed matching today, but nothing tested that coupling. `ApiGatewayServiceApplicationTests.contextLoads()` only proves the app boots (gRPC channel creation is lazy, so a wrong name wouldn't fail startup), and every other test that touches login behavior (`AuthenticationControllerTest`, `AuthenticationControllerThreadingTest`, `UserGrpcClientTest`) mocks `UserGrpcClient`/its stub away entirely, never exercising this bean's real wiring.
+Found via a systematic cross-reference of every main-source class against every test class (direct or indirect) across all 6 modules — 72 classes checked, this the first real gap found. `userIdentityServiceStub(...)` wires `UserIdentityServiceBlockingStub` against a hardcoded channel name, `"userService"`, which must exactly match `application.yaml`'s `spring.grpc.client.channels.userService` key — confirmed matching today, but nothing tested that coupling. `ApiGatewayServiceApplicationTests.contextLoads()` only proves the app boots (gRPC channel creation is lazy, so a wrong name wouldn't fail startup), and every other test that touches login behavior (`AuthenticationControllerTest`, `AuthenticationControllerThreadingTest`, `UserGrpcClientTest`) mocks `UserGrpcClient`/its stub away entirely, never exercising this bean's real wiring.
 
 Added `CommonAppConfigTest`, constructing `CommonAppConfig` directly (matching `SecurityConfigTest`'s established precedent for `@Configuration` classes — no full Spring context needed) with a mocked `GrpcChannelFactory`, asserting `createChannel("userService")` is called with the exact name and the returned stub wraps the mocked channel. Verified via deliberate revert: changed the channel name to a typo, confirmed the test genuinely fails (`NullPointerException`, not just a wrong-value assertion), restored it.
 
 No production code changed. Full repo suite green, 148/148 (up from 147/147).
+
+---
+
+### [`GrpcExecutor.java`](https://github.com/Terrence721/saga-full/blob/main/user-service/src/main/java/io/github/terrence721/saga/user/infra/grpc/GrpcExecutor.java) — test-coverage gap found in the same sweep
+
+**low · Test coverage** — Fixed via [PR #185](https://github.com/Terrence721/saga-full/pull/185) ([issue #179](https://github.com/Terrence721/saga-full/issues/179))
+
+`execute(...)`'s catch-all `catch (Exception ex) -> Status.INTERNAL` branch had zero coverage. The other 3 branches (`UserNotFoundException`/`InvalidCredentialsException`/`UserInactiveException` → `UNAUTHENTICATED`, `IllegalArgumentException` → `INVALID_ARGUMENT`) are exercised transitively through `UserGrpcServiceImplErrorTest`'s real `login()`/`validateToken()` calls, but nothing ever forced a genuinely unexpected exception through this method — the real safety net for an error that isn't one of this module's known types.
+
+Added `GrpcExecutorTest`, calling `execute(...)` directly with a `Supplier` that throws a plain `RuntimeException`, asserting the captured `StatusRuntimeException`'s code and description. Reuses the existing package-private `RecordingStreamObserver` test helper rather than adding a new one.
+
+No production code changed. Full repo suite green, 149/149 (up from 148/148).

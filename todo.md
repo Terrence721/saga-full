@@ -74,6 +74,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `user-service` | `JwtTokenProviderTest` | 5 | ✅ passing | Phase 11 | 2026-08-10 |
 | `user-service` | `UserGrpcServiceImplTest` | 2 | ✅ passing | Phase 12 | 2026-08-10 |
 | `user-service` | `UserGrpcServiceImplErrorTest` | 6 | ✅ passing | [#41](https://github.com/Terrence721/saga-full/pull/41) | 2026-08-13 |
+| `user-service` | `GrpcExecutorTest` | 1 | ✅ passing | [#185](https://github.com/Terrence721/saga-full/pull/185) | 2026-09-04 |
 | `user-service` | `UserGrpcServiceIntegrationTest` | 3 | ✅ passing | Phase 15 | 2026-08-10 |
 | `user-service` | `UserServiceApplicationTests` | 1 | ✅ passing | Phase 17 | 2026-08-10 |
 | `user-service` | `SecurityConfigTest` | 2 | ✅ passing | [#29](https://github.com/Terrence721/saga-full/pull/29) | 2026-08-13 |
