@@ -19,9 +19,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -118,6 +120,28 @@ class OutboxPublisherServiceTest {
 
         shortTimeoutService.publishPendingOutboxRecords();
 
+        verify(outboxRepository, never()).delete(any());
+    }
+
+    /**
+     * The InterruptedException catch block does something real (Thread.currentThread()
+     * .interrupt(), the standard never-swallow-an-interrupt pattern) that nothing else
+     * tests. Thread.interrupted() below both asserts and clears the flag, so this test
+     * doesn't leak an interrupted thread into whichever test JUnit runs next on it.
+     */
+    @Test
+    void publishPendingOutboxRecords_leavesRecordForRetryAndRestoresInterruptFlag_onInterrupt() throws Exception {
+        OutboxRecord record = outboxRecord("order-interrupted", "{}");
+        when(outboxRepository.findByOrderByCreatedTimeAsc(PageRequest.of(0, 10)))
+                .thenReturn(List.of(record));
+
+        CompletableFuture<SendResult<String, String>> future = mock(CompletableFuture.class);
+        when(future.get(anyLong(), any(TimeUnit.class))).thenThrow(new InterruptedException());
+        when(kafkaTemplate.send(any(Message.class))).thenReturn(future);
+
+        publisherService.publishPendingOutboxRecords();
+
+        assertThat(Thread.interrupted()).isTrue();
         verify(outboxRepository, never()).delete(any());
     }
 

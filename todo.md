@@ -83,7 +83,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `order-service` | `OrderRepositoryTest` | 3 | ✅ passing | Phase 19 | 2026-08-10 |
 | `order-service` | `OutboxRepositoryTest` | 2 | ✅ passing | Phase 19 | 2026-08-10 |
 | `order-service` | `OrderServiceTest` | 11 | ✅ passing | [#79](https://github.com/Terrence721/saga-full/pull/79) | 2026-08-19 |
-| `order-service` | `OutboxPublisherServiceTest` | 5 | ✅ passing | [#81](https://github.com/Terrence721/saga-full/pull/81) | 2026-08-19 |
+| `order-service` | `OutboxPublisherServiceTest` | 6 | ✅ passing | [#186](https://github.com/Terrence721/saga-full/pull/186) | 2026-09-04 |
 | `order-service` | `OrderControllerTest` | 6 | ✅ passing | [#59](https://github.com/Terrence721/saga-full/pull/59) | 2026-08-18 |
 | `order-service` | `OrderConsumerConfigTest` | 5 | ✅ passing | [#77](https://github.com/Terrence721/saga-full/pull/77) | 2026-08-19 |
 | `payment-service` | `PaymentServiceApplicationTests` | 1 | ✅ passing | Phase 27 | 2026-08-12 |
