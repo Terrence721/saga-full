@@ -96,7 +96,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `restaurant-service` | `InventoryItemRepositoryTest` | 2 | ✅ passing | Phase 34 | 2026-08-12 |
 | `restaurant-service` | `RestaurantTicketRepositoryTest` | 3 | ✅ passing | [#117](https://github.com/Terrence721/saga-full/pull/117) | 2026-08-28 |
 | `restaurant-service` | `OutboxRepositoryTest` | 2 | ✅ passing | Phase 34 | 2026-08-12 |
-| `restaurant-service` | `RestaurantServiceTest` | 7 | ✅ passing | [#89](https://github.com/Terrence721/saga-full/pull/89) | 2026-08-22 |
+| `restaurant-service` | `RestaurantServiceTest` | 11 | ✅ passing | [#189](https://github.com/Terrence721/saga-full/pull/189) | 2026-09-04 |
 | `restaurant-service` | `RestaurantInventoryServiceTest` | 3 | ✅ passing | Phase 35 | 2026-08-12 |
 | `restaurant-service` | `RestaurantInventoryServiceConcurrencyTest` | 1 | ✅ passing | [#146](https://github.com/Terrence721/saga-full/pull/146) | 2026-08-31 |
 | `restaurant-service` | `OutboxPublisherServiceTest` | 7 | ✅ passing | [#188](https://github.com/Terrence721/saga-full/pull/188) | 2026-09-04 |
