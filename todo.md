@@ -105,6 +105,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `api-gateway-service` | `AuthenticationControllerThreadingTest` | 1 | ✅ passing | [#152](https://github.com/Terrence721/saga-full/pull/152) | 2026-08-31 |
 | `api-gateway-service` | `GatewayFallbackControllerTest` | 1 | ✅ passing | [#154](https://github.com/Terrence721/saga-full/pull/154) | 2026-08-31 |
 | `api-gateway-service` | `UserGrpcClientTest` | 3 | ✅ passing | [#174](https://github.com/Terrence721/saga-full/pull/174) | 2026-09-04 |
+| `api-gateway-service` | `UserGrpcExceptionTranslatorTest` | 8 | ✅ passing | [#176](https://github.com/Terrence721/saga-full/pull/176) | 2026-09-04 |
 
 ## ✅ Done
 
@@ -305,7 +306,7 @@ Process detail: [docs/code-review.md](docs/code-review.md). Parent tracking issu
 | `src/main/java/.../exception/UserNotFoundException.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#169](https://github.com/Terrence721/saga-full/issues/169) | [#170](https://github.com/Terrence721/saga-full/pull/170) | Done — no findings, same shape as `InvalidCredentialsException.java`/`UserInactiveException.java`, merged |
 | `src/main/java/.../filter/JwtPerimeterGuardGatewayFilterFactory.java` | [`660f24e`](https://github.com/Terrence721/saga-full/commit/660f24e) | [#171](https://github.com/Terrence721/saga-full/issues/171) | [#172](https://github.com/Terrence721/saga-full/pull/172) | Done — real finding fixed (CWE-117 log injection via a malformed token's decoded payload), merged |
 | `src/main/java/.../infra/grpc/UserGrpcClient.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#173](https://github.com/Terrence721/saga-full/issues/173) | [#174](https://github.com/Terrence721/saga-full/pull/174) | Done — 2 real findings fixed (CWE-117 log injection, pre-flagged from #155; a zero-test-coverage gap), merged |
-| `src/main/java/.../infra/grpc/UserGrpcExceptionTranslator.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | — | — | Pending |
+| `src/main/java/.../infra/grpc/UserGrpcExceptionTranslator.java` | [`4369f62`](https://github.com/Terrence721/saga-full/commit/4369f62) | [#175](https://github.com/Terrence721/saga-full/issues/175) | [#176](https://github.com/Terrence721/saga-full/pull/176) | In Progress |
 
 ## 🔧 Still to do
 

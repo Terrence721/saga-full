@@ -704,11 +704,25 @@ Fixed with the same pattern already used for `OrderService.cancelOrder`'s identi
 
 **high · CWE-117 log injection, plus a real test-coverage gap** — Fixed via [PR #174](https://github.com/Terrence721/saga-full/pull/174) ([issue #173](https://github.com/Terrence721/saga-full/issues/173))
 
-**Real finding, fixed — pre-flagged from #155's review of `AuthRequest.java`**: `login()` logged `webAuthRequest.email()` raw, twice, on the unauthenticated `/auth/login` endpoint. `AuthRequest.email` is a `@RequestBody` record field with `@NotBlank`-only validation — content-unrestricted, so a JSON body's `\r\n` escapes decode into real control characters in the resulting `String`, letting an unauthenticated caller forge fake log lines on every login attempt, successful or not. Fixed by sanitizing once into a local (`webAuthRequest.email().replaceAll("[\r\n]", "_")`), reused for both log lines — the same `@RequestBody`-record-accessor shape [[project-codeql-log-injection-header-source-gap|already confirmed to reliably clear CodeQL's sanitizer]], unlike the `@RequestHeader` case that needed a false-positive dismissal.
+**Real finding, fixed — pre-flagged from #155's review of `AuthRequest.java`**: `login()` logged `webAuthRequest.email()` raw, twice, on the unauthenticated `/auth/login` endpoint. `AuthRequest.email` is a `@RequestBody` record field with `@NotBlank`-only validation — content-unrestricted, so a JSON body's `\r\n` escapes decode into real control characters in the resulting `String`, letting an unauthenticated caller forge fake log lines on every login attempt, successful or not. Fixed by sanitizing once into a local (`webAuthRequest.email().replaceAll("[\r\n]", "_")`), reused for both log lines — the same `@RequestBody`-record-accessor shape already confirmed to reliably clear CodeQL's sanitizer (see `OrderController.java`'s and `JwtPerimeterGuardGatewayFilterFactory.java`'s entries above), unlike the `@RequestHeader` case that needed a false-positive dismissal.
 
 **Second, real finding found while checking real usages**: this file had zero test coverage anywhere — `AuthenticationControllerTest` mocks `UserGrpcClient` itself (`@MockitoBean`), so the class's own logic (building the `LoginRequest`, the try/catch around `StatusRuntimeException`, delegating to `UserGrpcExceptionTranslator`) was never actually exercised by any test. Added `UserGrpcClientTest` (3 tests): the happy path (stub returns a `LoginResponse`, request fields captured and asserted), the error path (stub throws, `translator.translate(...)` is called and its result is what actually propagates — proving the wiring, not just that *some* exception escapes), and the CR/LF-in-email case, matching this repo's established convention of proving the sanitizing call doesn't disturb normal processing rather than inspecting log output.
 
 Full repo suite green, 139/139 (up from 136/136).
+
+---
+
+### [`UserGrpcExceptionTranslator.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/infra/grpc/UserGrpcExceptionTranslator.java)
+
+**Reviewed via [PR #176](https://github.com/Terrence721/saga-full/pull/176) ([issue #175](https://github.com/Terrence721/saga-full/issues/175)) — the last file in `api-gateway-service`**
+
+No findings in the translation logic itself — confirmed correct against `user-service`'s real behavior across `InvalidCredentialsException.java`'s and `UserGrpcClient.java`'s reviews (the `UNAUTHENTICATED`/`UNAVAILABLE`/`DEADLINE_EXCEEDED`/`INTERNAL`/`default` branches are the ones a real `Login` call can actually reach today; `NOT_FOUND`/`PERMISSION_DENIED`/`INVALID_ARGUMENT` are correct, deliberate, forward-compatible dead code given `GrpcExecutor`'s CWE-203 status collapse, not a bug — see `InvalidCredentialsException.java`'s entry above for the full reasoning).
+
+**Real finding, fixed (test-coverage gap)**: this file had zero direct test coverage — `UserGrpcClientTest`'s error-path test mocks `translator.translate(...)` to return a canned exception, proving `UserGrpcClient` calls it correctly, but never exercises the translator's own switch statement. Added `UserGrpcExceptionTranslatorTest` (8 tests, one per `Status` code the switch handles plus one for the `default` branch via `RESOURCE_EXHAUSTED`), asserting both the returned exception's type and message, and — for the 3 codes that wrap the original `StatusRuntimeException` — that the cause is preserved (`isSameAs`, not just non-null).
+
+No production code changed. Full repo suite green, 147/147 (up from 139/139).
+
+**`api-gateway-service`'s code-review audit is now closed — 15/15 files, all six modules of this repo's audit complete.** See the module-completion note below.
 
 ---
 
