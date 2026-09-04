@@ -730,4 +730,18 @@ No production code changed. Full repo suite green, 147/147 (up from 139/139).
 
 Every file across `user-contract`, `user-service`, `order-service`, `payment-service`, `restaurant-service`, and `api-gateway-service` has now gone through this file-by-file review — 73 files, 26 real findings fixed across 26 files (0 left open), verified via real GitHub issues, real PRs, and real test runs throughout, never assumed. See [#17](https://github.com/Terrence721/saga-full/issues/17) for the closed parent tracking issue and [todo.md](../todo.md)'s Milestones section for the full timeline. Full multi-module suite: 147/147 tests passing.
 
-*More findings are appended here as each file's PR merges. See [todo.md](../todo.md) for the per-file tracking table of whichever module is currently in progress.*
+---
+
+## Post-audit findings
+
+Real findings caught after the audit's formal closure — a different lens than the original file-by-file review, applied on request rather than as part of the per-file sequence.
+
+### [`CommonAppConfig.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/config/CommonAppConfig.java) — test-coverage gap found in a repo-wide coverage sweep
+
+**medium · Test coverage** — Fixed via [PR #178](https://github.com/Terrence721/saga-full/pull/178) ([issue #177](https://github.com/Terrence721/saga-full/issues/177))
+
+Found via a systematic cross-reference of every main-source class against every test class (direct or indirect) across all 6 modules — the one genuine gap out of 78 classes checked. `userIdentityServiceStub(...)` wires `UserIdentityServiceBlockingStub` against a hardcoded channel name, `"userService"`, which must exactly match `application.yaml`'s `spring.grpc.client.channels.userService` key — confirmed matching today, but nothing tested that coupling. `ApiGatewayServiceApplicationTests.contextLoads()` only proves the app boots (gRPC channel creation is lazy, so a wrong name wouldn't fail startup), and every other test that touches login behavior (`AuthenticationControllerTest`, `AuthenticationControllerThreadingTest`, `UserGrpcClientTest`) mocks `UserGrpcClient`/its stub away entirely, never exercising this bean's real wiring.
+
+Added `CommonAppConfigTest`, constructing `CommonAppConfig` directly (matching `SecurityConfigTest`'s established precedent for `@Configuration` classes — no full Spring context needed) with a mocked `GrpcChannelFactory`, asserting `createChannel("userService")` is called with the exact name and the returned stub wraps the mocked channel. Verified via deliberate revert: changed the channel name to a typo, confirmed the test genuinely fails (`NullPointerException`, not just a wrong-value assertion), restored it.
+
+No production code changed. Full repo suite green, 148/148 (up from 147/147).

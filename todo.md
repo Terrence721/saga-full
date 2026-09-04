@@ -108,6 +108,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `api-gateway-service` | `GatewayFallbackControllerTest` | 1 | ✅ passing | [#154](https://github.com/Terrence721/saga-full/pull/154) | 2026-08-31 |
 | `api-gateway-service` | `UserGrpcClientTest` | 3 | ✅ passing | [#174](https://github.com/Terrence721/saga-full/pull/174) | 2026-09-04 |
 | `api-gateway-service` | `UserGrpcExceptionTranslatorTest` | 8 | ✅ passing | [#176](https://github.com/Terrence721/saga-full/pull/176) | 2026-09-04 |
+| `api-gateway-service` | `CommonAppConfigTest` | 1 | ✅ passing | [#178](https://github.com/Terrence721/saga-full/pull/178) | 2026-09-04 |
 
 ## ✅ Done
 
