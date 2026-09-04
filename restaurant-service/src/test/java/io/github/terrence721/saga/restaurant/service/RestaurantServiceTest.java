@@ -65,6 +65,49 @@ class RestaurantServiceTest {
     }
 
     @Test
+    void processRestaurantStep_throwsIllegalArgumentException_whenOrderIdIsNull() {
+        when(ticketRepository.existsByOrderId(null)).thenReturn(false);
+        PaymentProcessedEvent event = new PaymentProcessedEvent(
+                null, UUID.randomUUID(), "PIZZA_01", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED);
+
+        assertThatThrownBy(() -> restaurantService.processRestaurantStep(event))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void processRestaurantStep_throwsIllegalArgumentException_whenCustomerIdIsNull() {
+        UUID orderId = UUID.randomUUID();
+        when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
+        PaymentProcessedEvent event = new PaymentProcessedEvent(
+                orderId, null, "PIZZA_01", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED);
+
+        assertThatThrownBy(() -> restaurantService.processRestaurantStep(event))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void processRestaurantStep_throwsIllegalArgumentException_whenItemCodeIsNull() {
+        UUID orderId = UUID.randomUUID();
+        when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
+        PaymentProcessedEvent event = new PaymentProcessedEvent(
+                orderId, UUID.randomUUID(), null, 2, new BigDecimal("19.99"), PaymentStatus.APPROVED);
+
+        assertThatThrownBy(() -> restaurantService.processRestaurantStep(event))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void processRestaurantStep_throwsIllegalArgumentException_whenStatusIsNull() {
+        UUID orderId = UUID.randomUUID();
+        when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
+        PaymentProcessedEvent event = new PaymentProcessedEvent(
+                orderId, UUID.randomUUID(), "PIZZA_01", 2, new BigDecimal("19.99"), null);
+
+        assertThatThrownBy(() -> restaurantService.processRestaurantStep(event))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void processRestaurantStep_throwsIllegalArgumentException_whenQuantityNotPositive() {
         UUID orderId = UUID.randomUUID();
         when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
