@@ -757,3 +757,15 @@ No production code changed. Full repo suite green, 148/148 (up from 147/147).
 Added `GrpcExecutorTest`, calling `execute(...)` directly with a `Supplier` that throws a plain `RuntimeException`, asserting the captured `StatusRuntimeException`'s code and description. Reuses the existing package-private `RecordingStreamObserver` test helper rather than adding a new one.
 
 No production code changed. Full repo suite green, 149/149 (up from 148/148).
+
+---
+
+### [`order-service/OutboxPublisherService.java`](https://github.com/Terrence721/saga-full/blob/main/order-service/src/main/java/io/github/terrence721/saga/order/service/OutboxPublisherService.java) — test-coverage gap found in the same sweep, first of three occurrences
+
+**low · Test coverage** — Fixed via [PR #186](https://github.com/Terrence721/saga-full/pull/186) ([issue #180](https://github.com/Terrence721/saga-full/issues/180))
+
+`publish(...)`'s `InterruptedException` catch block does something real (`Thread.currentThread().interrupt()`, the standard never-swallow-an-interrupt pattern) that nothing tested — only `ExecutionException` and `TimeoutException` had coverage. Same gap in `payment-service`'s and `restaurant-service`'s own copies of this class, fixed identically in their own turns.
+
+Added `publishPendingOutboxRecords_leavesRecordForRetryAndRestoresInterruptFlag_onInterrupt`, mocking the returned `CompletableFuture` directly so `.get(timeout, unit)` throws `InterruptedException` without needing real thread interruption. Asserts via `Thread.interrupted()` (checks and clears in one call, so the test doesn't leak an interrupted thread into whichever test JUnit runs next on the same thread).
+
+No production code changed. Full repo suite green, 150/150 (up from 149/149).
