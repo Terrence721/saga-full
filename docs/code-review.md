@@ -769,3 +769,13 @@ No production code changed. Full repo suite green, 149/149 (up from 148/148).
 Added `publishPendingOutboxRecords_leavesRecordForRetryAndRestoresInterruptFlag_onInterrupt`, mocking the returned `CompletableFuture` directly so `.get(timeout, unit)` throws `InterruptedException` without needing real thread interruption. Asserts via `Thread.interrupted()` (checks and clears in one call, so the test doesn't leak an interrupted thread into whichever test JUnit runs next on the same thread).
 
 No production code changed. Full repo suite green, 150/150 (up from 149/149).
+
+---
+
+### [`payment-service/OutboxPublisherService.java`](https://github.com/Terrence721/saga-full/blob/main/payment-service/src/main/java/io/github/terrence721/saga/payment/service/OutboxPublisherService.java) — test-coverage gap found in the same sweep, second of three occurrences
+
+**low · Test coverage** — Fixed via [PR #187](https://github.com/Terrence721/saga-full/pull/187) ([issue #181](https://github.com/Terrence721/saga-full/issues/181))
+
+Same gap as `order-service`'s copy: `publish(...)`'s `InterruptedException` catch block (`Thread.currentThread().interrupt()`) was untested. Fixed identically.
+
+No production code changed. Full repo suite green, 151/151 (up from 150/150).
