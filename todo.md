@@ -90,7 +90,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | `payment-service` | `PaymentRepositoryTest` | 7 | ✅ passing | [#103](https://github.com/Terrence721/saga-full/pull/103) | 2026-08-25 |
 | `payment-service` | `OutboxRepositoryTest` | 2 | ✅ passing | Phase 29 | 2026-08-12 |
 | `payment-service` | `PaymentServiceTest` | 9 | ✅ passing | [#97](https://github.com/Terrence721/saga-full/pull/97) | 2026-08-22 |
-| `payment-service` | `OutboxPublisherServiceTest` | 5 | ✅ passing | [#105](https://github.com/Terrence721/saga-full/pull/105) | 2026-08-25 |
+| `payment-service` | `OutboxPublisherServiceTest` | 6 | ✅ passing | [#187](https://github.com/Terrence721/saga-full/pull/187) | 2026-09-04 |
 | `payment-service` | `PaymentConsumerConfigTest` | 5 | ✅ passing | [#107](https://github.com/Terrence721/saga-full/pull/107) | 2026-08-25 |
 | `restaurant-service` | `RestaurantServiceApplicationTests` | 2 | ✅ passing | [#111](https://github.com/Terrence721/saga-full/pull/111) | 2026-08-25 |
 | `restaurant-service` | `InventoryItemRepositoryTest` | 2 | ✅ passing | Phase 34 | 2026-08-12 |
