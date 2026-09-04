@@ -29,6 +29,7 @@ replay_pid*
 .project
 .classpath
 bin/
+cspell.json
 
 # OS
 .DS_Store
