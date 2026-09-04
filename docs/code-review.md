@@ -801,3 +801,15 @@ No production code changed. Full repo suite green, 152/152 (up from 151/151).
 Added 4 tests, one per missing guard, matching the file's own existing `quantityNotPositive`/`amountNotPositive` sibling tests' shape exactly. Verified via deliberate revert on the trickiest one (`orderId`, since `processRestaurantStep` calls `ticketRepository.existsByOrderId(event.orderId())` *before* `validate()` runs — order-of-operations matters here): removed the guard, confirmed the new test genuinely fails, restored it.
 
 No production code changed. Full repo suite green, 156/156 (up from 152/152).
+
+---
+
+### [`DependencyUnavailableException.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/exception/DependencyUnavailableException.java) — dead code found in the same sweep
+
+**low · Dead code** — Fixed via [PR #190](https://github.com/Terrence721/saga-full/pull/190) ([issue #184](https://github.com/Terrence721/saga-full/issues/184))
+
+The single-arg `DependencyUnavailableException(String message)` constructor was never called anywhere. Production code and the one test that constructs this exception both only ever use the `(message, cause)` overload, since every real construction site (`UserGrpcExceptionTranslator`) always has a real underlying `StatusRuntimeException` cause to attach.
+
+Removed the unused constructor. Verified with a real clean recompile (`./gradlew :api-gateway-service:clean :api-gateway-service:test`), not a cached/`UP-TO-DATE` run, since nothing else in the file changed enough to force Gradle to notice otherwise.
+
+This was the last of the 4 post-audit test-coverage/dead-code findings from the repo-wide sweep. Full repo suite green, 156/156 (unchanged — no test added, none removed).
