@@ -833,3 +833,13 @@ Removed the dead branch. No production behavior change (unreachable), no test ad
 Added a test asserting the guard's own `"Missing or malformed"` message specifically for a `Basic ...` header. Verified via deliberate revert: narrowed the condition to `authHeader == null` only, confirmed the new test genuinely fails (a different message surfaces from the JWT library's own decode failure instead), restored it.
 
 No production code changed. Full repo suite green, 157/157 (up from 156/156).
+
+---
+
+## Test-coverage scan: floor reached
+
+The remaining files on the per-branch resume list — `UserGrpcClient.java`, `UserGrpcExceptionTranslator.java` (api-gateway-service), and `UserGrpcServiceImpl.java` (user-service) — all checked out clean: `UserGrpcClient`'s success and `StatusRuntimeException`-translate branches (plus the CR/LF non-disruption case) are both tested; `UserGrpcExceptionTranslator`'s every `case` (all 7 explicit gRPC status codes plus `default`) has its own dedicated test; `UserGrpcServiceImpl`'s `login()` (not-found/inactive/wrong-password/success, including the timing-safety dummy-hash-comparison tests) and `validateToken()` (valid/invalid) are both fully covered.
+
+With the resume list exhausted, the structural cross-reference was re-run across all 6 modules to check for anything new since the original 72-class sweep (2026-09-04) — the class list came back identical, confirming no source files have been added or changed. Every domain/DTO class over 15 lines was spot-checked (`Order`, `Payment`, `OutboxRecord` ×3, `User`, `RestaurantTicket`, `InventoryItem`, `CreateOrderRequest`) and remains pure Lombok/JPA boilerplate with no custom logic — the established "exercised indirectly, not a gap" convention still holds.
+
+**Every class in this repo has now been through either the original 73-file audit or this scan's per-branch pass.** There is nothing left to check with this method until new code is written.
