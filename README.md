@@ -5,13 +5,13 @@
 
 **[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)**
 
-Last updated: September 4, 2026 (code-review audit complete — all 6 modules, 73/73 files reviewed, 26 real findings fixed across 26 files, 0 findings left open)
+Last updated: September 6, 2026 (full Docker containerization complete; the register/POS frontend build has launched — plan approved, step 1/9 done)
 
 This repository is a from-scratch demonstration of the Distributed Saga pattern for coordinating long-running business transactions across independent microservices — order placement, payment settlement, and fulfillment, each owned by its own service, coordinated without a shared database transaction.
 
 This is an original implementation, not a fork of any existing project. The module boundaries and general shape of the problem (order → payment → fulfillment, with compensation on failure) are common territory for this class of system; the code, design decisions, and tradeoffs recorded here are this repo's own.
 
-**At a glance:** 156/156 tests passing across `user-contract` + `user-service` + `order-service` + `payment-service` + `restaurant-service` + `api-gateway-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
+**At a glance:** 161/161 tests passing across `user-contract` + `user-service` + `order-service` + `payment-service` + `restaurant-service` + `api-gateway-service` — see the **[consolidated test report](https://terrence721.github.io/saga-full/test-report.html)**, a single file that CI keeps current on every push to `main` as more test cases are added. To generate it locally instead, run `./gradlew test --continue && ./gradlew aggregateTestReport` — see [CONTRIBUTING.md](CONTRIBUTING.md#consolidated-test-report-all-modules-one-file) for details.
 
 ## 🧭 Start Here
 
@@ -37,7 +37,7 @@ Saga orchestration is a common interview-whiteboard topic and an uncommon thing 
 
 ## 🏗 What's Here So Far
 
-`user-contract` (shared gRPC contract), `user-service` (identity + auth: login, token issuance, token validation), `order-service` (order creation, transactional outbox, Kafka publish/consume, the saga's create/confirm/cancel lifecycle), `payment-service` (charge on order creation, refund on restaurant rejection), `restaurant-service` (inventory allocation, ticket creation, the saga's approve/reject decision), and `api-gateway-service` (reactive WebFlux edge — JWT-guarded routing to `order-service`, gRPC-backed login, a Resilience4j circuit breaker on the downstream hop) are complete, all with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). The full saga chain is wired end-to-end behind a real security perimeter: order → payment → restaurant, with compensation flowing back on rejection. This completes all five originally-planned backend modules — what's left is a register/POS frontend and an unscoped `reservation-service` addition. See `todo.md` for the full build-out plan.
+`user-contract` (shared gRPC contract), `user-service` (identity + auth: login, token issuance, token validation), `order-service` (order creation, transactional outbox, Kafka publish/consume, the saga's create/confirm/cancel lifecycle), `payment-service` (charge on order creation, refund on restaurant rejection), `restaurant-service` (inventory allocation, ticket creation, the saga's approve/reject decision), and `api-gateway-service` (reactive WebFlux edge — JWT-guarded routing to `order-service`, gRPC-backed login, a Resilience4j circuit breaker on the downstream hop) are complete, all with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). The full saga chain is wired end-to-end behind a real security perimeter: order → payment → restaurant, with compensation flowing back on rejection. This completes all five originally-planned backend modules, and the whole stack is now containerized end-to-end (5 per-service `Dockerfile`s + `docker-compose.yml`). A register/POS frontend build is in progress (plan approved, first backend step merged); an unscoped `reservation-service` addition remains open. See `todo.md` for the full build-out plan.
 
 ```text
   api-gateway-service/   inbound edge, JWT perimeter guard, routing         ✅ done
