@@ -39,7 +39,6 @@ public class AuthenticationController {
                                     grpcResponse.getExpiresInSeconds()
                             )
                     )
-                )
-                .defaultIfEmpty(ResponseEntity.status(401).build());
+                );
     }
 }
