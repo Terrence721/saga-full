@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -25,6 +26,10 @@ import io.github.terrence721.saga.user.grpc.LoginResponse;
         GlobalExceptionHandler.class
     }
 )
+// WebTestClient's default 5s response timeout is tight enough to flake under the
+// CPU contention of 6 modules' test JVMs running concurrently (org.gradle.parallel=true) -
+// not a real latency requirement of the code under test.
+@AutoConfigureWebTestClient(timeout = "PT15S")
 class AuthenticationControllerTest {
 
     @Autowired
