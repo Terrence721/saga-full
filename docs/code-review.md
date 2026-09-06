@@ -1,7 +1,7 @@
 # Code Review Results
 
 <!-- markdownlint-disable-next-line MD036 -->
-**Last Updated: September 4, 2026**
+**Last Updated: September 6, 2026**
 
 > [!CAUTION]
 > This is a simulation of real-world code review.
@@ -811,5 +811,15 @@ No production code changed. Full repo suite green, 156/156 (up from 152/152).
 The single-arg `DependencyUnavailableException(String message)` constructor was never called anywhere. Production code and the one test that constructs this exception both only ever use the `(message, cause)` overload, since every real construction site (`UserGrpcExceptionTranslator`) always has a real underlying `StatusRuntimeException` cause to attach.
 
 Removed the unused constructor. Verified with a real clean recompile (`./gradlew :api-gateway-service:clean :api-gateway-service:test`), not a cached/`UP-TO-DATE` run, since nothing else in the file changed enough to force Gradle to notice otherwise.
+
+---
+
+### [`AuthenticationController.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/controller/AuthenticationController.java) — dead code found resuming the coverage scan's per-branch pass
+
+**low · Dead code** — Fixed via [PR #192](https://github.com/Terrence721/saga-full/pull/192) ([issue #191](https://github.com/Terrence721/saga-full/issues/191))
+
+Resuming the scan's "not yet re-examined per-branch" list: `order-service`'s and `payment-service`'s `*ConsumerConfig.java`, `restaurant-service`'s `RestaurantConsumerConfig.java`, and `order-service`'s `OrderController.java` all checked out clean (every branch, including every configured Kafka non-retryable-exception type, already has a dedicated test). `AuthenticationController.login()` didn't: its `.defaultIfEmpty(ResponseEntity.status(401).build())` branch only fires if the upstream `Mono` completes empty, which only happens if `UserGrpcClient.login()` returns null — and it never can, since a gRPC blocking stub call either returns a real response or throws (translated by `UserGrpcExceptionTranslator`, handled by `GlobalExceptionHandler`). The original audit's review of this file (#151/#152) only addressed the threading fix, never this branch.
+
+Removed the dead branch. No production behavior change (unreachable), no test added (nothing real to test — the only way to trigger it was a Mockito quirk, not a genuine code path). Full repo suite green, 156/156 (unchanged — no tests added or removed).
 
 This was the last of the 4 post-audit test-coverage/dead-code findings from the repo-wide sweep. Full repo suite green, 156/156 (unchanged — no test added, none removed).
