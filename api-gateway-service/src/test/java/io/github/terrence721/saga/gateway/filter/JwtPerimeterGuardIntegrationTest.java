@@ -3,6 +3,7 @@ package io.github.terrence721.saga.gateway.filter;
 import java.util.Date;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.http.HttpHeaders;
@@ -25,6 +26,10 @@ import com.auth0.jwt.algorithms.Algorithm;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT, properties = {
         "app.jwt.secret=test-only-secret-never-used-outside-this-test"
 })
+// WebTestClient's default 5s response timeout is tight enough to flake under the
+// CPU contention of 6 modules' test JVMs running concurrently (org.gradle.parallel=true) -
+// not a real latency requirement of the code under test.
+@AutoConfigureWebTestClient(timeout = "PT15S")
 class JwtPerimeterGuardIntegrationTest {
 
     private static final String TEST_SECRET = "test-only-secret-never-used-outside-this-test";
