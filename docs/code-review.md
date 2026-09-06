@@ -822,4 +822,14 @@ Resuming the scan's "not yet re-examined per-branch" list: `order-service`'s and
 
 Removed the dead branch. No production behavior change (unreachable), no test added (nothing real to test — the only way to trigger it was a Mockito quirk, not a genuine code path). Full repo suite green, 156/156 (unchanged — no tests added or removed).
 
-This was the last of the 4 post-audit test-coverage/dead-code findings from the repo-wide sweep. Full repo suite green, 156/156 (unchanged — no test added, none removed).
+---
+
+### [`JwtPerimeterGuardGatewayFilterFactory.java`](https://github.com/Terrence721/saga-full/blob/main/api-gateway-service/src/main/java/io/github/terrence721/saga/gateway/filter/JwtPerimeterGuardGatewayFilterFactory.java) — test-coverage gap found continuing the same per-branch pass
+
+**low · Test coverage** — Fixed via [PR #194](https://github.com/Terrence721/saga-full/pull/194) ([issue #193](https://github.com/Terrence721/saga-full/issues/193))
+
+`GatewayFallbackController.java` checked out clean (a single unconditional path, already fully asserted). `JwtPerimeterGuardGatewayFilterFactory.java`'s header guard didn't: `authHeader == null || !authHeader.startsWith("Bearer ")` only had its `== null` half tested — a header that's *present* but not Bearer-scheme (e.g. `Basic ...`) had no dedicated test proving it's rejected by this same guard, rather than falling through to a JWT-library decode failure further down (a different exception message, from a different code path, that would still incidentally satisfy a looser assertion).
+
+Added a test asserting the guard's own `"Missing or malformed"` message specifically for a `Basic ...` header. Verified via deliberate revert: narrowed the condition to `authHeader == null` only, confirmed the new test genuinely fails (a different message surfaces from the JWT library's own decode failure instead), restored it.
+
+No production code changed. Full repo suite green, 157/157 (up from 156/156).
