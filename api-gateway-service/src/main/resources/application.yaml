@@ -88,6 +88,20 @@ resilience4j:
         waitDurationInOpenState: 15000ms   # Wait 15 seconds in OPEN state before trying again (HALF-OPEN)
         permittedNumberOfCallsInHalfOpenState: 3
         automaticTransitionFromOpenToHalfOpenEnabled: true
+  # Spring Cloud Circuit Breaker's Resilience4j reactive integration pairs a
+  # TimeLimiter with a CircuitBreaker by matching instance name. Left
+  # unconfigured, Resilience4j silently falls back to its library default of
+  # 1 second - fine for a direct localhost call, but too tight for a real
+  # cross-container call: verified against the real Dockerized stack, the
+  # very first order-service call (cold DNS resolution + connection-pool
+  # warmup on the Docker bridge network) took long enough to trip this
+  # default and fall back, even though order-service went on to process it
+  # successfully a moment later. Every call after the first stayed well
+  # under 5s.
+  timelimiter:
+    instances:
+      orderServiceCircuitBreaker:
+        timeout-duration: 5s
 
 # ===================================================================
 # 6. CUSTOM APPLICATION PROPERTIES

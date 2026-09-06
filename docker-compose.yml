@@ -25,10 +25,20 @@ services:
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      # Two PLAINTEXT listeners, not one: PLAINTEXT_HOST is what this repo's
+      # existing non-Docker workflow connects through (a locally-run
+      # ./gradlew bootRun hitting localhost:9092, see CONTRIBUTING.md) - kept
+      # unchanged. PLAINTEXT_INTERNAL is new, for the per-service containers
+      # below: Kafka tells every client which address to use for the actual
+      # produce/consume connection (not just the bootstrap one) via
+      # KAFKA_ADVERTISED_LISTENERS, so a single "localhost:9092" advertised
+      # address would send a container back to its own loopback instead of
+      # this broker - unreachable, since "localhost" means something
+      # different inside every container's own network namespace.
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT_HOST:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT_HOST://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_HOST://localhost:9092,PLAINTEXT_INTERNAL://kafka-broker:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-broker:9093
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
@@ -36,3 +46,97 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    ports:
+      - "9090:9090"
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DATABASE_HOST: postgres-db
+      DATABASE_PORT: "5432"
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DATABASE_HOST: postgres-db
+      DATABASE_PORT: "5432"
+      KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      kafka-broker:
+        condition: service_healthy
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DATABASE_HOST: postgres-db
+      DATABASE_PORT: "5432"
+      KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      kafka-broker:
+        condition: service_healthy
+
+  restaurant-service:
+    build:
+      context: .
+      dockerfile: restaurant-service/Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DATABASE_HOST: postgres-db
+      DATABASE_PORT: "5432"
+      KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+      kafka-broker:
+        condition: service_healthy
+
+  api-gateway-service:
+    build:
+      context: .
+      dockerfile: api-gateway-service/Dockerfile
+    ports:
+      # Host port 8090, not the standard 8080 - this dev machine already has
+      # another project's proxy container permanently bound to 8080. The
+      # container's own internal port is still 8080 (GATEWAY_PORT's default,
+      # unchanged) - only the host-side mapping differs. Call the gateway at
+      # http://localhost:8090 from the host; other containers on this
+      # compose network still reach it at api-gateway-service:8080.
+      - "8090:8080"
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
+      USER_SERVICE_GRPC_HOST: user-service
+      GRPC_PORT: "9090"
+      ORDER_SERVICE_HOST: order-service
+      ORDER_SERVICE_PORT: "8081"
+    depends_on:
+      - user-service
+      - order-service

@@ -1,0 +1,31 @@
+# Every per-service Dockerfile builds with the repo root as context (see the
+# comment at the top of each Dockerfile) - this keeps that context down to just
+# what a build actually reads, matching .gitignore's own exclusions plus .git
+# itself (irrelevant to a build, and often the single largest thing in the tree).
+.git/
+.gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+.idea/
+*.iml
+*.iws
+.vscode/
+*.code-workspace
+.settings/
+.project
+.classpath
+bin/
+cspell.json
+
+.DS_Store
+Thumbs.db
+
+*.log
+
+.env
+
+docs/
+diagrams/
+*.md
