@@ -50,6 +50,22 @@ SPRING_PROFILES_ACTIVE=postgres DATABASE_PORT=5433 ./gradlew :order-service:boot
 
 Tear down with `docker compose down` when done.
 
+## Running the full stack (Docker)
+
+Each service module has its own `Dockerfile` (multi-stage: `eclipse-temurin:25-jdk` to build, `eclipse-temurin:25-jre` to run). `docker-compose.yml` wires up all five alongside Postgres and Kafka - the whole saga, containerized:
+
+```shell
+docker compose up -d --build
+```
+
+This brings up `postgres-db`, `kafka-broker`, and all five services, in dependency order (each service waits on Postgres/Kafka's healthchecks before starting). The gateway is reachable at **`http://localhost:8090`**, not 8080 - this dev machine already has another project's proxy bound to 8080 (same reasoning as Postgres's 5433 remap above); the container's own internal port is still 8080, so this only affects host access. `user-service` has no HTTP port - it's gRPC-only, reachable inside the compose network at `user-service:9090`.
+
+`JWT_SECRET` defaults to `local-dev-secret-change-me` if unset (matching the non-Docker `bootRun` launch configs) - override it via a real environment variable or an `.env` file for anything beyond local use.
+
+Each `Dockerfile` builds with the **repo root** as its context (`docker build -f order-service/Dockerfile .`), not its own directory - `settings.gradle.kts` `include()`s all six modules, and Gradle refuses to configure the build if any included module's directory doesn't physically exist, even for a module (like `order-service`) with zero actual dependency on the others.
+
+Tear down with `docker compose down -v` when done (`-v` also drops Postgres's data volume, so schemas are recreated fresh next time).
+
 ## Submitting pull requests
 
 Please follow these steps to simplify review:

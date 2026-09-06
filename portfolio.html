@@ -475,7 +475,7 @@
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">27</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">28</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -1080,6 +1080,26 @@
           </div>
           <div class="meta">
             <span class="tag">high · security</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">28</div>
+        <div>
+          <div class="file">api-gateway-service — gateway circuit breaker had no explicit call timeout, silently defaulting to 1 second</div>
+          <div class="desc">
+            Found while bringing the whole stack up in real Docker
+            containers for the first time: the very first order
+            request — a cold cross-container HTTP call, DNS
+            resolution and connection-pool warmup included — took
+            1.29 seconds and got a false-positive circuit-open
+            fallback under Resilience4j's undocumented library
+            default. Fixed by configuring an explicit 5-second
+            <code>TimeLimiter</code>, then re-verified from a fresh
+            stack restart that the very first cold call succeeds.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · reliability</span>
           </div>
         </div>
       </div>
