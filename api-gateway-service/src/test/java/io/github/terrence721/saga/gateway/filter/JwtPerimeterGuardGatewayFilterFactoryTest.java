@@ -94,6 +94,30 @@ class JwtPerimeterGuardGatewayFilterFactoryTest {
     }
 
     /**
+     * Distinct from the missing-header case above: the header is present, just not
+     * Bearer-scheme. Asserts the guard's own "Missing or malformed" message specifically,
+     * not just any JWTVerificationException - a "Basic ..." header must never reach
+     * jwtVerifier.verify(...) and fail there instead (a different message, from a
+     * different code path, that would still incidentally satisfy a looser assertion).
+     */
+    @Test
+    void apply_ShouldEmitJwtVerificationError_WhenAuthorizationHeaderIsPresentButNotBearerScheme() {
+        MockServerHttpRequest request = MockServerHttpRequest.post("/orders")
+                .header(HttpHeaders.AUTHORIZATION, "Basic dXNlcjpwYXNz")
+                .build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        GatewayFilter filter = filterFactory.apply(new JwtPerimeterGuardGatewayFilterFactory.Config());
+
+        StepVerifier.create(filter.filter(exchange, filterChain))
+                .expectErrorMatches(ex -> ex instanceof JWTVerificationException
+                        && ex.getMessage().contains("Missing or malformed"))
+                .verify();
+
+        verifyNoInteractions(filterChain);
+    }
+
+    /**
      * A malformed/tampered token throws JWTDecodeException, a JWTVerificationException
      * subtype - so GlobalExceptionHandler's same handler still maps it to 401, not 403
      * (403 is reserved for TokenExpiredException specifically).
