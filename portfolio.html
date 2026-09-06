@@ -463,10 +463,10 @@
   <div class="wrap">
     <div class="manifest-row">
       <div class="manifest-cell">
-        <span class="v">42</span><span class="k">phases shipped</span>
+        <span class="v">44</span><span class="k">phases shipped</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">156/156</span><span class="k">tests passing</span>
+        <span class="v">161/161</span><span class="k">tests passing</span>
       </div>
       <div class="manifest-cell">
         <span class="v">6</span><span class="k">services complete</span>
@@ -1117,11 +1117,15 @@
       genuine <code>HikariPool</code>→<code>PgConnection</code> connection,
       and each service's consumer groups actually joining and getting real
       partition assignments against the live broker — the thing every prior
-      test run under a mocked or absent broker couldn't prove.
+      test run under a mocked or absent broker couldn't prove. Every service
+      now runs as its own container too, not just its infra dependencies —
+      the full 7-container stack (5 services + Postgres + Kafka) starts with
+      one <code>docker compose up</code>, verified end to end including the
+      saga's compensation path, not just the happy path.
     </p>
     <div class="twocol">
       <div class="card">
-        <h3>156/156 tests, real infra behind them</h3>
+        <h3>161/161 tests, real infra behind them</h3>
         <p>
           Repository tests run against embedded H2 with real Hibernate DDL,
           not mocks; Kafka/Postgres wiring is separately verified against
