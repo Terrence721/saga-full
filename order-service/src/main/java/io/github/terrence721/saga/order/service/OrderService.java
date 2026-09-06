@@ -53,6 +53,10 @@ public class OrderService {
         return savedOrder;
     }
 
+    public Order getOrder(UUID orderId) {
+        return findOrder(orderId);
+    }
+
     @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void confirmOrder(RestaurantApprovedEvent event) {

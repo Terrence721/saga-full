@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.terrence721.saga.order.domain.Order;
 import io.github.terrence721.saga.order.domain.OrderStatus;
 import io.github.terrence721.saga.order.dto.CreateOrderRequest;
+import io.github.terrence721.saga.order.exception.OrderNotFoundException;
 import io.github.terrence721.saga.order.service.OrderService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -119,5 +121,74 @@ class OrderControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getOrder_returnsOk_whenPerimeterHeaderMatchesOrderCustomerId() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        Order order = Order.builder()
+                .id(orderId)
+                .customerId(customerId)
+                .totalAmount(new BigDecimal("25.50"))
+                .itemCode("BURGER_01")
+                .quantity(2)
+                .status(OrderStatus.SUCCESS)
+                .build();
+
+        when(orderService.getOrder(orderId)).thenReturn(order);
+
+        mockMvc.perform(get("/orders/{id}", orderId)
+                        .header("X-Perimeter-User-Id", customerId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(orderId.toString()))
+                .andExpect(jsonPath("$.status").value("SUCCESS"));
+    }
+
+    @Test
+    void getOrder_returnsForbidden_whenPerimeterHeaderMissing() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        Order order = Order.builder()
+                .id(orderId)
+                .customerId(UUID.randomUUID())
+                .totalAmount(new BigDecimal("25.50"))
+                .itemCode("BURGER_01")
+                .quantity(2)
+                .status(OrderStatus.PENDING)
+                .build();
+
+        when(orderService.getOrder(orderId)).thenReturn(order);
+
+        mockMvc.perform(get("/orders/{id}", orderId))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getOrder_returnsForbidden_whenPerimeterHeaderDoesNotMatchOrderCustomerId() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        Order order = Order.builder()
+                .id(orderId)
+                .customerId(UUID.randomUUID())
+                .totalAmount(new BigDecimal("25.50"))
+                .itemCode("BURGER_01")
+                .quantity(2)
+                .status(OrderStatus.PENDING)
+                .build();
+
+        when(orderService.getOrder(orderId)).thenReturn(order);
+
+        mockMvc.perform(get("/orders/{id}", orderId)
+                        .header("X-Perimeter-User-Id", UUID.randomUUID().toString()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getOrder_returnsNotFound_whenOrderDoesNotExist() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        when(orderService.getOrder(orderId)).thenThrow(new OrderNotFoundException("Order not found: " + orderId));
+
+        mockMvc.perform(get("/orders/{id}", orderId)
+                        .header("X-Perimeter-User-Id", UUID.randomUUID().toString()))
+                .andExpect(status().isNotFound());
     }
 }
