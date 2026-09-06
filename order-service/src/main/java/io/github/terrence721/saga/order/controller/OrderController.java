@@ -2,17 +2,23 @@ package io.github.terrence721.saga.order.controller;
 
 import io.github.terrence721.saga.order.domain.Order;
 import io.github.terrence721.saga.order.dto.CreateOrderRequest;
+import io.github.terrence721.saga.order.exception.OrderNotFoundException;
 import io.github.terrence721.saga.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/orders")
@@ -65,6 +71,28 @@ public class OrderController {
                 request.quantity(), request.totalAmount());
         Order order = orderService.createOrder(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Order> getOrder(
+            @PathVariable UUID id,
+            @RequestHeader(value = "X-Perimeter-User-Id", required = false) String perimeterUserId) {
+
+        Order order = orderService.getOrder(id);
+
+        // Same fail-closed invariant as createOrder above: a caller can only ever see
+        // their own order, never one addressed by someone else's id.
+        if (perimeterUserId == null || !perimeterUserId.equals(order.getCustomerId().toString())) {
+            log.warn("Rejected get order request: X-Perimeter-User-Id does not match order's customerId, orderId={}", id);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
+        }
+
+        return ResponseEntity.ok(order);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<Void> handleOrderNotFound() {
+        return ResponseEntity.notFound().build();
     }
 
     private static String sanitizeForLog(String value) {
