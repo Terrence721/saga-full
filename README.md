@@ -54,4 +54,10 @@ Saga orchestration is a common interview-whiteboard topic and an uncommon thing 
 ./gradlew :api-gateway-service:compileJava
 ```
 
-A full runnable stack needs Postgres + Kafka up (`docker-compose up`, see [CONTRIBUTING.md](CONTRIBUTING.md)) and each service started with the `postgres` profile — `user-service` and `order-service` first, since `api-gateway-service` and `payment-service`/`restaurant-service` depend on them being reachable over gRPC and Kafka respectively.
+The whole stack — all 5 services plus Postgres and Kafka — runs as containers with one command:
+
+```shell
+docker compose up -d --build
+```
+
+The gateway is then reachable at `http://localhost:8090`. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full breakdown (per-service `Dockerfile`s, port mappings, `JWT_SECRET`). For local development against individual modules instead, each service can still be started directly with `./gradlew :<module>:bootRun` and the `postgres` profile — `user-service` and `order-service` first, since `api-gateway-service` and `payment-service`/`restaurant-service` depend on them being reachable over gRPC and Kafka respectively.
