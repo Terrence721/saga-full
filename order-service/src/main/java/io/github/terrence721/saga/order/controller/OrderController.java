@@ -7,7 +7,9 @@ import io.github.terrence721.saga.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 
 import java.util.UUID;
 
@@ -88,6 +91,27 @@ public class OrderController {
         }
 
         return ResponseEntity.ok(order);
+    }
+
+    @GetMapping(value = "/{id}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<Order>> streamOrder(
+            @PathVariable UUID id,
+            @RequestHeader(value = "X-Perimeter-User-Id", required = false) String perimeterUserId) {
+
+        // getOrder() both throws OrderNotFoundException (-> 404, same handler below) if
+        // the order doesn't exist, and doubles as the current-state snapshot streamed as
+        // this connection's first event - no separate lookup needed.
+        Order current = orderService.getOrder(id);
+
+        // Same fail-closed invariant as getOrder above: a caller can only ever stream
+        // their own order, never one addressed by someone else's id.
+        if (perimeterUserId == null || !perimeterUserId.equals(current.getCustomerId().toString())) {
+            log.warn("Rejected stream order request: X-Perimeter-User-Id does not match order's customerId, orderId={}", id);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
+        }
+
+        return Flux.concat(Flux.just(current), orderService.streamOrderUpdates(id))
+                .map(order -> ServerSentEvent.builder(order).build());
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
