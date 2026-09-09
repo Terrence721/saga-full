@@ -1,7 +1,5 @@
 package io.github.terrence721.saga.order.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.terrence721.saga.order.domain.Order;
 import io.github.terrence721.saga.order.domain.OrderStatus;
 import io.github.terrence721.saga.order.domain.OutboxRecord;
@@ -15,10 +13,7 @@ import io.github.terrence721.saga.order.repository.OutboxRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -27,24 +22,15 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OutboxRepository outboxRepository;
-    private final ObjectMapper objectMapper;
-    // Multicast, not a per-order-id map: v1 is a one-terminal cashier flow, not many
-    // concurrent orders, so one shared bus filtered per-subscriber by order ID is simpler
-    // and needs no eviction logic. directBestEffort(), not onBackpressureBuffer(): a
-    // backpressure buffer queues emissions made while zero subscribers are connected and
-    // replays the whole backlog to the first subscriber that arrives - verified for real
-    // against the running stack that this produces a genuinely wrong client-visible symptom
-    // (a client connecting after an order already reached SUCCESS saw its stream replay a
-    // stale PENDING before SUCCESS again, even though the connection's own current-state
-    // snapshot already correctly showed SUCCESS). directBestEffort() delivers only to
-    // subscribers connected at emission time and drops the value otherwise - the correct
-    // semantics here, since streamOrderUpdates() callers already prepend current state.
-    private final Sinks.Many<Order> orderUpdates = Sinks.many().multicast().directBestEffort();
+    private final OutboxRecordFactory outboxRecordFactory;
+    private final OrderUpdatePublisher orderUpdatePublisher;
 
-    public OrderService(OrderRepository orderRepository, OutboxRepository outboxRepository, ObjectMapper objectMapper) {
+    public OrderService(OrderRepository orderRepository, OutboxRepository outboxRepository,
+            OutboxRecordFactory outboxRecordFactory, OrderUpdatePublisher orderUpdatePublisher) {
         this.orderRepository = orderRepository;
         this.outboxRepository = outboxRepository;
-        this.objectMapper = objectMapper;
+        this.outboxRecordFactory = outboxRecordFactory;
+        this.orderUpdatePublisher = orderUpdatePublisher;
     }
 
     @SuppressWarnings("null") // Spring Data's save() never returns null; it throws on failure instead.
@@ -63,32 +49,13 @@ public class OrderService {
 
         OutboxRecord outboxRecord = buildOutboxRecord(savedOrder);
         outboxRepository.save(outboxRecord);
-        emitOrderUpdate(savedOrder);
+        orderUpdatePublisher.publish(savedOrder);
 
         return savedOrder;
     }
 
     public Order getOrder(UUID orderId) {
         return findOrder(orderId);
-    }
-
-    // Live-only: no current-state snapshot. Callers building a client-facing stream (see
-    // OrderController's /stream endpoint) are expected to prepend getOrder(orderId)'s result
-    // themselves, so a subscriber always gets current state immediately, then live pushes.
-    public Flux<Order> streamOrderUpdates(UUID orderId) {
-        return orderUpdates.asFlux().filter(order -> order.getId().equals(orderId));
-    }
-
-    private void emitOrderUpdate(Order order) {
-        Sinks.EmitResult result = orderUpdates.tryEmitNext(order);
-        if (result == Sinks.EmitResult.FAIL_ZERO_SUBSCRIBER) {
-            // Expected, common outcome with directBestEffort(): most orders won't have an
-            // active /stream client at the exact moment their status changes - the client's
-            // own connection always gets current state from its snapshot regardless.
-            log.debug("No active subscriber for order {} update; skipping live push", order.getId());
-        } else if (result.isFailure()) {
-            log.warn("Failed to emit order update for order {}: {}", order.getId(), result);
-        }
     }
 
     @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
@@ -111,7 +78,7 @@ public class OrderService {
 
         order.setStatus(OrderStatus.SUCCESS);
         orderRepository.save(order);
-        emitOrderUpdate(order);
+        orderUpdatePublisher.publish(order);
         log.info("Order {} marked SUCCESS", event.orderId());
     }
 
@@ -132,7 +99,7 @@ public class OrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
-        emitOrderUpdate(order);
+        orderUpdatePublisher.publish(order);
         // reason carries order-service's own itemCode unmodified through payment-service and
         // restaurant-service (both raw string-concatenate it into this field) - client-controlled,
         // content-unrestricted, and needs the same CR/LF sanitizing as OrderController's itemCode
@@ -158,7 +125,6 @@ public class OrderService {
         }
     }
 
-    @SuppressWarnings("null") // Lombok's generated build() never returns null.
     private OutboxRecord buildOutboxRecord(Order order) {
         OrderCreatedEvent event = new OrderCreatedEvent(
                 order.getId(),
@@ -168,20 +134,6 @@ public class OrderService {
                 order.getTotalAmount(),
                 order.getStatus()
         );
-
-        String payload;
-        try {
-            payload = objectMapper.writeValueAsString(event);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Failed to serialize OrderCreatedEvent for order " + order.getId(), e);
-        }
-
-        OutboxRecord outboxRecord = OutboxRecord.builder()
-                .aggregateId(order.getId().toString())
-                .eventType("OrderCreatedEvent")
-                .payload(payload)
-                .createdTime(LocalDateTime.now())
-                .build();
-        return outboxRecord;
+        return outboxRecordFactory.create(order.getId().toString(), "OrderCreatedEvent", event);
     }
 }

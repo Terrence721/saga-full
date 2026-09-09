@@ -17,17 +17,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,11 +39,15 @@ class OrderServiceTest {
     @Mock
     private OutboxRepository outboxRepository;
 
+    @Mock
+    private OrderUpdatePublisher orderUpdatePublisher;
+
     private OrderService orderService;
 
     @BeforeEach
     void setUp() {
-        orderService = new OrderService(orderRepository, outboxRepository, new ObjectMapper());
+        orderService = new OrderService(orderRepository, outboxRepository,
+                new OutboxRecordFactory(new ObjectMapper()), orderUpdatePublisher);
     }
 
     private Order pendingOrder(UUID id) {
@@ -91,40 +92,17 @@ class OrderServiceTest {
     }
 
     @Test
-    void createOrder_emitsOrderUpdateOnCreation() {
-        UUID orderId = UUID.randomUUID();
+    void createOrder_publishesOrderUpdateOnCreation() {
         CreateOrderRequest request = new CreateOrderRequest(UUID.randomUUID(), new BigDecimal("19.99"), "ITEM-1", 2);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order order = invocation.getArgument(0);
-            order.setId(orderId);
+            order.setId(UUID.randomUUID());
             return order;
         });
 
-        StepVerifier.create(orderService.streamOrderUpdates(orderId))
-                .then(() -> orderService.createOrder(request))
-                .assertNext(order -> assertThat(order.getStatus()).isEqualTo(OrderStatus.PENDING))
-                .thenCancel()
-                .verify(Duration.ofSeconds(1));
-    }
+        Order saved = orderService.createOrder(request);
 
-    @Test
-    void streamOrderUpdates_filtersOutUpdatesForOtherOrders() {
-        UUID orderId = UUID.randomUUID();
-        UUID otherOrderId = UUID.randomUUID();
-        Order thisOrder = pendingOrder(orderId);
-        Order otherOrder = pendingOrder(otherOrderId);
-        when(orderRepository.existsByIdAndStatus(any(), eq(OrderStatus.CANCELLED))).thenReturn(false);
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(thisOrder));
-        when(orderRepository.findById(otherOrderId)).thenReturn(Optional.of(otherOrder));
-
-        StepVerifier.create(orderService.streamOrderUpdates(orderId))
-                .then(() -> {
-                    orderService.cancelOrder(new RestaurantRejectedEvent(otherOrderId, otherOrder.getCustomerId(), "Out of stock"));
-                    orderService.cancelOrder(new RestaurantRejectedEvent(orderId, thisOrder.getCustomerId(), "Out of stock"));
-                })
-                .assertNext(order -> assertThat(order.getId()).isEqualTo(orderId))
-                .thenCancel()
-                .verify(Duration.ofSeconds(1));
+        verify(orderUpdatePublisher).publish(saved);
     }
 
     @Test
@@ -136,6 +114,7 @@ class OrderServiceTest {
 
         verify(orderRepository, never()).findById(any());
         verify(orderRepository, never()).save(any());
+        verify(orderUpdatePublisher, never()).publish(any());
     }
 
     @Test
@@ -149,21 +128,7 @@ class OrderServiceTest {
 
         assertThat(existing.getStatus()).isEqualTo(OrderStatus.SUCCESS);
         verify(orderRepository).save(existing);
-    }
-
-    @Test
-    void confirmOrder_emitsOrderUpdateOnSuccess() {
-        UUID orderId = UUID.randomUUID();
-        Order existing = pendingOrder(orderId);
-        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
-
-        StepVerifier.create(orderService.streamOrderUpdates(orderId))
-                .then(() -> orderService.confirmOrder(
-                        new RestaurantApprovedEvent(orderId, existing.getCustomerId(), UUID.randomUUID())))
-                .assertNext(order -> assertThat(order.getStatus()).isEqualTo(OrderStatus.SUCCESS))
-                .thenCancel()
-                .verify(Duration.ofSeconds(1));
+        verify(orderUpdatePublisher).publish(existing);
     }
 
     @Test
@@ -214,6 +179,7 @@ class OrderServiceTest {
 
         verify(orderRepository, never()).findById(any());
         verify(orderRepository, never()).save(any());
+        verify(orderUpdatePublisher, never()).publish(any());
     }
 
     @Test
@@ -227,21 +193,7 @@ class OrderServiceTest {
 
         assertThat(existing.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         verify(orderRepository).save(existing);
-    }
-
-    @Test
-    void cancelOrder_emitsOrderUpdateOnCancellation() {
-        UUID orderId = UUID.randomUUID();
-        Order existing = pendingOrder(orderId);
-        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(false);
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
-
-        StepVerifier.create(orderService.streamOrderUpdates(orderId))
-                .then(() -> orderService.cancelOrder(
-                        new RestaurantRejectedEvent(orderId, existing.getCustomerId(), "Out of stock")))
-                .assertNext(order -> assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED))
-                .thenCancel()
-                .verify(Duration.ofSeconds(1));
+        verify(orderUpdatePublisher).publish(existing);
     }
 
     @Test
