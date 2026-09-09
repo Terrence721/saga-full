@@ -6,6 +6,7 @@ import io.github.terrence721.saga.order.domain.OrderStatus;
 import io.github.terrence721.saga.order.dto.CreateOrderRequest;
 import io.github.terrence721.saga.order.exception.OrderNotFoundException;
 import io.github.terrence721.saga.order.service.OrderService;
+import io.github.terrence721.saga.order.service.OrderUpdatePublisher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -41,6 +42,9 @@ class OrderControllerTest {
 
     @MockitoBean
     private OrderService orderService;
+
+    @MockitoBean
+    private OrderUpdatePublisher orderUpdatePublisher;
 
     @Test
     void createOrder_returnsCreated_whenRequestIsValid() throws Exception {
@@ -214,9 +218,8 @@ class OrderControllerTest {
         when(orderService.getOrder(orderId)).thenReturn(order);
         // Empty: this test only proves the current-state snapshot is streamed as the first
         // (here, only) event and the connection completes cleanly - live-push behavior itself
-        // is OrderServiceTest's concern (streamOrderUpdates_filtersOutUpdatesForOtherOrders,
-        // confirmOrder/cancelOrder's own emit tests), not something to re-prove against a mock.
-        when(orderService.streamOrderUpdates(orderId)).thenReturn(Flux.empty());
+        // is OrderUpdatePublisherTest's concern, not something to re-prove against a mock.
+        when(orderUpdatePublisher.streamUpdates(orderId)).thenReturn(Flux.empty());
 
         MvcResult mvcResult = mockMvc.perform(get("/orders/{id}/stream", orderId)
                         .header("X-Perimeter-User-Id", customerId.toString()))
