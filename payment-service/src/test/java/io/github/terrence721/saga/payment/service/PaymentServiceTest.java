@@ -45,7 +45,8 @@ class PaymentServiceTest {
 
     @BeforeEach
     void setUp() {
-        paymentService = new PaymentService(paymentRepository, outboxRepository, new ObjectMapper(), MAX_AMOUNT);
+        paymentService = new PaymentService(paymentRepository, outboxRepository,
+                new OutboxRecordFactory(new ObjectMapper()), MAX_AMOUNT);
     }
 
     private Payment approvedPayment(UUID orderId, UUID customerId) {

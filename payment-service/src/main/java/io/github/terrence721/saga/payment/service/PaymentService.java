@@ -1,7 +1,5 @@
 package io.github.terrence721.saga.payment.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.terrence721.saga.payment.domain.OutboxRecord;
 import io.github.terrence721.saga.payment.domain.Payment;
 import io.github.terrence721.saga.payment.domain.PaymentStatus;
@@ -17,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -26,17 +23,17 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
     private final OutboxRepository outboxRepository;
-    private final ObjectMapper objectMapper;
+    private final OutboxRecordFactory outboxRecordFactory;
     private final BigDecimal maxAmount;
 
     public PaymentService(
             PaymentRepository paymentRepository,
             OutboxRepository outboxRepository,
-            ObjectMapper objectMapper,
+            OutboxRecordFactory outboxRecordFactory,
             @Value("${app.payment.max-amount:500.00}") BigDecimal maxAmount) {
         this.paymentRepository = paymentRepository;
         this.outboxRepository = outboxRepository;
-        this.objectMapper = objectMapper;
+        this.outboxRecordFactory = outboxRecordFactory;
         this.maxAmount = maxAmount;
     }
 
@@ -116,20 +113,6 @@ public class PaymentService {
                 payment.getAmount(),
                 payment.getStatus()
         );
-
-        String payload;
-        try {
-            payload = objectMapper.writeValueAsString(outboxEvent);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Failed to serialize PaymentProcessedEvent for order " + payment.getOrderId(), e);
-        }
-
-        OutboxRecord outboxRecord = OutboxRecord.builder()
-                .aggregateId(payment.getOrderId().toString())
-                .eventType("PaymentProcessedEvent")
-                .payload(payload)
-                .createdTime(LocalDateTime.now())
-                .build();
-        return outboxRecord;
+        return outboxRecordFactory.create(payment.getOrderId().toString(), "PaymentProcessedEvent", outboxEvent);
     }
 }
