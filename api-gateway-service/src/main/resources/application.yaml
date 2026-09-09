@@ -28,16 +28,11 @@ spring:
     gateway:
       server:
         webflux:
-          globalcors:
-            cors-configurations:
-              '[/**]':
-                allowedOrigins: '${FRONTEND_ORIGIN:http://localhost:5180}'
-                allowedMethods:
-                  - GET
-                  - POST
-                allowedHeaders:
-                  - Authorization
-                  - Content-Type
+          # CORS is handled by GlobalCorsConfig's CorsWebFilter bean, not here - this
+          # globalcors block is only wired into RoutePredicateHandlerMapping, the mapping
+          # that resolves the routes below, and has no effect on a path served by a real
+          # local @RestController (AuthenticationController's /auth/login). See
+          # GlobalCorsConfig's own comment for the full story.
           routes:
             # Route 1: Edge Authentication Endpoint Forwarder
             - id: auth-token-route

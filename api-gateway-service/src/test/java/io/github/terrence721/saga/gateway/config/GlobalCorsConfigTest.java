@@ -12,10 +12,21 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Verifies application.yaml's spring.cloud.gateway.server.webflux.globalcors block is
- * actually wired, not just declared - a preflight request is handled by a filter chain
- * that runs before route matching/JwtPerimeterGuard, so this is the only way to prove it
- * works without a browser: nothing else in this repo sends a real OPTIONS preflight.
+ * Verifies GlobalCorsConfig's CorsWebFilter is actually wired, not just declared - a
+ * preflight request is handled by a filter chain that runs before route matching/
+ * JwtPerimeterGuard, so this is the only way to prove it works without a browser: nothing
+ * else in this repo sends a real OPTIONS preflight.
+ *
+ * <p>{@code /auth/login} specifically is a real regression test, not just extra coverage:
+ * before {@link GlobalCorsConfig} existed, {@code spring.cloud.gateway.server.webflux.
+ * globalcors} was the only CORS mechanism, wired solely into RoutePredicateHandlerMapping
+ * (the mapping that resolves this app's YAML-defined routes) - it had no effect on
+ * {@code /auth/login}, served by a real local {@code @RestController}
+ * (AuthenticationController) through a completely different HandlerMapping with no CORS
+ * configuration of its own. Confirmed for real against a running container: that preflight
+ * returned 403 while the identical origin worked fine on a Gateway-routed path.
+ * CorsWebFilter, being a HandlerMapping-agnostic WebFilter, fixes this for every path
+ * uniformly.
  *
  * <p>Requests here use an absolute URI (http://localhost/...) rather than a bare path.
  * @AutoConfigureWebTestClient binds this module's WebTestClient straight to the application
@@ -37,7 +48,7 @@ class GlobalCorsConfigTest {
     private WebTestClient webTestClient;
 
     @Test
-    void preflightRequest_fromFrontendOrigin_getsAllowedByGlobalCorsConfig() {
+    void preflightRequest_fromFrontendOrigin_getsAllowedOnOrdersRoute() {
         webTestClient.options()
                 .uri("http://localhost/orders")
                 .header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN)
@@ -51,13 +62,29 @@ class GlobalCorsConfigTest {
 
     @Test
     void preflightRequest_fromFrontendOrigin_isAllowedOnOrderStreamRoute() {
-        // Same globalcors config applies gateway-wide, not per-route - one check on the
-        // new SSE route is enough to prove it isn't scoped in a way that misses it.
+        // Same CorsWebFilter applies app-wide, not per-route - one check on the SSE
+        // route is enough to prove it isn't scoped in a way that misses it.
         webTestClient.options()
                 .uri("http://localhost/orders/{id}/stream", UUID.randomUUID())
                 .header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN)
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "Authorization")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, FRONTEND_ORIGIN);
+    }
+
+    @Test
+    void preflightRequest_fromFrontendOrigin_isAllowedOnAuthLoginRoute_realRegressionCase() {
+        // /auth/login is served by a real local @RestController (AuthenticationController),
+        // not proxied to another service like the /orders routes - a completely different
+        // HandlerMapping than the one globalcors used to wire into exclusively. This is the
+        // exact path that returned 403 before GlobalCorsConfig's CorsWebFilter was added.
+        webTestClient.options()
+                .uri("http://localhost/auth/login")
+                .header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN)
+                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
+                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "Content-Type")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, FRONTEND_ORIGIN);
