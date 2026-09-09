@@ -30,9 +30,16 @@ public class OrderService {
     private final ObjectMapper objectMapper;
     // Multicast, not a per-order-id map: v1 is a one-terminal cashier flow, not many
     // concurrent orders, so one shared bus filtered per-subscriber by order ID is simpler
-    // and needs no eviction logic. Late subscribers get nothing from before they subscribed
-    // - streamOrderUpdates() callers are expected to prepend the current state themselves.
-    private final Sinks.Many<Order> orderUpdates = Sinks.many().multicast().onBackpressureBuffer();
+    // and needs no eviction logic. directBestEffort(), not onBackpressureBuffer(): a
+    // backpressure buffer queues emissions made while zero subscribers are connected and
+    // replays the whole backlog to the first subscriber that arrives - verified for real
+    // against the running stack that this produces a genuinely wrong client-visible symptom
+    // (a client connecting after an order already reached SUCCESS saw its stream replay a
+    // stale PENDING before SUCCESS again, even though the connection's own current-state
+    // snapshot already correctly showed SUCCESS). directBestEffort() delivers only to
+    // subscribers connected at emission time and drops the value otherwise - the correct
+    // semantics here, since streamOrderUpdates() callers already prepend current state.
+    private final Sinks.Many<Order> orderUpdates = Sinks.many().multicast().directBestEffort();
 
     public OrderService(OrderRepository orderRepository, OutboxRepository outboxRepository, ObjectMapper objectMapper) {
         this.orderRepository = orderRepository;
@@ -74,7 +81,12 @@ public class OrderService {
 
     private void emitOrderUpdate(Order order) {
         Sinks.EmitResult result = orderUpdates.tryEmitNext(order);
-        if (result.isFailure()) {
+        if (result == Sinks.EmitResult.FAIL_ZERO_SUBSCRIBER) {
+            // Expected, common outcome with directBestEffort(): most orders won't have an
+            // active /stream client at the exact moment their status changes - the client's
+            // own connection always gets current state from its snapshot regardless.
+            log.debug("No active subscriber for order {} update; skipping live push", order.getId());
+        } else if (result.isFailure()) {
             log.warn("Failed to emit order update for order {}: {}", order.getId(), result);
         }
     }
