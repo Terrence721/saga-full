@@ -15,6 +15,8 @@ import io.github.terrence721.saga.order.repository.OutboxRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -26,6 +28,11 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
+    // Multicast, not a per-order-id map: v1 is a one-terminal cashier flow, not many
+    // concurrent orders, so one shared bus filtered per-subscriber by order ID is simpler
+    // and needs no eviction logic. Late subscribers get nothing from before they subscribed
+    // - streamOrderUpdates() callers are expected to prepend the current state themselves.
+    private final Sinks.Many<Order> orderUpdates = Sinks.many().multicast().onBackpressureBuffer();
 
     public OrderService(OrderRepository orderRepository, OutboxRepository outboxRepository, ObjectMapper objectMapper) {
         this.orderRepository = orderRepository;
@@ -49,12 +56,27 @@ public class OrderService {
 
         OutboxRecord outboxRecord = buildOutboxRecord(savedOrder);
         outboxRepository.save(outboxRecord);
+        emitOrderUpdate(savedOrder);
 
         return savedOrder;
     }
 
     public Order getOrder(UUID orderId) {
         return findOrder(orderId);
+    }
+
+    // Live-only: no current-state snapshot. Callers building a client-facing stream (see
+    // OrderController's /stream endpoint) are expected to prepend getOrder(orderId)'s result
+    // themselves, so a subscriber always gets current state immediately, then live pushes.
+    public Flux<Order> streamOrderUpdates(UUID orderId) {
+        return orderUpdates.asFlux().filter(order -> order.getId().equals(orderId));
+    }
+
+    private void emitOrderUpdate(Order order) {
+        Sinks.EmitResult result = orderUpdates.tryEmitNext(order);
+        if (result.isFailure()) {
+            log.warn("Failed to emit order update for order {}: {}", order.getId(), result);
+        }
     }
 
     @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
@@ -77,6 +99,7 @@ public class OrderService {
 
         order.setStatus(OrderStatus.SUCCESS);
         orderRepository.save(order);
+        emitOrderUpdate(order);
         log.info("Order {} marked SUCCESS", event.orderId());
     }
 
@@ -97,6 +120,7 @@ public class OrderService {
 
         order.setStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
+        emitOrderUpdate(order);
         // reason carries order-service's own itemCode unmodified through payment-service and
         // restaurant-service (both raw string-concatenate it into this field) - client-controlled,
         // content-unrestricted, and needs the same CR/LF sanitizing as OrderController's itemCode
