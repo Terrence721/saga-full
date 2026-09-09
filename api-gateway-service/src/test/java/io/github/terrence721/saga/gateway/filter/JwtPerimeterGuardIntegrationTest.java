@@ -1,6 +1,7 @@
 package io.github.terrence721.saga.gateway.filter;
 
 import java.util.Date;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
@@ -70,6 +71,35 @@ class JwtPerimeterGuardIntegrationTest {
                 .expectStatus().isForbidden()
                 .expectBody()
                 .jsonPath("$.error").isEqualTo("FORBIDDEN")
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").isNumber();
+    }
+
+    // The two tests below prove JwtPerimeterGuard is actually wired onto the two new
+    // GET routes (order-get-route/order-stream-route), not just declared in application.yaml
+    // - a route with a typo'd filter name fails silently (the route still matches and
+    // proxies unguarded) rather than failing startup, so only a real request proves it.
+
+    @Test
+    void orderGetRoute_RejectsMissingToken_WithDocumentedErrorShape() {
+        webTestClient.get()
+                .uri("/orders/{id}", UUID.randomUUID())
+                .exchange()
+                .expectStatus().isUnauthorized()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("UNAUTHORIZED")
+                .jsonPath("$.message").exists()
+                .jsonPath("$.timestamp").isNumber();
+    }
+
+    @Test
+    void orderStreamRoute_RejectsMissingToken_WithDocumentedErrorShape() {
+        webTestClient.get()
+                .uri("/orders/{id}/stream", UUID.randomUUID())
+                .exchange()
+                .expectStatus().isUnauthorized()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("UNAUTHORIZED")
                 .jsonPath("$.message").exists()
                 .jsonPath("$.timestamp").isNumber();
     }

@@ -28,20 +28,39 @@ spring:
     gateway:
       server:
         webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: '${FRONTEND_ORIGIN:http://localhost:5173}'
+                allowedMethods:
+                  - GET
+                  - POST
+                allowedHeaders:
+                  - Authorization
+                  - Content-Type
           routes:
             # Route 1: Edge Authentication Endpoint Forwarder
             - id: auth-token-route
               uri: forward:/auth/login
               predicates:
                 - Path=/auth/login
-                - Method=POST
+                # OPTIONS alongside POST: Spring Cloud Gateway's Method predicate matches
+                # the request's own method with no preflight-awareness, so a route without
+                # OPTIONS here never matches a real browser's CORS preflight at all -
+                # getHandlerInternal returns no handler, globalcors's CORS-processing step
+                # (chained onto that result) never runs, and the request falls through
+                # unrouted. Verified for real: a preflight without this got rejected before
+                # any CORS config was even consulted. Adding OPTIONS is safe - a matched
+                # preflight is still short-circuited by Spring's own handler mapping before
+                # any route filter (JwtPerimeterGuard included) runs.
+                - Method=POST,OPTIONS
 
             # Route 2: Guarded Edge Route to Order Microservice
             - id: order-service-route
               uri: 'http://${ORDER_SERVICE_HOST:localhost}:${ORDER_SERVICE_PORT:8081}'
               predicates:
                 - Path=/orders
-                - Method=POST
+                - Method=POST,OPTIONS
               filters:
                 # Invokes io.github.terrence721.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactory
                 - JwtPerimeterGuard
@@ -50,6 +69,28 @@ spring:
                   args:
                     name: orderServiceCircuitBreaker
                     fallbackUri: forward:/fallback/orders
+
+            # Route 3: Guarded Edge Route to Order Microservice - point-in-time lookup
+            - id: order-get-route
+              uri: 'http://${ORDER_SERVICE_HOST:localhost}:${ORDER_SERVICE_PORT:8081}'
+              predicates:
+                - Path=/orders/{id}
+                - Method=GET,OPTIONS
+              filters:
+                - JwtPerimeterGuard
+                - RemoveRequestHeader=Cookie
+              # No CircuitBreaker filter, unlike Route 2: a read-only status check is
+              # lower-stakes than order creation - a deliberate v1 choice, not an oversight.
+
+            # Route 4: Guarded Edge Route to Order Microservice - live status stream
+            - id: order-stream-route
+              uri: 'http://${ORDER_SERVICE_HOST:localhost}:${ORDER_SERVICE_PORT:8081}'
+              predicates:
+                - Path=/orders/{id}/stream
+                - Method=GET,OPTIONS
+              filters:
+                - JwtPerimeterGuard
+                - RemoveRequestHeader=Cookie
 
 # ===================================================================
 # 3. ACTUATOR HEALTH PROBES
