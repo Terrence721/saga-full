@@ -18,8 +18,8 @@
         <body>
         <h1>saga-full - Aggregated Test Report</h1>
         <div class="summary">
-            <span><strong>Total:</strong> 161</span>
-            <span style="color:#1a7f37"><strong>Passed:</strong> 161</span>
+            <span><strong>Total:</strong> 169</span>
+            <span style="color:#1a7f37"><strong>Passed:</strong> 169</span>
             <span style="color:#cf222e"><strong>Failed:</strong> 0</span>
             <span style="color:#9a6700"><strong>Skipped:</strong> 0</span>
         </div>
@@ -273,7 +273,7 @@
     <td>io.github.terrence721.saga.order.OrderServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.506s</td>
+    <td>0.411s</td>
     <td></td>
 </tr>
 <tr>
@@ -281,7 +281,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsBadRequest_whenItemCodeExceedsMaxLength()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -289,7 +289,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsBadRequest_whenPayloadFailsValidation()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.012s</td>
+    <td>0.01s</td>
     <td></td>
 </tr>
 <tr>
@@ -297,7 +297,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsBadRequest_whenTotalAmountHasTooManyIntegerDigits()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -305,7 +305,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsCreated_whenRequestIsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.192s</td>
+    <td>0.097s</td>
     <td></td>
 </tr>
 <tr>
@@ -313,7 +313,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsForbidden_whenPerimeterHeaderDoesNotMatchCustomerId()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -321,7 +321,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsForbidden_whenPerimeterHeaderMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -329,7 +329,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>getOrder_returnsForbidden_whenPerimeterHeaderDoesNotMatchOrderCustomerId()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -337,7 +337,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>getOrder_returnsForbidden_whenPerimeterHeaderMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.02s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -345,7 +345,7 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>getOrder_returnsNotFound_whenOrderDoesNotExist()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.096s</td>
+    <td>0.01s</td>
     <td></td>
 </tr>
 <tr>
@@ -353,7 +353,39 @@
     <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
     <td>getOrder_returnsOk_whenPerimeterHeaderMatchesOrderCustomerId()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.005s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>order-service</td>
+    <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
+    <td>streamOrder_returnsForbidden_whenPerimeterHeaderDoesNotMatchOrderCustomerId()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
     <td>0.006s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>order-service</td>
+    <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
+    <td>streamOrder_returnsForbidden_whenPerimeterHeaderMissing()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.004s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>order-service</td>
+    <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
+    <td>streamOrder_returnsNotFound_whenOrderDoesNotExist()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.005s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>order-service</td>
+    <td>io.github.terrence721.saga.order.controller.OrderControllerTest</td>
+    <td>streamOrder_streamsCurrentStateThenLiveUpdates_whenPerimeterHeaderMatchesOrderCustomerId()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.185s</td>
     <td></td>
 </tr>
 <tr>
@@ -361,7 +393,7 @@
     <td>io.github.terrence721.saga.order.repository.OrderRepositoryTest</td>
     <td>existsByIdAndStatus_returnsFalse_whenIdDoesNotExist()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -369,7 +401,7 @@
     <td>io.github.terrence721.saga.order.repository.OrderRepositoryTest</td>
     <td>existsByIdAndStatus_returnsFalse_whenStatusDoesNotMatch()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -377,7 +409,7 @@
     <td>io.github.terrence721.saga.order.repository.OrderRepositoryTest</td>
     <td>existsByIdAndStatus_returnsTrue_whenStatusMatches()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.149s</td>
+    <td>0.106s</td>
     <td></td>
 </tr>
 <tr>
@@ -385,7 +417,7 @@
     <td>io.github.terrence721.saga.order.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsEmpty_whenNoRecords()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -393,7 +425,7 @@
     <td>io.github.terrence721.saga.order.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsOldestFirst_upToPageSize()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.03s</td>
+    <td>0.028s</td>
     <td></td>
 </tr>
 <tr>
@@ -401,7 +433,7 @@
     <td>io.github.terrence721.saga.order.service.OrderConsumerConfigTest</td>
     <td>kafkaErrorHandler_recoversImmediatelyForIllegalArgumentException()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.206s</td>
+    <td>0.177s</td>
     <td></td>
 </tr>
 <tr>
@@ -409,7 +441,7 @@
     <td>io.github.terrence721.saga.order.service.OrderConsumerConfigTest</td>
     <td>kafkaErrorHandler_recoversImmediatelyForOrderNotFoundException()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -417,7 +449,7 @@
     <td>io.github.terrence721.saga.order.service.OrderConsumerConfigTest</td>
     <td>kafkaErrorHandler_retriesGenericExceptionsBeforeGivingUp()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.104s</td>
+    <td>0.102s</td>
     <td></td>
 </tr>
 <tr>
@@ -425,7 +457,7 @@
     <td>io.github.terrence721.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantApproved_deserializesPayloadAndDelegatesToConfirmOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.013s</td>
+    <td>0.012s</td>
     <td></td>
 </tr>
 <tr>
@@ -433,7 +465,15 @@
     <td>io.github.terrence721.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantRejected_deserializesPayloadAndDelegatesToCancelOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.007s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>order-service</td>
+    <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
+    <td>cancelOrder_emitsOrderUpdateOnCancellation()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.048s</td>
     <td></td>
 </tr>
 <tr>
@@ -441,7 +481,7 @@
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>cancelOrder_shortCircuits_whenAlreadyCancelled()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -449,7 +489,7 @@
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>cancelOrder_stillCancelsOrder_whenReasonContainsCrLf()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -457,7 +497,7 @@
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>cancelOrder_throwsIllegalArgumentException_whenCustomerIdDoesNotMatchOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -465,7 +505,7 @@
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>cancelOrder_throwsOrderNotFoundException_whenOrderMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -479,9 +519,17 @@
 <tr>
     <td>order-service</td>
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
+    <td>confirmOrder_emitsOrderUpdateOnSuccess()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.006s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>order-service</td>
+    <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_shortCircuits_whenAlreadySuccess()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -489,7 +537,7 @@
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_throwsIllegalArgumentException_whenCustomerIdDoesNotMatchOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -497,7 +545,7 @@
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_throwsIllegalArgumentException_whenTicketIdMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -505,7 +553,7 @@
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_throwsOrderNotFoundException_whenOrderMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -519,9 +567,25 @@
 <tr>
     <td>order-service</td>
     <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
+    <td>createOrder_emitsOrderUpdateOnCreation()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.011s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>order-service</td>
+    <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
     <td>createOrder_savesOrderAndStagesOutboxWithRealSerializedPayload()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.174s</td>
+    <td>0.158s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>order-service</td>
+    <td>io.github.terrence721.saga.order.service.OrderServiceTest</td>
+    <td>streamOrderUpdates_filtersOutUpdatesForOtherOrders()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -529,7 +593,7 @@
     <td>io.github.terrence721.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_continuesBatch_afterOneRecordFails()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.013s</td>
     <td></td>
 </tr>
 <tr>
@@ -545,7 +609,7 @@
     <td>io.github.terrence721.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_leavesRecordForRetryAndRestoresInterruptFlag_onInterrupt()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.173s</td>
+    <td>0.152s</td>
     <td></td>
 </tr>
 <tr>
@@ -553,7 +617,7 @@
     <td>io.github.terrence721.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_leavesRecordForRetry_onFailure()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -561,7 +625,7 @@
     <td>io.github.terrence721.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_leavesRecordForRetry_onTimeout()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.059s</td>
+    <td>0.057s</td>
     <td></td>
 </tr>
 <tr>
@@ -569,7 +633,7 @@
     <td>io.github.terrence721.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_publishesRawPayloadAndDeletes_onSuccess()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.165s</td>
+    <td>0.134s</td>
     <td></td>
 </tr>
 <tr>
