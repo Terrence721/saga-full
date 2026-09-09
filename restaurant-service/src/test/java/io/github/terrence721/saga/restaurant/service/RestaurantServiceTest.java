@@ -46,7 +46,8 @@ class RestaurantServiceTest {
 
     @BeforeEach
     void setUp() {
-        restaurantService = new RestaurantService(ticketRepository, inventoryService, outboxRepository, new ObjectMapper());
+        restaurantService = new RestaurantService(ticketRepository, inventoryService, outboxRepository,
+                new OutboxRecordFactory(new ObjectMapper()));
     }
 
     private PaymentProcessedEvent paymentProcessedEvent(UUID orderId, UUID customerId) {

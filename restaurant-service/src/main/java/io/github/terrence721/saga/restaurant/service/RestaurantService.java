@@ -1,7 +1,5 @@
 package io.github.terrence721.saga.restaurant.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.terrence721.saga.restaurant.domain.InventoryStatus;
 import io.github.terrence721.saga.restaurant.domain.OutboxRecord;
 import io.github.terrence721.saga.restaurant.domain.RestaurantTicket;
@@ -18,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -28,17 +25,17 @@ public class RestaurantService {
     private final RestaurantTicketRepository ticketRepository;
     private final RestaurantInventoryService inventoryService;
     private final OutboxRepository outboxRepository;
-    private final ObjectMapper objectMapper;
+    private final OutboxRecordFactory outboxRecordFactory;
 
     public RestaurantService(
             RestaurantTicketRepository ticketRepository,
             RestaurantInventoryService inventoryService,
             OutboxRepository outboxRepository,
-            ObjectMapper objectMapper) {
+            OutboxRecordFactory outboxRecordFactory) {
         this.ticketRepository = ticketRepository;
         this.inventoryService = inventoryService;
         this.outboxRepository = outboxRepository;
-        this.objectMapper = objectMapper;
+        this.outboxRecordFactory = outboxRecordFactory;
     }
 
     @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
@@ -114,22 +111,9 @@ public class RestaurantService {
         return savedTicket;
     }
 
-    @SuppressWarnings("null") // Lombok's generated build() never returns null.
+    @SuppressWarnings("null") // OutboxRecordFactory.create() never returns null; it throws on failure instead.
     private void saveRestaurantTicketOutbox(RestaurantEvent event, String eventType) {
-        String payload;
-        try {
-            payload = objectMapper.writeValueAsString(event);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Failed to serialize " + eventType + " for order " + event.orderId(), e);
-        }
-
-        OutboxRecord outbox = OutboxRecord.builder()
-                .aggregateId(event.orderId().toString())
-                .eventType(eventType)
-                .payload(payload)
-                .createdTime(LocalDateTime.now())
-                .build();
-
+        OutboxRecord outbox = outboxRecordFactory.create(event.orderId().toString(), eventType, event);
         outboxRepository.save(outbox);
         log.info("Saved outbox record for order {} ({})", event.orderId(), eventType);
     }
