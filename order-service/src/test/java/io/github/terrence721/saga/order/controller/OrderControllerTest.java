@@ -12,15 +12,21 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import reactor.core.publisher.Flux;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(OrderController.class)
@@ -188,6 +194,84 @@ class OrderControllerTest {
         when(orderService.getOrder(orderId)).thenThrow(new OrderNotFoundException("Order not found: " + orderId));
 
         mockMvc.perform(get("/orders/{id}", orderId)
+                        .header("X-Perimeter-User-Id", UUID.randomUUID().toString()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void streamOrder_streamsCurrentStateThenLiveUpdates_whenPerimeterHeaderMatchesOrderCustomerId() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        Order order = Order.builder()
+                .id(orderId)
+                .customerId(customerId)
+                .totalAmount(new BigDecimal("25.50"))
+                .itemCode("BURGER_01")
+                .quantity(2)
+                .status(OrderStatus.PENDING)
+                .build();
+
+        when(orderService.getOrder(orderId)).thenReturn(order);
+        // Empty: this test only proves the current-state snapshot is streamed as the first
+        // (here, only) event and the connection completes cleanly - live-push behavior itself
+        // is OrderServiceTest's concern (streamOrderUpdates_filtersOutUpdatesForOtherOrders,
+        // confirmOrder/cancelOrder's own emit tests), not something to re-prove against a mock.
+        when(orderService.streamOrderUpdates(orderId)).thenReturn(Flux.empty());
+
+        MvcResult mvcResult = mockMvc.perform(get("/orders/{id}/stream", orderId)
+                        .header("X-Perimeter-User-Id", customerId.toString()))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM))
+                .andExpect(content().string(containsString(orderId.toString())));
+    }
+
+    @Test
+    void streamOrder_returnsForbidden_whenPerimeterHeaderMissing() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        Order order = Order.builder()
+                .id(orderId)
+                .customerId(UUID.randomUUID())
+                .totalAmount(new BigDecimal("25.50"))
+                .itemCode("BURGER_01")
+                .quantity(2)
+                .status(OrderStatus.PENDING)
+                .build();
+
+        when(orderService.getOrder(orderId)).thenReturn(order);
+
+        mockMvc.perform(get("/orders/{id}/stream", orderId))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void streamOrder_returnsForbidden_whenPerimeterHeaderDoesNotMatchOrderCustomerId() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        Order order = Order.builder()
+                .id(orderId)
+                .customerId(UUID.randomUUID())
+                .totalAmount(new BigDecimal("25.50"))
+                .itemCode("BURGER_01")
+                .quantity(2)
+                .status(OrderStatus.PENDING)
+                .build();
+
+        when(orderService.getOrder(orderId)).thenReturn(order);
+
+        mockMvc.perform(get("/orders/{id}/stream", orderId)
+                        .header("X-Perimeter-User-Id", UUID.randomUUID().toString()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void streamOrder_returnsNotFound_whenOrderDoesNotExist() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        when(orderService.getOrder(orderId)).thenThrow(new OrderNotFoundException("Order not found: " + orderId));
+
+        mockMvc.perform(get("/orders/{id}/stream", orderId)
                         .header("X-Perimeter-User-Id", UUID.randomUUID().toString()))
                 .andExpect(status().isNotFound());
     }
