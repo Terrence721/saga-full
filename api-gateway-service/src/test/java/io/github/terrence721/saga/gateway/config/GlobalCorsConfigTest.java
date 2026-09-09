@@ -31,7 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @AutoConfigureWebTestClient(timeout = "PT15S")
 class GlobalCorsConfigTest {
 
-    private static final String FRONTEND_ORIGIN = "http://localhost:5173";
+    private static final String FRONTEND_ORIGIN = "http://localhost:5180";
 
     @Autowired
     private WebTestClient webTestClient;
