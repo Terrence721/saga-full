@@ -1,9 +1,10 @@
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: {
     // Pinned rather than left to Vite's automatic fallback - this machine runs
     // several portfolio projects' dev servers concurrently (coolify-full's
