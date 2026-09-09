@@ -93,6 +93,8 @@ public class OrderController {
         return ResponseEntity.ok(order);
     }
 
+    @SuppressWarnings("null") // Neither getOrder() nor the Reactive-Streams-compliant sink
+    // behind streamOrderUpdates() can ever produce a null Order element.
     @GetMapping(value = "/{id}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<Order>> streamOrder(
             @PathVariable UUID id,
