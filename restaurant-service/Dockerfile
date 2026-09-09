@@ -18,7 +18,15 @@ COPY payment-service ./payment-service
 COPY restaurant-service ./restaurant-service
 COPY api-gateway-service ./api-gateway-service
 
-RUN chmod +x gradlew && ./gradlew :restaurant-service:bootJar --no-daemon
+# Cache mount, not a plain layer: without it, any change under restaurant-service/ (even
+# a one-line source edit) invalidates the COPY above and forces this RUN to start from a
+# completely empty filesystem - re-downloading the Gradle distribution itself and
+# re-resolving every dependency from Maven Central from scratch, observed costing 10+
+# minutes per rebuild during real debugging. A cache mount persists independently of
+# layer invalidation, keyed by its target path across builds on this machine's BuildKit
+# instance.
+RUN --mount=type=cache,target=/root/.gradle \
+    chmod +x gradlew && ./gradlew :restaurant-service:bootJar --no-daemon
 
 # Runtime stage: JRE only, no Gradle/JDK/source in the shipped image.
 FROM eclipse-temurin:25-jre AS runtime
