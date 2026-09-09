@@ -422,7 +422,7 @@
 
 <div class="hero">
   <div class="wrap">
-    <p class="eyebrow">Portfolio Manifest — Prepared 2026-08-19</p>
+    <p class="eyebrow">Portfolio Manifest — Last updated 2026-09-09</p>
     <h1 class="name">Terrence&nbsp;Daniels</h1>
     <p class="role">Backend &amp; Distributed Systems Engineer</p>
     <p class="thesis">
@@ -453,7 +453,7 @@
   </div>
   <div class="stamp" aria-hidden="true">
     <div class="stamp-inner">
-      <span class="n">15</span>
+      <span class="n">31</span>
       <span class="l">REAL BUGS<br />FOUND &amp; FIXED</span>
     </div>
   </div>
@@ -463,10 +463,10 @@
   <div class="wrap">
     <div class="manifest-row">
       <div class="manifest-cell">
-        <span class="v">44</span><span class="k">phases shipped</span>
+        <span class="v">52</span><span class="k">phases shipped</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">161/161</span><span class="k">tests passing</span>
+        <span class="v">181/181</span><span class="k">tests passing</span>
       </div>
       <div class="manifest-cell">
         <span class="v">6</span><span class="k">services complete</span>
@@ -475,7 +475,7 @@
         <span class="v">3</span><span class="k">saga chain hops</span>
       </div>
       <div class="manifest-cell">
-        <span class="v">28</span><span class="k">real bugs found &amp; fixed</span>
+        <span class="v">31</span><span class="k">real bugs found &amp; fixed</span>
       </div>
       <div class="manifest-cell">
         <span class="v">2</span><span class="k">real infra, not mocked</span>
@@ -1103,6 +1103,80 @@
           </div>
         </div>
       </div>
+      <div class="item">
+        <div class="no">29</div>
+        <div>
+          <div class="file">order-service — SSE stream replayed stale buffered updates to a late-connecting client</div>
+          <div class="desc">
+            Real end-to-end verification (not caught by any unit test — every
+            test subscribes before the emission it's checking) showed a
+            client connecting after an order had already reached
+            <code>SUCCESS</code> still saw it flicker back through
+            <code>PENDING</code> first. Root cause:
+            <code>Sinks.many().multicast().onBackpressureBuffer()</code>
+            queues any emission made while nobody's subscribed and replays
+            the whole backlog to the next arrival, regardless of relevance.
+            Fixed by switching to <code>directBestEffort()</code>, which only
+            delivers to a subscriber connected at the exact moment of
+            emission.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · concurrency</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">30</div>
+        <div>
+          <div class="file">api-gateway-service — a CORS preflight route Gateway itself could never match</div>
+          <div class="desc">
+            Spring Cloud Gateway Server WebFlux's own
+            <code>MethodRoutePredicateFactory</code> matches a request's
+            literal HTTP method with zero preflight-awareness — a route
+            restricted to <code>POST</code> or <code>GET</code> never
+            matches a real browser's <code>OPTIONS</code> preflight at all.
+            Confirmed via bytecode inspection of
+            <code>AbstractHandlerMapping.getHandler()</code>: its
+            CORS-processing step only runs once a route has already
+            matched, so an unmatched preflight falls through unrouted
+            regardless of how the CORS config itself is written. Fixed by
+            adding <code>OPTIONS</code> to every guarded route's method
+            predicate — safe, since a matched preflight is still
+            short-circuited before any route filter runs.
+          </div>
+          <div class="meta">
+            <span class="tag">medium · reliability</span>
+          </div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="no">31</div>
+        <div>
+          <div class="file">api-gateway-service — the login endpoint's CORS bug was a HandlerMapping race, not a config error</div>
+          <div class="desc">
+            A real preflight to <code>/auth/login</code> kept getting
+            rejected with 403 even though the gateway's CORS config looked
+            correct on paper — the identical origin worked fine on a
+            gateway-routed path. Diagnosed empirically with a temporary
+            diagnostic <code>WebFilter</code> before writing any fix:
+            Spring's own <code>@RestController</code> dispatch
+            (<code>AuthenticationController</code>) claims
+            <code>/auth/login</code> before the gateway's own routing ever
+            sees it, and the CORS config was only ever wired into the
+            latter — so the path actually being served had no CORS
+            configuration behind it at all, invisible from reading the YAML
+            alone. Fixed with a <code>HandlerMapping</code>-agnostic
+            <code>CorsWebFilter</code> that applies uniformly regardless of
+            which mapping serves a request. A real Dockerfile inefficiency
+            found in the same debugging pass — no BuildKit Gradle cache
+            mount, costing 10+ minutes per rebuild — was fixed in the same
+            change.
+          </div>
+          <div class="meta">
+            <span class="tag">high · reliability</span>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1125,7 +1199,7 @@
     </p>
     <div class="twocol">
       <div class="card">
-        <h3>161/161 tests, real infra behind them</h3>
+        <h3>181/181 tests, real infra behind them</h3>
         <p>
           Repository tests run against embedded H2 with real Hibernate DDL,
           not mocks; Kafka/Postgres wiring is separately verified against
@@ -1201,7 +1275,10 @@
       common distributed-systems pattern. Every number on this page is
       reproducible from the repository's own <code>todo.md</code> phase log,
       commit history, and CI runs — nothing here is asserted without a link
-      to check it against. A register/POS frontend and a
+      to check it against. A separate DRY/SOLID/composition audit closed the
+      same week with 0 findings left open. A register/POS frontend (steps 1-5
+      of 9 done — a live SSE status stream, gateway routing, and a login flow
+      verified end-to-end against the real running stack) and a
       <code>reservation-service</code> addition are still open — see
       <code>todo.md</code> for the honest current state.
     </p>
