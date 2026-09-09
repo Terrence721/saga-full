@@ -4,6 +4,7 @@ import io.github.terrence721.saga.order.domain.Order;
 import io.github.terrence721.saga.order.dto.CreateOrderRequest;
 import io.github.terrence721.saga.order.exception.OrderNotFoundException;
 import io.github.terrence721.saga.order.service.OrderService;
+import io.github.terrence721.saga.order.service.OrderUpdatePublisher;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,9 +30,11 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderUpdatePublisher orderUpdatePublisher;
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, OrderUpdatePublisher orderUpdatePublisher) {
         this.orderService = orderService;
+        this.orderUpdatePublisher = orderUpdatePublisher;
     }
 
     @PostMapping
@@ -94,7 +97,7 @@ public class OrderController {
     }
 
     @SuppressWarnings("null") // Neither getOrder() nor the Reactive-Streams-compliant sink
-    // behind streamOrderUpdates() can ever produce a null Order element.
+    // behind OrderUpdatePublisher.streamUpdates() can ever produce a null Order element.
     @GetMapping(value = "/{id}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ServerSentEvent<Order>> streamOrder(
             @PathVariable UUID id,
@@ -112,7 +115,7 @@ public class OrderController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
         }
 
-        return Flux.concat(Flux.just(current), orderService.streamOrderUpdates(id))
+        return Flux.concat(Flux.just(current), orderUpdatePublisher.streamUpdates(id))
                 .map(order -> ServerSentEvent.builder(order).build());
     }
 
