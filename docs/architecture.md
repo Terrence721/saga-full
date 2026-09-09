@@ -793,3 +793,226 @@ Replaced the single `{}`-on-`request` log call with four separate placeholders f
 
 - `./gradlew :order-service:test` verified green with no regressions (`OrderControllerTest` doesn't assert on log output, so the fix was purely additive from a test-coverage standpoint).
 - No dedicated test added for the sanitization itself — matching this repo's own precedent of not writing tests for straightforward one-line defensive fixes with no branching logic (e.g. `DependencyUnavailableException`'s constructors, Phase 38) — verified instead by reading the fixed line directly.
+
+## Repo hygiene: `cleanLogs` finds untracked `.log` files via `git ls-files`, not a hand-maintained skip-list
+
+**Status:** Done — Phase 42.
+
+### Context: no automated way to clear stray log files
+
+Running any service locally (`bootRun`, ad-hoc debugging) tends to leave `.log` files scattered around the repo. Nothing removed them automatically, and a hand-maintained list of directories/filenames to sweep would need updating every time a new module or log location appeared.
+
+### Decision: derive the list from git itself, not a maintained list
+
+A new root `build.gradle.kts` task, `cleanLogs`, finds every untracked `.log` file via `git ls-files --others` — unioned with an `--ignored` pass, since this repo's own blanket `*.log` rule in `.gitignore` means the unadorned `--exclude-standard` flag alone would always report nothing. This makes the task correct for any future `.log` file with zero code changes needed, and it never touches a tracked file by construction. Wired as a `dependsOn` for every subproject's `bootRun` task, matched by task name rather than the Spring Boot plugin's `BootRun` class (the plugin is applied per-service, not at the root), so it runs automatically before the local-dev launch command every service's own section of this doc already documents.
+
+### Consequences: no new dependency, a small tax on every `bootRun`
+
+- Verified for real: `./gradlew cleanLogs` found and removed both root-level and nested `.log` files in one run, and reported "No log files found" cleanly on an already-clean tree. `--dry-run` on all 5 services' `bootRun` confirmed `:cleanLogs` runs first in the task graph every time.
+- No dedicated test — this is a build-time housekeeping task with no runtime code path, matching the repo's existing precedent for straightforward, unbranched Gradle tasks.
+
+## CI speed: Gradle build cache + parallel module execution, plus a real flake it surfaced
+
+**Status:** Done — Phase 43.
+
+### Context: Gradle was chosen for caching (Phase 2) but never actually configured to use it
+
+No `gradle.properties` existed, so `org.gradle.caching` and `org.gradle.parallel` were both off — every CI push recompiled and re-tested all 6 modules from scratch regardless of what actually changed, despite Phase 2's whole rationale for choosing Gradle over Maven being incremental/cached builds across this multi-module project. The module graph (only `user-service`/`api-gateway-service` depend on `user-contract`; `order-service`/`payment-service`/`restaurant-service` have zero inter-module dependencies) is also well-suited to running module test suites in parallel.
+
+### Decision: flip both properties, then fix what parallel execution exposed
+
+A root `gradle.properties` sets `org.gradle.caching=true` and `org.gradle.parallel=true` — `gradle/actions/setup-gradle@v4` already caches `~/.gradle/caches` between CI runs, so this took effect with just the property flip, no workflow changes needed. Enabling parallel module execution surfaced a real flake: `AuthenticationControllerTest` failed once with `IllegalStateException: Timeout on blocking read for 5000000000 NANOSECONDS` — `WebTestClient`'s default 5-second response timeout, tripped by CPU contention from 6 modules' test JVMs running concurrently on this 8-core dev machine (GitHub's hosted runners have fewer cores, so CI was equally or more exposed). Not a code regression — the same suite passed standalone immediately after. Fixed at the root cause rather than by capping parallelism: added `@AutoConfigureWebTestClient(timeout = "PT15S")` to all 4 test classes repo-wide that rely on the default-configured `WebTestClient` (`AuthenticationControllerTest`, `AuthenticationControllerThreadingTest`, `GatewayFallbackControllerTest`, `JwtPerimeterGuardIntegrationTest`), since all 4 share the identical latent fragility, not just the one that happened to flake this run.
+
+### Consequences: a real, measured speedup, and a CodeQL regression caught the same day
+
+- Real repeated `./gradlew clean` + `./gradlew test --continue` runs confirmed build-cache reuse (17-19 of 30 tasks restored `FROM-CACHE`/`UP-TO-DATE` on a clean tree once only the touched files actually changed) and wall-clock dropping from ~1m56s to as low as 6s on a fully-cached run.
+- Two full clean+test runs after the `@AutoConfigureWebTestClient` fix both passed with no timeout. Full repo suite green, 157/157 (unchanged — annotation-only test changes).
+- Enabling the build cache then broke CodeQL repo-wide once `main`'s cache warmed up: a cache hit meant `javac` never actually ran, so CodeQL's tracer observed zero real compilation and failed every scan with `could not process any code written in Java/Kotlin`. Found via real CI run history, not assumed, and fixed by scoping `--no-build-cache` to just that one workflow step ([#197](https://github.com/Terrence721/saga-full/issues/197)) — the module-level caching win for the `Test` job stayed intact.
+
+## Docker: per-service `Dockerfile`s + full `docker-compose.yml`, two real bugs found running the actual stack
+
+**Status:** Done — Phase 44.
+
+### Context: `bootRun` against local infra isn't the same as the thing that would actually deploy
+
+Phase 26 verified `order-service` against real Postgres/Kafka containers via `bootRun`, but nothing in the repo built a deployable artifact or ran a service the way it would actually ship. `docker-compose.yml` still only had `postgres-db`/`kafka-broker`.
+
+### Decision: multi-stage builds from the repo root, one dual-listener fix, one timeout fix
+
+Multi-stage `Dockerfile`s (`eclipse-temurin:25-jdk` to build, `eclipse-temurin:25-jre` to run, non-root user) for all 5 services, each building with the **repo root** as context rather than its own directory — verified empirically that `settings.gradle.kts`'s `include()` of all 6 modules means Gradle refuses to configure the build unless every included module's directory physically exists, even for a module with zero actual dependency on the others (confirmed: `:order-service:bootJar` alone, without the other 5 module directories present, fails with "Configuring project ':user-contract' without an existing directory is not allowed"). `docker-compose.yml` extended with all 5 services, wired to the existing Postgres/Kafka containers via the `postgres` Spring profile and `KAFKA_BOOTSTRAP_SERVERS`.
+
+Two real bugs surfaced only by bringing up the full 7-container stack, not by writing or reviewing the config:
+
+- **Kafka's advertised listener.** A single `PLAINTEXT://localhost:9092` listener works for host-based connections but tells a container reconnecting via `kafka-broker:9092`, post-handshake, to use `localhost:9092` — meaningless inside that container's own network namespace. Fixed with the standard dual-listener pattern: `PLAINTEXT_HOST` unchanged for the host, a new `PLAINTEXT_INTERNAL` on `kafka-broker:29092` for containers.
+- **The gateway's circuit breaker had no explicit `TimeLimiter` timeout**, silently defaulting to Resilience4j's library default of 1 second — fine for a direct localhost call, too tight for a real cross-container call. Measured 1.29s on the very first order request (cold DNS resolution + connection-pool warmup on the Docker bridge network), which the 1-second default rejected even though `order-service` went on to process it successfully a moment later. Fixed with an explicit `resilience4j.timelimiter.instances.orderServiceCircuitBreaker.timeout-duration: 5s`.
+
+### Consequences: verified end-to-end, including the compensation path
+
+- Brought up the full 7-container stack for real, inserted a test user directly via `psql`, logged in through the containerized gateway, and created a real order — watched it flow through the complete distributed saga across containers, **including the compensation path** (an unseeded item code triggered a real restaurant rejection, which correctly triggered both a payment refund and an order cancellation).
+- Re-verified from a completely fresh stack restart that the very first cold order call succeeds, after the `TimeLimiter` fix.
+- A root `.dockerignore` and a "Running the full stack" section in [CONTRIBUTING.md](../CONTRIBUTING.md) were added alongside. Kubernetes manifests remain out of scope until there's a real deployment target to write them for.
+
+## `order-service`: `GET /orders/{id}`, the frontend plan's first backend step
+
+**Status:** Done — Phase 45, step 1 of the register/POS frontend plan ([#15](https://github.com/Terrence721/saga-full/issues/15)).
+
+### Context: nothing exposed an order's state outside the service
+
+No endpoint let a caller look up an order's current state — a gap that blocks both a standalone lookup and the "current state on connect" half of the SSE stream planned for the very next step.
+
+### Decision: reuse the existing lookup helper, keep the same ownership invariant
+
+`OrderService.getOrder(UUID)` reuses the private `findOrder` helper `confirmOrder`/`cancelOrder` already relied on (unchanged `OrderNotFoundException` on a miss). `OrderController.getOrder` (`GET /orders/{id}`) enforces the same `X-Perimeter-User-Id === order.customerId` fail-closed invariant `createOrder` already enforces — a caller can only ever see their own order — and a new `OrderController.handleOrderNotFound` gives the module its first HTTP-facing exception handler; `OrderNotFoundException` previously only ever propagated through the Kafka-consumer path, with nothing translating it to a 404 for an HTTP caller.
+
+### Consequences: a small, additive surface
+
+- 4 new `OrderControllerTest` cases: 200 (ownership matches), 403×2 (missing header / mismatched header), 404 (order doesn't exist).
+- Verified via deliberate revert: removed the ownership check, confirmed both 403 tests genuinely fail, restored it.
+- `./gradlew :order-service:test` green.
+
+## `order-service`: live order status via Server-Sent Events
+
+**Status:** Done — Phase 46, step 2 of the frontend plan.
+
+### Context: the frontend needs to observe status changes live, not poll
+
+Phase 45 covers a point-in-time lookup. The register/POS UI also needs to watch an order move through `PENDING`→`SUCCESS`/`CANCELLED` live, without polling — and the plan had already decided (Phase 44's docs, `todo.md`'s **Still to do** table) that this would be Server-Sent Events streamed directly from `order-service`, not a new Kafka consumer bolted onto the gateway just to relay state the order service already knows the instant it changes.
+
+### Decision: a shared multicast sink, filtered per order, prepended with a snapshot
+
+`OrderService` gained a `Sinks.Many<Order>` (multicast, not a per-order-id map — v1 is a one-terminal cashier flow, not many concurrent orders in flight). `createOrder`/`confirmOrder`/`cancelOrder` each emit the updated `Order` right after their existing `save()` call, the exact point status already changes today. `OrderService.streamOrderUpdates(UUID)` filters that shared stream down to one order ID; it carries no current-state snapshot of its own; `OrderController.streamOrder` (`GET /orders/{id}/stream`, `Flux<ServerSentEvent<Order>>`) is what actually assembles a useful stream — it reuses `getOrder(id)` for both the 404/ownership check and the stream's first emitted event, concatenated with `streamOrderUpdates(id)` for live pushes after.
+
+This runs on Spring MVC, not WebFlux — `order-service` never adopted a reactive stack, and didn't need to. Spring's `ReactiveTypeHandler` streams a `Flux<ServerSentEvent<T>>` return type out over a normal servlet response once `reactor-core` is on the classpath, so `reactor-core`/`reactor-test` were added as the only new dependency.
+
+### Consequences: real async-dispatch test coverage, one real gap flagged for a follow-up
+
+- 4 new `OrderServiceTest` cases (`StepVerifier`-based: `createOrder`/`confirmOrder`/`cancelOrder` each emit onto the sink, plus a filter test proving one order's stream never sees another order's updates) and 4 new `OrderControllerTest` cases (200 via real async dispatch through `MockMvc`, 403×2, 404).
+- Verified via deliberate revert: removed `confirmOrder`'s emit call, confirmed its emit test genuinely fails, restored it.
+- `./gradlew :order-service:test` green (46/46 in this module at the time).
+- Real `curl` verification against the containerized stack was flagged as still outstanding at merge time — it's what actually surfaced Phase 47's bug the same day.
+
+## `order-service`: SSE stream stopped replaying stale buffered updates
+
+**Status:** Done — Phase 47, a real bug found doing Phase 46's own outstanding end-to-end verification.
+
+### Context: a bug no unit test could have caught
+
+Every `StepVerifier` test in Phase 46 subscribes to `streamOrderUpdates` before triggering the emission — a shape that structurally can't exercise what happens when a client connects *after* updates have already happened. Real verification against the running Docker stack did: a test order was created, and because the full saga (order → payment → restaurant approval → confirm) completes in well under a second against local infra, the order had already reached `SUCCESS` in the database (confirmed via `psql`) by the time a real `GET /orders/{id}/stream` connection opened. The stream's first event correctly showed the current snapshot (`SUCCESS`) — but was immediately followed by two more events for the same order: `PENDING`, then `SUCCESS` again, a visible flicker back through a status the order was never actually in by the time anyone was watching.
+
+### Decision: `directBestEffort()`, not `onBackpressureBuffer()`
+
+`OrderService`'s shared bus was `Sinks.many().multicast().onBackpressureBuffer()`. That sink queues *any* emission made while zero subscribers are connected — not just genuine backpressure from a slow existing subscriber — and replays the entire backlog, in order, to the first subscriber that arrives, regardless of how stale it's become relative to the current DB state the stream's own snapshot already served. Switched to `Sinks.many().multicast().directBestEffort()`, which delivers only to subscribers connected at the exact moment of emission and drops the value otherwise — the semantics the field's own doc comment already described, just not the ones the chosen sink type actually enforced. A client's own snapshot already covers everything before it connected; a live update is only meaningful if delivered while someone's actually watching.
+
+### Consequences: no test changes needed, re-verified against the real stack
+
+- `./gradlew :order-service:test` green — every existing test subscribes before emitting, so `directBestEffort()` behaves identically to the old sink for all of them.
+- Rebuilt `order-service` and re-ran the same repro against the real stack: a late-connecting client now sees only the correct current-state snapshot.
+
+## `api-gateway-service`: GET/stream routes + CORS for the frontend, and a preflight-routing bug
+
+**Status:** Done — Phase 48, step 3 of the frontend plan.
+
+### Context: the gateway had no route to either new endpoint, and no CORS config at all
+
+Phases 45-47 gave `order-service` a point-in-time lookup and a live SSE stream. The gateway didn't route to either yet, and the Vite dev server can't call it cross-origin with zero CORS configuration in place.
+
+### Decision: two new guarded routes, `globalcors`, and a real bug fixed along the way
+
+Two new routes in `application.yaml`, both carrying the same `JwtPerimeterGuard` filter `POST /orders` already uses — no security relaxation: `order-get-route` (`GET /orders/{id}`) and `order-stream-route` (`GET /orders/{id}/stream`), both to `order-service`, neither with a `CircuitBreaker` filter (a read-only status check is lower-stakes than order creation, a deliberate v1 choice). `spring.cloud.gateway.server.webflux.globalcors` was added, scoped to `Authorization`/`Content-Type` headers and GET/POST, defaulting to the Vite dev server origin — this config was later fully superseded by Phase 52's `GlobalCorsConfig` and removed from `application.yaml` entirely, once it turned out to only ever cover half the picture (see Phase 52).
+
+A real bug surfaced during this step's own verification: Spring Cloud Gateway Server WebFlux 4.3.0's `MethodRoutePredicateFactory` matches a request's own HTTP method with zero preflight-awareness — a route restricted to `POST` (or `GET`) never matches a real browser's `OPTIONS` preflight at all. Confirmed via bytecode inspection of `AbstractHandlerMapping.getHandler()`: its CORS-processing step is chained onto `getHandlerInternal(exchange)`'s result via `.map(...)`, so if no route matches (as with a bare `Method=POST` route seeing an `OPTIONS` request), the CORS processor is never even invoked — the request falls through unrouted regardless of how `globalcors` itself is configured. Fixed by adding `OPTIONS` to every guarded route's `Method` predicate list. This is safe, not a security relaxation: Spring's own handler-mapping logic short-circuits a matched preflight with a no-op handler before any route filter (`JwtPerimeterGuard` included) ever runs. A narrower issue surfaced the same pass: `cors-configurations`'s YAML map key had to stay bracket-escaped (`'[/**]'`) — the unescaped form failed startup outright with `ConverterNotFoundException` under this `@ConfigurationProperties` binding, confirmed by an actual failed context load.
+
+### Consequences: real preflight coverage, one gap flagged for the very next phase
+
+- 3 new `GlobalCorsConfigTest` cases (real preflight requests via `WebTestClient`, absolute-URI form) and 2 new `JwtPerimeterGuardIntegrationTest` cases proving the two new GET routes actually enforce `JwtPerimeterGuard`, not just declare it.
+- Verified via deliberate revert: removed `OPTIONS` from one route's method predicate, confirmed the corresponding CORS test genuinely fails, restored it.
+- `./gradlew :api-gateway-service:test` green, 38/38 in this module.
+- Real end-to-end verification against the rebuilt container (a real preflight, a real GET lookup, a real SSE stream connection) was flagged as still in progress at merge time — it's what surfaced Phase 52's bug once real login verification actually happened.
+
+## Architectural audit: DRY/SOLID/composition fixes across `order-service`/`payment-service`/`restaurant-service`
+
+**Status:** Done — Phase 49 ([#207](https://github.com/Terrence721/saga-full/issues/207)/[PR #208](https://github.com/Terrence721/saga-full/pull/208)).
+
+### Context: a different lens than the correctness/security audit already run
+
+The code-review audit ([#17](https://github.com/Terrence721/saga-full/issues/17), Phases culminating at Milestone 15) looked for real bugs and test-coverage gaps, file by file. It wasn't designed to catch structural duplication or responsibility-fusion across files — a separate, read-only architectural scan was run specifically for that, across the three saga-participant services.
+
+### Decision: extract three real violations, leave two intentional repetitions alone
+
+- **Triplicated outbox-record-building, direct `ObjectMapper` dependency.** `OrderService.buildOutboxRecord`, `PaymentService.buildOutboxRecord`, and `RestaurantService.saveRestaurantTicketOutbox` each did an identical serialize-and-build sequence, with each domain service depending directly on `ObjectMapper` to do it — a DIP smell (a business-logic class owning a serialization-library dependency) as much as a DRY one. Extracted a per-module `OutboxRecordFactory` component (not a shared cross-module library — this keeps the established per-service-independence architecture the same repetition-tolerant way the original audit already accepted for `OutboxPublisherService`/`OutboxRecord`/`OutboxRepository`) that owns just that policy: serialize to JSON, wrap a failure the same way every time, stamp `aggregateId`/`eventType`/`payload`/`createdTime`. Each domain service now depends on its module's factory instead of `ObjectMapper` directly, and only does its own domain-specific entity→event-DTO mapping.
+- **SSE-push responsibility fused into `OrderService`.** Phase 46 gave `OrderService` a `Sinks.Many<Order>` for live order-status push — a concern with no relationship to order lifecycle rules, a single-responsibility violation specific to `order-service`. Extracted into `OrderUpdatePublisher`, a standalone component `OrderController` now depends on directly for streaming; `OrderService` no longer has any reactive-push surface at all.
+- **Kafka `*ConsumerConfig` classes bundling listener routing with retry-policy definition.** Each `*ConsumerConfig` class defined both its `@KafkaListener` methods and the `@Bean DefaultErrorHandler kafkaErrorHandler()` retry/backoff policy — two independent responsibilities in one class. Split the bean into its own `KafkaErrorHandlerConfig` class per module; `*ConsumerConfig` now only routes Kafka messages to its service. The identical backoff/logging lambda staying textually the same across all three independently-deployed modules is the same accepted tradeoff as the outbox-infra repetition above — not worth extracting further without a shared library this repo deliberately doesn't have.
+- **Reviewed and deliberately left alone:** `validateCustomerMatches`'s duplication between `order-service`/`payment-service` (the two copies operate on different domain types, `Order` vs `Payment`, for a 5-line method used once per service — a shared implementation would need a generic helper or interface, the classic premature-abstraction trade, worse than the duplication it would remove); per-service DTO/enum copies; and OCP/LSP/ISP/inheritance-vs-composition across all three services — all checked, no findings.
+
+### Consequences: 7 new files, no behavior change, every delegation point proven
+
+- Every new class (`OutboxRecordFactory` ×3, `OrderUpdatePublisher`, `KafkaErrorHandlerConfig` ×3) has its own dedicated tests, moved/adapted from the classes they were extracted from where applicable.
+- Every existing test class's assertions are unchanged — only constructor wiring and mock targets updated to match the new dependency graph.
+- Deliberate-revert verified for the outbox-factory delegation in all three services and the `OrderService`→`OrderUpdatePublisher` delegation — each genuinely fails when the delegation is broken.
+- Full repo-wide `./gradlew test` green across all 6 modules. 0 findings left open.
+
+## Frontend: Vite + React + TypeScript + Tailwind shell, on Yarn
+
+**Status:** Done — Phase 50, step 4 of the frontend plan ([#209](https://github.com/Terrence721/saga-full/issues/209)/[PR #210](https://github.com/Terrence721/saga-full/pull/210)).
+
+### Context: this repo has no frontend at all, and neither does the structural-reference source
+
+The source this repo used as a directory-structure guide is backend-only. The register/POS UI is genuinely new scope, decided 2026-08-31 (React + TypeScript + Vite + Tailwind, calling `api-gateway-service` directly, reusing the existing JWT login flow as-is, SSE for real-time delivery). This step scaffolds the shell only — nothing functional yet.
+
+### Decision: Yarn over npm, a dedicated port, `strict: true` from the start
+
+New top-level `frontend/` directory (sibling to the service modules). Yarn 4.18.0 with the `node-modules` linker — not PnP, and not the `create-vite` template's default npm — pinned via `packageManager` in `package.json` so the toolchain is reproducible rather than whatever's globally installed. `strict: true` added to both `tsconfig.app.json` and `tsconfig.node.json`; the template ships without it. Tailwind CSS 4 wired through `@tailwindcss/vite` rather than a PostCSS config file, matching Tailwind 4's own preferred integration path. The stock Vite demo/counter page and its demo-specific CSS were replaced with a minimal placeholder — `src/index.css` is now just Tailwind's own `@import`, not a supplemented version of the old file.
+
+A real cross-project port collision was found before it caused a confusing failure: this machine runs several portfolio projects' dev servers concurrently, and `coolify-full`'s own Vite dev server already claims Vite's default port, 5173. Pinned this repo's dev server to **5180** instead (`strictPort: true`, so a silent fallback to some other free port never happens), and updated `api-gateway-service`'s `FRONTEND_ORIGIN` CORS default to match — the gateway's CORS config needs one fixed origin, not whatever port happened to be free on a given run.
+
+### Consequences: verified live, two items deliberately deferred and tracked
+
+- `yarn build` succeeds with `strict: true` on.
+- Tailwind verified for real, not just by a successful build: added a test utility class to the placeholder, confirmed it rendered (color/size/weight) via the live dev server in a real browser, then reverted the test class.
+- `./gradlew :api-gateway-service:test` green after the CORS default port change.
+- Deliberately deferred, not silently dropped: `frontend/README.md` and `frontend/public/favicon.svg` are still generic `create-vite` template content — revisit once there's a real UI/brand to describe, per `todo.md`.
+
+## Frontend: the real login flow, and a cross-platform file-casing bug
+
+**Status:** Done — Phase 51, step 5 of the frontend plan ([#211](https://github.com/Terrence721/saga-full/issues/211)/[#213](https://github.com/Terrence721/saga-full/issues/213)/[#215](https://github.com/Terrence721/saga-full/issues/215)).
+
+### Context: the shell exists, nothing calls the gateway yet
+
+Phase 50 scaffolded the shell with no functional code. This step wires up a real login against the actual gateway — the first thing any cashier session needs.
+
+### Decision: a shared fetch helper, JWT in React state, a 3-way context split
+
+`src/api/httpClient.ts` — a shared `apiFetch<T>()` helper owning the generic fetch/error-normalization policy (base URL, JSON content-type, parsing the `{error, message, timestamp}` shape `GlobalExceptionHandler` actually returns, throwing a typed `ApiError`) — extracted proactively rather than duplicated later, so a future `orderClient.ts` (step 6) won't re-triplicate the same logic Phase 49 just finished de-duplicating on the backend side. `src/api/authClient.ts`'s `login()` calls the real `POST /auth/login`, typed to match `AuthRequest`/`WebTokenResponse` exactly. JWT is kept in React state/context, not `localStorage` — avoids the XSS-token-theft surface, consistent with this repo's existing security posture everywhere else (Phase 41's log-injection fix, the JWT-perimeter-guard design itself).
+
+The context module was split three ways — `AuthContext.ts` (the context object + `AuthState` type), `AuthProvider.tsx` (the provider component only), `useAuth.ts` (the hook only) — because oxlint's `react-refresh/only-export-components` rule rejects a single file that exports a component alongside a hook and a plain context object; Vite Fast Refresh needs a file to export only components to safely hot-reload it.
+
+A real bug surfaced while wiring `App.tsx`: the pre-split files were named `authContext.ts` and `AuthContext.tsx` — identical except for casing. Each built fine individually, but once `App.tsx`'s import graph pulled both into the same TypeScript program, the compiler failed with "differs...only in casing" (TS1149/TS1261) — Windows/macOS's case-insensitive filesystems tolerate this on disk, but TypeScript's module resolution (and Linux/git) don't. Fixed by renaming to genuinely distinct names (`AuthContext.ts`, `AuthProvider.tsx`) via a sequenced `git mv` that never passed through an intermediate same-name collision on disk.
+
+### Consequences: real, verified login; a process fix for premature issue auto-closure
+
+- Verified against the real running gateway, not mocked: a real login with a real test user, and a real rejected login with wrong credentials, both confirmed in a real browser.
+- Vitest + React Testing Library coverage for the login flow is still outstanding — planned as step 8, covering steps 5-7 together.
+- Issues #211 and #213 both closed prematurely when their respective PRs merged with only partial scope (`httpClient.ts` alone, then `authClient.ts` alone) — each PR's "Closes #N" auto-closed the tracking issue before its stated scope was actually done. Fixed going forward: PR bodies use "Part of #N", never an auto-closing keyword, for incremental work, so the tracking issue (#215, for the remainder of this step) stays open until its full scope actually lands.
+
+## `api-gateway-service`: `/auth/login`'s CORS bug was a `HandlerMapping` race, not a config error; plus a Dockerfile fix
+
+**Status:** Done — Phase 52 ([PR #219](https://github.com/Terrence721/saga-full/pull/219)).
+
+### Context: real browser verification of Phase 51's login flow failed with a 403 the config didn't explain
+
+Phase 48's `globalcors` config looked correct — same origin, same methods, same headers as the working `/orders` routes. But a real preflight to `/auth/login` from the real frontend origin was rejected with 403, while the identical origin worked fine on a gateway-routed path (`/orders`). Nothing about `globalcors`'s own YAML looked wrong.
+
+### Decision: diagnose empirically before touching anything, then replace the config layer entirely
+
+Rather than guessing at the YAML, a temporary diagnostic `WebFilter` was added to inspect `ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR` on both paths at request time: `route=null` for `/auth/login`, populated for `/orders`. That proved the gateway's own routing was never even being consulted for `/auth/login` — the request was being served by something else entirely. The root cause: `AuthenticationController` is a real local `@RestController` also mapping `/auth/login` (Phase 38), and Spring dispatches a request through whichever `HandlerMapping` claims the path first. `RequestMappingHandlerMapping` (standard `@RestController` dispatch) claims `/auth/login` before `RoutePredicateHandlerMapping` (the gateway's own routing, where `globalcors` is wired) ever sees it — so the path that's actually served has zero CORS configuration behind it, regardless of how correctly `globalcors` itself is written.
+
+Fixed with `GlobalCorsConfig`, a `CorsWebFilter` bean built on a plain `UrlBasedCorsConfigurationSource` — a standard, `HandlerMapping`-agnostic mechanism that applies uniformly no matter which mapping ultimately serves a request. This **replaces** `globalcors` entirely (removed from `application.yaml`) rather than running alongside it, since a second, narrower-scoped config layered on top of the first would just be more surface for the two to silently disagree.
+
+The same PR fixed a real, unrelated inefficiency found while iterating on this bug: none of the 5 service `Dockerfile`s used a BuildKit cache mount for Gradle's dependency cache, so any rebuild that touched a service's own source invalidated the `COPY` layer above it and forced the build to start from a completely empty filesystem — re-downloading the Gradle distribution itself and re-resolving every dependency from Maven Central from scratch, observed costing 10+ minutes per rebuild during this session's own debugging. Fixed by adding `--mount=type=cache,target=/root/.gradle` to each `RUN ./gradlew :<module>:bootJar --no-daemon` line — a cache mount persists independently of layer invalidation, keyed by its target path across builds on this machine's BuildKit instance, unlike a plain layer.
+
+### Consequences: a real regression test, and the frontend's login flow is now genuinely done end-to-end
+
+- New `GlobalCorsConfigTest` case, `preflightRequest_fromFrontendOrigin_isAllowedOnAuthLoginRoute_realRegressionCase()`, verified via deliberate revert of the `CorsWebFilter` bean — confirmed it genuinely fails without the fix, restored it.
+- Login confirmed working end-to-end against the real running gateway in a real browser — the last real blocker on Phase 51's login flow.
+- Full repo suite green, **181/181 tests passing**.
+- An in-flight Docker build started before the Dockerfile edit does not retroactively benefit from the cache mount — noted for anyone timing a rebuild against this change.
