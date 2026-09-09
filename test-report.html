@@ -18,8 +18,8 @@
         <body>
         <h1>saga-full - Aggregated Test Report</h1>
         <div class="summary">
-            <span><strong>Total:</strong> 180</span>
-            <span style="color:#1a7f37"><strong>Passed:</strong> 180</span>
+            <span><strong>Total:</strong> 181</span>
+            <span style="color:#1a7f37"><strong>Passed:</strong> 181</span>
             <span style="color:#cf222e"><strong>Failed:</strong> 0</span>
             <span style="color:#9a6700"><strong>Skipped:</strong> 0</span>
         </div>
@@ -33,7 +33,7 @@
     <td>io.github.terrence721.saga.gateway.ApiGatewayServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.576s</td>
+    <td>0.629s</td>
     <td></td>
 </tr>
 <tr>
@@ -41,7 +41,7 @@
     <td>io.github.terrence721.saga.gateway.config.CommonAppConfigTest</td>
     <td>userIdentityServiceStub_CreatesChannel_UsingTheUserServiceNameFromApplicationYaml()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.319s</td>
+    <td>0.298s</td>
     <td></td>
 </tr>
 <tr>
@@ -55,9 +55,17 @@
 <tr>
     <td>api-gateway-service</td>
     <td>io.github.terrence721.saga.gateway.config.GlobalCorsConfigTest</td>
-    <td>preflightRequest_fromFrontendOrigin_getsAllowedByGlobalCorsConfig()</td>
+    <td>preflightRequest_fromFrontendOrigin_getsAllowedOnOrdersRoute()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.01s</td>
+    <td>0.095s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>api-gateway-service</td>
+    <td>io.github.terrence721.saga.gateway.config.GlobalCorsConfigTest</td>
+    <td>preflightRequest_fromFrontendOrigin_isAllowedOnAuthLoginRoute_realRegressionCase()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -65,7 +73,7 @@
     <td>io.github.terrence721.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromFrontendOrigin_isAllowedOnOrderStreamRoute()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.085s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -81,7 +89,7 @@
     <td>io.github.terrence721.saga.gateway.controller.AuthenticationControllerTest</td>
     <td>login_ShouldReturnBadRequest_WhenPayloadInputFailsValidationRules()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.131s</td>
+    <td>0.108s</td>
     <td></td>
 </tr>
 <tr>
@@ -89,7 +97,7 @@
     <td>io.github.terrence721.saga.gateway.controller.AuthenticationControllerTest</td>
     <td>login_ShouldReturnForbidden_WhenUserInactiveExceptionIsThrown()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.012s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -97,7 +105,7 @@
     <td>io.github.terrence721.saga.gateway.controller.AuthenticationControllerTest</td>
     <td>login_ShouldReturnInternalServerError_WhenUnexpectedExceptionIsThrown()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.019s</td>
+    <td>0.015s</td>
     <td></td>
 </tr>
 <tr>
@@ -105,7 +113,7 @@
     <td>io.github.terrence721.saga.gateway.controller.AuthenticationControllerTest</td>
     <td>login_ShouldReturnNotFound_WhenUserNotFoundExceptionIsThrown()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -113,7 +121,7 @@
     <td>io.github.terrence721.saga.gateway.controller.AuthenticationControllerTest</td>
     <td>login_ShouldReturnOkAndToken_WhenCredentialsAreValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.029s</td>
+    <td>0.031s</td>
     <td></td>
 </tr>
 <tr>
@@ -129,7 +137,7 @@
     <td>io.github.terrence721.saga.gateway.controller.AuthenticationControllerTest</td>
     <td>login_ShouldReturnUnauthorized_WhenInvalidCredentialsExceptionIsThrown()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.067s</td>
+    <td>0.051s</td>
     <td></td>
 </tr>
 <tr>
@@ -137,7 +145,7 @@
     <td>io.github.terrence721.saga.gateway.controller.AuthenticationControllerThreadingTest</td>
     <td>login_DoesNotBlockTheNettyEventLoopThread()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.02s</td>
+    <td>0.023s</td>
     <td></td>
 </tr>
 <tr>
@@ -145,7 +153,7 @@
     <td>io.github.terrence721.saga.gateway.controller.GatewayFallbackControllerTest</td>
     <td>orderFallback_ReturnsServiceUnavailableWithErrorBody()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.011s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -153,7 +161,7 @@
     <td>io.github.terrence721.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldEmitJwtVerificationError_WhenAuthorizationHeaderIsMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -161,7 +169,7 @@
     <td>io.github.terrence721.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldEmitJwtVerificationError_WhenAuthorizationHeaderIsPresentButNotBearerScheme()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.07s</td>
+    <td>0.059s</td>
     <td></td>
 </tr>
 <tr>
@@ -177,7 +185,7 @@
     <td>io.github.terrence721.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldForwardAndMutateHeader_WhenTokenSignatureIsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.042s</td>
+    <td>0.087s</td>
     <td></td>
 </tr>
 <tr>
@@ -185,7 +193,7 @@
     <td>io.github.terrence721.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldStillEmitJwtVerificationError_WhenDecodedPayloadContainsCrLf()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -193,7 +201,7 @@
     <td>io.github.terrence721.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>orderGetRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.011s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -201,7 +209,7 @@
     <td>io.github.terrence721.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>orderStreamRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.017s</td>
+    <td>0.018s</td>
     <td></td>
 </tr>
 <tr>
@@ -209,7 +217,7 @@
     <td>io.github.terrence721.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>ordersRoute_RejectsExpiredToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.02s</td>
+    <td>0.016s</td>
     <td></td>
 </tr>
 <tr>
@@ -217,7 +225,7 @@
     <td>io.github.terrence721.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>ordersRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.012s</td>
+    <td>0.015s</td>
     <td></td>
 </tr>
 <tr>
@@ -225,7 +233,7 @@
     <td>io.github.terrence721.saga.gateway.infra.grpc.UserGrpcClientTest</td>
     <td>login_ReturnsTheStubResponse_BuildingTheGrpcRequestFromEmailAndPassword()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.118s</td>
+    <td>0.106s</td>
     <td></td>
 </tr>
 <tr>
@@ -233,7 +241,7 @@
     <td>io.github.terrence721.saga.gateway.infra.grpc.UserGrpcClientTest</td>
     <td>login_StillSucceeds_WhenEmailContainsCrLf()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -249,7 +257,7 @@
     <td>io.github.terrence721.saga.gateway.infra.grpc.UserGrpcExceptionTranslatorTest</td>
     <td>translate_ReturnsDependencyUnavailableExceptionWithCause_ForAnyOtherStatus()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -257,7 +265,7 @@
     <td>io.github.terrence721.saga.gateway.infra.grpc.UserGrpcExceptionTranslatorTest</td>
     <td>translate_ReturnsDependencyUnavailableExceptionWithCause_ForDeadlineExceeded()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -273,7 +281,7 @@
     <td>io.github.terrence721.saga.gateway.infra.grpc.UserGrpcExceptionTranslatorTest</td>
     <td>translate_ReturnsDependencyUnavailableExceptionWithCause_ForUnavailable()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -289,7 +297,7 @@
     <td>io.github.terrence721.saga.gateway.infra.grpc.UserGrpcExceptionTranslatorTest</td>
     <td>translate_ReturnsInvalidCredentialsException_ForUnauthenticated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
