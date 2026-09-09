@@ -66,6 +66,20 @@ Each `Dockerfile` builds with the **repo root** as its context (`docker build -f
 
 Tear down with `docker compose down -v` when done (`-v` also drops Postgres's data volume, so schemas are recreated fresh next time).
 
+## Running the frontend
+
+The register/POS frontend (`frontend/`) is a Vite + React + TypeScript + Tailwind app, on Yarn 4 (`node-modules` linker) rather than npm:
+
+```shell
+cd frontend
+yarn install
+yarn dev
+```
+
+The dev server is pinned to **`http://localhost:5180`**, not Vite's default 5173 — some dev machines already run another project's Vite server there. It calls `api-gateway-service` directly (no separate backend-for-frontend), so the gateway needs to be running first, either via `./gradlew :api-gateway-service:bootRun` or the full Docker stack above.
+
+The gateway's CORS config only allows one configured origin (`FRONTEND_ORIGIN`, defaulting to `http://localhost:5180`) — if you run the frontend dev server on a different port, set `FRONTEND_ORIGIN` to match when starting the gateway, or the browser's preflight requests will be rejected.
+
 ## Submitting pull requests
 
 Please follow these steps to simplify review:
@@ -124,6 +138,7 @@ The service module affected, matching the module layout as it gets built out:
 - **restaurant-service**
 - **user-service**
 - **user-contract**
+- **frontend**
 
 ### Subject and body
 
