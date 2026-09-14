@@ -1,6 +1,9 @@
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { defineConfig } from 'vite'
+// Imported from 'vitest/config', not 'vite' - it re-exports Vite's own defineConfig
+// with the type extended to include the `test` field below, so a plain `vite` build
+// still just ignores it.
+import { defineConfig } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,5 +16,9 @@ export default defineConfig({
     // happens to be free on a given run.
     port: 5180,
     strictPort: true,
+  },
+  test: {
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
   },
 })
