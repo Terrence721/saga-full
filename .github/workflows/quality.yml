@@ -72,3 +72,33 @@ jobs:
             git commit -m "chore: update consolidated test report [skip ci]"
             git push
           fi
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Yarn 4.18.0 is pinned via package.json's packageManager field, not installed
+      # separately - corepack (bundled with Node) reads that field and fetches the
+      # exact pinned version, matching what every contributor's local yarn already runs.
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build
+        run: yarn build
+
+      - name: Test
+        run: yarn test
