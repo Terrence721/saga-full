@@ -1,6 +1,6 @@
 # Case Study: Distributed Saga Microservice Platform
 
-Last updated: September 9, 2026
+Last updated: September 14, 2026
 
 For the portfolio-facing version of this page, see [portfolio.html](https://terrence721.github.io/saga-full/portfolio.html). This document is the shorter, docs-oriented summary — problem, constraints, tradeoffs, results — for anyone scanning this repo rather than reading it end to end.
 
@@ -31,6 +31,8 @@ In short: `api-gateway-service` is a reactive WebFlux edge — JWT verification,
 
 The whole stack now runs as seven containers (`docker compose up -d --build`: five services, Postgres, Kafka) — the shift from "boots against local infra" to "boots as the thing that would actually deploy" surfaced two of the real bugs in the Results section below.
 
+A register/POS frontend (React/TypeScript/Vite/Tailwind) sits in front of all this as the one real client of the system — a cashier logs in, places an order, and watches it move live through the saga via a hand-rolled SSE reader, calling `api-gateway-service` directly with no backend-for-frontend layer in between.
+
 ## Tradeoffs
 
 A sample of the deliberate deviations from the structural-reference source, each made for a stated reason rather than by default — full list and reasoning in [architecture.md](architecture.md):
@@ -44,6 +46,7 @@ A sample of the deliberate deviations from the structural-reference source, each
 | `spring-kafka` directly | Spring Cloud Stream's Kafka binder | This project only ever targets Kafka and never needs broker-swappability — the extra abstraction had no payoff here |
 | `ValidateToken` returns `valid: false` | throwing a gRPC error | An expired/forged token is a normal answer for a validation endpoint, not a failure of the endpoint — same reasoning as OAuth2 token introspection (RFC 7662) |
 | SSE streamed directly from `order-service` (`Sinks.Many`), proxied by the gateway | a new Kafka consumer added to the gateway | The gateway has no existing Kafka wiring and doesn't need one just to relay status the order service already knows the instant it changes |
+| Frontend decodes the JWT client-side for the customer's id | a dedicated field on the login response | The claim is already handed to the client either way — JWTs are signed, not encrypted — so returning it a second time would only duplicate what the token already carries |
 
 Two tradeoffs cost real debugging time rather than just design discussion, both only found by actually running the containerized stack, not by writing or reviewing the config:
 
@@ -57,7 +60,8 @@ Two tradeoffs cost real debugging time rather than just design discussion, both 
 - **A separate, structural test-coverage scan closed 9 further real gaps** (dead branches, untested error paths) after the audit above had already run its course — cross-referencing every source class against its test class rather than relying on the audit's per-file read to catch everything.
 - **Verified against the actual deployable artifact, not just `bootRun` against local infra**: the full 7-container stack was brought up for real, a test user inserted directly via `psql` (no registration endpoint exists — this is a login-only identity service by design), and a real order driven through the complete saga across container boundaries — including the compensation path, where an unseeded item code triggered a genuine restaurant rejection that correctly fired both a payment refund and an order cancellation.
 - **CI itself had a real, repo-wide-blocking bug found and fixed**: enabling Gradle's build cache for faster CI turnaround let CodeQL's build step restore `compileJava`'s output from cache instead of invoking `javac`, so its tracer saw zero real compilation and failed every scan, scheduled and on-push, across all of `main`. Fixed by scoping `--no-build-cache` to just that one workflow step.
+- **Register/POS frontend built and verified end-to-end against the real running stack, not mocked**: a real login, a real order created through the actual gateway, and its status watched moving live from `PENDING` through to the saga's real outcome — including the compensation path, reached for real once a seeded item's stock ran out during verification. 20 Vitest + React Testing Library tests now cover the login flow, order entry, and live status, run by CI's own dedicated job. Two more real bugs found only once a real browser was in the loop: a `/auth/login` CORS rejection rooted in a `HandlerMapping` race between the gateway's own routing and a local `@RestController`, and an error-handling gap in the frontend's own fetch wrapper that had only ever been exercised against one service's hand-built error shape.
 
 ## What's next
 
-The register/POS frontend (React/TS/Vite/Tailwind, streamed order status via SSE) is in progress — see [todo.md](../todo.md) for the current step. An unscoped `reservation-service` addition remains open on the board. Neither changes anything recorded above; this page will get another pass once the frontend build closes out.
+The register/POS frontend is functionally complete — all 9 planned steps done, backend through frontend through tests through CI. An unscoped `reservation-service` addition remains the one open item on the board. See [todo.md](../todo.md) for the full phase-by-phase log.
