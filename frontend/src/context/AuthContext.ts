@@ -2,6 +2,7 @@ import { createContext } from 'react'
 
 export interface AuthState {
   token: string | null
+  customerId: string | null
   login: (token: string) => void
   logout: () => void
 }
