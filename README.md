@@ -5,7 +5,7 @@
 
 **[📜 View the portfolio page →](https://terrence721.github.io/saga-full/portfolio.html)**
 
-Last updated: September 14, 2026 (register/POS frontend build: steps 1-8/9 done, 20 real frontend tests now wired into CI; a real Docker build-concurrency bug found and fixed; a separate DRY/SOLID/composition audit closed with 0 findings left open)
+Last updated: September 14, 2026 (register/POS frontend build complete — all 9 steps done, backend through tests through CI; a real Docker build-concurrency bug found and fixed; a separate DRY/SOLID/composition audit closed with 0 findings left open)
 
 This repository is a from-scratch demonstration of the Distributed Saga pattern for coordinating long-running business transactions across independent microservices — order placement, payment settlement, and fulfillment, each owned by its own service, coordinated without a shared database transaction.
 
@@ -20,7 +20,7 @@ This is an original implementation, not a fork of any existing project. The modu
 - **[Services Reference](https://terrence721.github.io/saga-full/diagrams/services-reference.html)** — the shared outbox-then-poll shape every service follows, and what's actually different per service (ports, topics, schemas)
 - **[Testing Strategy](https://terrence721.github.io/saga-full/diagrams/testing-strategy.html)** — the four test layers this repo runs together, each with a real bug example it alone caught
 
-The rest of the [wiki](https://github.com/Terrence721/saga-full/wiki) goes deeper per-module (one page per service).
+The rest of the [wiki](https://github.com/Terrence721/saga-full/wiki) goes deeper per-module (one page per service, plus the frontend).
 
 - **[`todo.md`](todo.md)** — the phase-by-phase log of everything done and everything still open, plus a [Milestones](todo.md#-milestones) section for the high-level story arc. This is the source of truth for progress.
 - **[GitHub Project board](https://github.com/users/Terrence721/projects/3)** — a Scrum-style Backlog/Planned/In Progress/Verification & QA/Done view of the same work, for a quick at-a-glance status without reading the full log. Kept in sync with [`todo.md`](todo.md).
@@ -37,7 +37,7 @@ Saga orchestration is a common interview-whiteboard topic and an uncommon thing 
 
 ## 🏗 What's Here So Far
 
-`user-contract` (shared gRPC contract), `user-service` (identity + auth: login, token issuance, token validation), `order-service` (order creation, transactional outbox, Kafka publish/consume, the saga's create/confirm/cancel lifecycle), `payment-service` (charge on order creation, refund on restaurant rejection), `restaurant-service` (inventory allocation, ticket creation, the saga's approve/reject decision), and `api-gateway-service` (reactive WebFlux edge — JWT-guarded routing to `order-service`, gRPC-backed login, a Resilience4j circuit breaker on the downstream hop) are complete, all with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). The full saga chain is wired end-to-end behind a real security perimeter: order → payment → restaurant, with compensation flowing back on rejection. This completes all five originally-planned backend modules, and the whole stack is now containerized end-to-end (5 per-service `Dockerfile`s + `docker-compose.yml`). A separate DRY/SOLID/composition audit across the three saga-participant services closed with 0 findings left open. A register/POS frontend (React/TypeScript/Vite/Tailwind) is in progress — steps 1-8 of 9 are done: gateway routing, a working login flow, real order entry, live order status via SSE, and 20 Vitest/RTL tests now wired into CI, all verified end-to-end against the real running stack; an unscoped `reservation-service` addition remains open. See `todo.md` for the full build-out plan.
+`user-contract` (shared gRPC contract), `user-service` (identity + auth: login, token issuance, token validation), `order-service` (order creation, transactional outbox, Kafka publish/consume, the saga's create/confirm/cancel lifecycle), `payment-service` (charge on order creation, refund on restaurant rejection), `restaurant-service` (inventory allocation, ticket creation, the saga's approve/reject decision), and `api-gateway-service` (reactive WebFlux edge — JWT-guarded routing to `order-service`, gRPC-backed login, a Resilience4j circuit breaker on the downstream hop) are complete, all with passing test suites (see the [consolidated test report](https://terrence721.github.io/saga-full/test-report.html)). The full saga chain is wired end-to-end behind a real security perimeter: order → payment → restaurant, with compensation flowing back on rejection. This completes all five originally-planned backend modules, and the whole stack is now containerized end-to-end (5 per-service `Dockerfile`s + `docker-compose.yml`). A separate DRY/SOLID/composition audit across the three saga-participant services closed with 0 findings left open. A register/POS frontend (React/TypeScript/Vite/Tailwind) is now functionally complete — gateway routing, a working login flow, real order entry, live order status via SSE, and 20 Vitest/RTL tests wired into CI, all verified end-to-end against the real running stack. An unscoped `reservation-service` addition remains the one open item. See `todo.md` for the full build-out plan.
 
 ```text
   api-gateway-service/   inbound edge, JWT perimeter guard, routing         ✅ done
@@ -46,7 +46,7 @@ Saga orchestration is a common interview-whiteboard topic and an uncommon thing 
   restaurant-service/    fulfillment-side processor                        ✅ done
   user-service/          identity + auth                                   ✅ done
   user-contract/         shared API contract types                         ✅ done
-  frontend/              register/POS UI (React/TS/Vite/Tailwind)          🚧 in progress
+  frontend/              register/POS UI (React/TS/Vite/Tailwind)          ✅ done
 ```
 
 ## 🖥 Getting Started
