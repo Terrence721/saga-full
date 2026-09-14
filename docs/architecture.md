@@ -1016,3 +1016,45 @@ The same PR fixed a real, unrelated inefficiency found while iterating on this b
 - Login confirmed working end-to-end against the real running gateway in a real browser — the last real blocker on Phase 51's login flow.
 - Full repo suite green, **181/181 tests passing**.
 - An in-flight Docker build started before the Dockerfile edit does not retroactively benefit from the cache mount — noted for anyone timing a rebuild against this change.
+
+## Frontend: order entry against `POST /orders`, and an error-handling gap `httpClient.ts` never had to face before
+
+**Status:** Done — Phase 53, step 6 of the frontend plan ([#221](https://github.com/Terrence721/saga-full/issues/221)/[PR #223](https://github.com/Terrence721/saga-full/pull/223)).
+
+### Context: the frontend can log in, but can't do anything a cashier would actually use it for
+
+Phase 51 proved a real login flow end-to-end. Nothing after that exists yet — no way to actually place an order, the entire point of a register/POS UI. `OrderController.createOrder` (Phase 23) requires the request body's `customerId` to exactly match the `X-Perimeter-User-Id` header the gateway injects from the caller's JWT, fail-closed 403 otherwise — but the login response (`WebTokenResponse`) never returns the user's id directly, only the token itself.
+
+### Decision: decode the JWT client-side, don't touch the backend just to hand back an id it already gave the client
+
+The `user-id` claim is already embedded in the JWT payload (`JwtTokenProvider.java`, `.withClaim("user-id", ...)`) — a JWT's payload is signed, not encrypted, so decoding it client-side to read a claim is standard practice, not a security boundary; the signature is still verified server-side on every guarded request regardless. New `jwt.ts` base64url-decodes the payload segment and reads that claim. `AuthContext`/`AuthProvider` were extended to derive `customerId` automatically on login and expose it via `useAuth()`, so no component needs to know anything about JWT internals to get it. This was weighed against adding a `userId` field to `WebTokenResponse` — a backend change that would have meant re-verifying the login flow's existing tests for no real benefit, since the client already has everything it needs.
+
+`orderClient.ts` mirrors `authClient.ts`'s shape (`createOrder(request, token)`) and is the first call this frontend makes with an `Authorization` header. `OrderEntryForm` collects itemCode/quantity/totalAmount and shows a static "Order created — status: PENDING" confirmation on success; it deliberately does not show live status — that's step 7's job (the SSE stream from Phase 46), not duplicated here.
+
+**Real bug found and fixed, confirmed against a real running `order-service` before writing the fix**: `httpClient.ts`'s `apiFetch` (Phase 51) was written and only ever exercised against `api-gateway-service`'s own hand-built `{error, message, timestamp}` error shape, used exclusively by `/auth/login` until now. A real `curl` against a locally-`bootRun` `order-service` showed its actual error responses don't match that shape at all: a 400 (validation failure) or 403 (ownership mismatch) returns `{"timestamp":"...","status":400,"error":"Bad Request","path":"/orders"}` with **no `message` field whatsoever** — Spring Boot's default `server.error.include-message` is `never`, and nothing in `order-service` configures it otherwise — and a 404 (`handleOrderNotFound`, Phase 45) returns **no body at all**. Unfixed, this meant `ApiError`'s constructor would call `super(undefined)`, showing the cashier the literal string "undefined" on the very first form-validation mistake, and a 404 would throw an uncaught `SyntaxError` from `response.json()` on an empty body rather than a clean error.
+
+Fixed in `httpClient.ts` itself, matching its own stated purpose as the owner of "the generic fetch/error-normalization policy": `ApiErrorBody`'s fields all made optional, `timestamp`'s type corrected from a number to a string-or-number union (a real server sends an ISO-8601 string, not epoch millis, contradicting the original type), `response.json()` wrapped in a try/catch (an empty body is a real case now, not a hypothetical), a fallback chain trying `message`, then `error`, then a generic message naming the HTTP status, and a new `status` field on `ApiError` so a caller can tell a validation failure apart from an auth problem.
+
+### Consequences: verified against the real contract at every layer, not assumed at any of them
+
+- `yarn build`/`yarn lint` clean.
+- Verified against the real running stack, not mocked: a real login through the actual gateway, a real `201 Created` from `POST /orders` whose body matched `orderClient.ts`'s `Order` type exactly (confirmed by decoding a real issued JWT and cross-checking its `user-id` claim against the seeded test row), and a real `400` (a 300-character `itemCode` — over the backend's `@Size(max=255)` cap, and with no client-side length limit on the form to catch it first) confirmed to render "Bad Request" rather than "undefined" or a crash.
+- Confirmed by the user in a real browser, not just via `curl`: a real order created end-to-end, "Order `<id>` created — status: PENDING" rendered correctly.
+- Vitest + React Testing Library coverage for this and the login flow remains deferred to step 8, which covers steps 5-7 together.
+
+## Docker: the Phase 52 cache mount's own testing missed a real concurrency bug
+
+**Status:** Done — Phase 54 ([#220](https://github.com/Terrence721/saga-full/issues/220)/[PR #222](https://github.com/Terrence721/saga-full/pull/222)).
+
+### Context: `docker compose build` with no service argument builds all 5 in parallel
+
+Bringing up the full stack to verify Phase 53 surfaced a real regression: `docker compose build`/`up --build` failed outright with a Gradle error — `Lock file: /root/.gradle/caches/journal-1/journal-1.lock` — when building all 5 services. Building one service at a time (`docker compose build order-service`) always succeeded; only building the full set, which Docker Compose parallelizes by default, triggered it. Every one of the 5 Dockerfiles mounts the exact same BuildKit cache target (`/root/.gradle`, added in Phase 52) — fine for a plain cache of files under BuildKit's own default `shared` sharing mode, but Gradle keeps its own exclusive lock on that directory's journal, and two concurrent `./gradlew` invocations against it collide on that lock rather than gracefully queuing. Phase 52's own testing never caught this because it only ever rebuilt one service's Dockerfile at a time.
+
+### Decision: `sharing=locked`, not a separate cache per service
+
+Added `sharing=locked` to each Dockerfile's cache mount, which makes BuildKit itself serialize access to that mount across concurrent build stages — a build that would have collided now queues for its turn instead. The alternative, giving each service its own cache `id=`, would avoid the contention entirely and preserve full parallelism, but was rejected: all 5 services are Spring Boot modules with heavily overlapping dependency trees (Spring Boot, Spring Cloud, Lombok, JUnit), so five separate caches would mean redundantly downloading and storing that shared dependency set five times over — exactly the cost the Phase 52 cache mount was introduced to eliminate in the first place. Correctness with reduced parallelism was judged the better trade than full parallelism with five times the cache footprint.
+
+### Consequences: verified with the exact command that originally failed
+
+- `docker compose build` with no service argument — the same command that produced the original failure — rebuilt all 5 images successfully afterward, confirming the fix rather than assuming it from the mount-mode documentation alone.
+- No change to any service's runtime behavior — this is a build-time-only fix, no Java/Gradle source touched.
