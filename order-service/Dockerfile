@@ -27,7 +27,16 @@ COPY api-gateway-service ./api-gateway-service
 # minutes per rebuild during real debugging. A cache mount persists independently of
 # layer invalidation, keyed by its target path across builds on this machine's BuildKit
 # instance.
-RUN --mount=type=cache,target=/root/.gradle \
+#
+# sharing=locked, not the default "shared": all 5 services' Dockerfiles mount this same
+# target path, and BuildKit's default sharing mode lets concurrent builds touch it at the
+# same time - fine for a plain cache of files, but Gradle keeps its own exclusive lock on
+# this directory's journal, so two `./gradlew` invocations hitting it simultaneously (the
+# real case whenever `docker compose build`/`up --build` builds all 5 services in
+# parallel, its default) collide on that lock and the build fails outright. `locked` makes
+# BuildKit serialize access to this mount instead - concurrent builds queue for their turn
+# rather than corrupting each other, at the cost of losing some of that parallelism.
+RUN --mount=type=cache,target=/root/.gradle,sharing=locked \
     chmod +x gradlew && ./gradlew :order-service:bootJar --no-daemon
 
 # Runtime stage: JRE only, no Gradle/JDK/source in the shipped image.
