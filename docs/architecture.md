@@ -1079,3 +1079,32 @@ The browser's native `EventSource` API is the obvious first reach for consuming 
 - `yarn build`/`yarn lint` clean.
 - Confirmed by the user in a real browser: submitted a real order and watched its status move live from `PENDING` to `CANCELLED` — the saga's compensation path, exercised by real inventory exhaustion from earlier verification orders, not a contrived test case.
 - Vitest + React Testing Library coverage remains deferred to step 8, covering steps 5-7 together.
+
+## Frontend: Vitest + React Testing Library coverage, and CI that was never actually watching
+
+**Status:** Done — Phase 56, step 8 of the frontend plan ([#226](https://github.com/Terrence721/saga-full/issues/226)/[PR #227](https://github.com/Terrence721/saga-full/pull/227)).
+
+### Context: three steps' worth of real logic, zero frontend tests
+
+Steps 5-7 (Phases 51, 53, 55) shipped a login flow, order entry, and live status streaming — each verified by hand against the real running stack at the time, but none of it locked in by an automated test. No frontend test tooling existed in this repo at all before this step.
+
+### Decision: Vitest + RTL, explicit imports over `globals: true`, mock at the network boundary
+
+Vitest was the natural choice already implied by the Vite-based scaffold (Phase 50) — it shares Vite's own config, transform pipeline, and plugin ecosystem, so `vite.config.ts`'s `defineConfig` now imports from `vitest/config` (a type-only superset of Vite's own config) rather than adding a wholly separate test runner and config file. React Testing Library, `@testing-library/jest-dom`, and `@testing-library/user-event` cover component-level testing; `jsdom` supplies the DOM environment.
+
+`globals: true` (Vitest's option to inject `describe`/`it`/`expect` etc. as ambient globals, matching Jest's traditional style) was deliberately not enabled — every test file imports what it needs from `'vitest'` explicitly, consistent with this repo's preference for explicit dependencies over ambient magic everywhere else (no service-locator patterns, no implicit Spring `@Autowired` field injection either). This has one real consequence: React Testing Library's own automatic per-test DOM cleanup relies on detecting the test framework's global `afterEach`, which isn't there without `globals: true` — found for real while writing the second component test file (`LoginForm.test.tsx`'s tests started failing with "multiple elements found," each test's rendered DOM accumulating on top of the last). Fixed by wiring `cleanup()` into `afterEach` explicitly in the shared `src/test/setup.ts`, rather than switching the `globals` decision to work around it.
+
+Coverage split into two layers: pure-logic tests (`jwt.test.ts`, `httpClient.test.ts`, `orderClient.test.ts`) that mock only `fetch` itself — the actual network boundary — and component tests (`LoginForm.test.tsx`, `OrderEntryForm.test.tsx`) that mock one layer up, at each component's own API-client dependency (`authClient`/`orderClient`), matching RTL's own guidance to test components through their real DOM behavior rather than their internals. `httpClient.test.ts` and `orderClient.test.ts` specifically encode two real bugs/behaviors already fixed by hand in Phases 53 and 55 as permanent regression tests — the same "found once, tested forever" discipline this repo's backend suites already hold themselves to.
+
+Every non-trivial assertion across all 5 files was verified via deliberate revert (break the real code, confirm the specific test fails for the expected reason, restore it) before being considered done — including `orderClient.test.ts`'s chunk-boundary-split test, which is the one case in the whole suite that can't be reasoned about from reading the assertion alone: it exists specifically to prove `streamOrder`'s buffer-retention logic (`buffer = events.pop() ?? ''`) actually matters, since a real network delivery can split a single SSE event across two `read()` calls.
+
+A second real, unrelated gap surfaced while writing `OrderEntryForm.test.tsx`: a test using `user.type()` to enter a 300-character string (needed to reach the backend's real validation-error path without a client-side length limit to block it) flaked past Vitest's default 5-second test timeout, since `user.type()` simulates one keystroke at a time. Fixed with `user.paste()` for that input instead — pasting doesn't need per-keystroke simulation, and is arguably more realistic for how a cashier would actually enter a long code anyway (scanned or copy-pasted, not hand-typed character by character).
+
+**A third, more consequential gap found in the same pass**: `.github/workflows/quality.yml` is entirely Java/Gradle-scoped — `build`/`test`/CodeQL jobs, nothing touching `frontend/` at all. Without a change, these 20 new tests would have been real, valuable, and permanently invisible to CI — passing or failing locally on whoever happened to remember to run `yarn test`, never gating a PR. Added a `Frontend` job to the same workflow: Node 22, Corepack (reads `package.json`'s `packageManager` field to fetch the exact pinned Yarn 4.18.0, rather than whatever Yarn/npm version happens to ship with the runner), `yarn install --immutable` (fails the build if the lockfile isn't already in sync, the CI-equivalent of a clean local install), `yarn build`, `yarn test`.
+
+### Consequences: 20 tests, verified twice — once locally, once for real in CI
+
+- `yarn test`: 20/20 passing, stable across repeated local runs (checked 3 times after the `user.paste()` fix, given the timeout flake had just been found).
+- `yarn build`/`yarn lint` clean.
+- The new CI `Frontend` job was not just added and assumed correct — it was confirmed passing for real on this change's own PR before merging, the same "verify empirically, don't assume from the YAML" standard this repo has applied to every other CI change (Phase 43's CodeQL/build-cache regression, most notably).
+- Step 9 (this repo's own docs catching up to describe the finished frontend) is the last item on the original 9-step plan.

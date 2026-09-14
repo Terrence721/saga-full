@@ -80,6 +80,15 @@ The dev server is pinned to **`http://localhost:5180`**, not Vite's default 5173
 
 The gateway's CORS config only allows one configured origin (`FRONTEND_ORIGIN`, defaulting to `http://localhost:5180`) — if you run the frontend dev server on a different port, set `FRONTEND_ORIGIN` to match when starting the gateway, or the browser's preflight requests will be rejected.
 
+### Frontend tests
+
+```shell
+cd frontend
+yarn test
+```
+
+Vitest + React Testing Library — a separate suite from the Gradle modules' own, run by CI's `Frontend` job rather than folded into the consolidated Java test report.
+
 ## Submitting pull requests
 
 Please follow these steps to simplify review:
