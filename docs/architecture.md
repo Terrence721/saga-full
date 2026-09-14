@@ -1058,3 +1058,24 @@ Added `sharing=locked` to each Dockerfile's cache mount, which makes BuildKit it
 
 - `docker compose build` with no service argument — the same command that produced the original failure — rebuilt all 5 images successfully afterward, confirming the fix rather than assuming it from the mount-mode documentation alone.
 - No change to any service's runtime behavior — this is a build-time-only fix, no Java/Gradle source touched.
+
+## Frontend: live order status, and why this reads the SSE stream by hand instead of using `EventSource`
+
+**Status:** Done — Phase 55, step 7 of the frontend plan ([#224](https://github.com/Terrence721/saga-full/issues/224)/[PR #225](https://github.com/Terrence721/saga-full/pull/225)).
+
+### Context: `order-service` has streamed live status since Phase 46, but the frontend never read it
+
+`OrderEntryForm` (Phase 53) shows a static "created" message and stops there — a real gap for a register/POS UI whose whole premise (per `todo.md`'s original scope decision) is watching an order move live through kitchen approval and payment, not a fire-and-forget confirmation screen.
+
+### Decision: `fetch()` and a hand-rolled parser, not `EventSource`
+
+The browser's native `EventSource` API is the obvious first reach for consuming an SSE endpoint, but it was already ruled out when the frontend plan was first approved (recorded in `todo.md`'s **Still to do** table well before any frontend code existed): `EventSource` has no way to set request headers, and `JwtPerimeterGuard` requires a real `Authorization: Bearer` header on every guarded request, `GET /orders/{id}/stream` included. `streamOrder()` in `orderClient.ts` instead calls `fetch()` directly (bypassing `apiFetch`, whose JSON-request/JSON-response shape doesn't fit a long-lived streaming body), reads the response via `response.body.getReader()`, and parses the `text/event-stream` wire format by hand: events are separated by a blank line, and each one contains a `data: <json>` line — exactly what `OrderController.streamOrder`'s `ServerSentEvent.builder(order).build()` (Phase 46) produces, with no explicit `event`/`id` fields set. `httpClient.ts`'s `API_BASE_URL` constant was exported for this one raw-`fetch()` case to reuse, rather than hardcoding the gateway's base URL a second time.
+
+`OrderEntryForm` calls `streamOrder` immediately after `createOrder` succeeds, and keeps the returned cleanup function (which aborts the underlying `fetch` via `AbortController`) in a ref, invoked both when the user starts a new order and on component unmount — an open SSE connection with nothing left to update it would otherwise keep running in the background.
+
+### Consequences: proven correct twice — once at the wire level, once in a real browser
+
+- The parsing logic was verified against a real SSE stream from the real running stack *before* being wired into any UI code: a standalone script mirroring `streamOrder`'s exact logic connected to a real order's stream and confirmed both the initial current-state snapshot and a genuine live update parsed correctly.
+- `yarn build`/`yarn lint` clean.
+- Confirmed by the user in a real browser: submitted a real order and watched its status move live from `PENDING` to `CANCELLED` — the saga's compensation path, exercised by real inventory exhaustion from earlier verification orders, not a contrived test case.
+- Vitest + React Testing Library coverage remains deferred to step 8, covering steps 5-7 together.
