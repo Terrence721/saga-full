@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { createOrder, type Order } from '../api/orderClient'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { createOrder, streamOrder, type Order } from '../api/orderClient'
 import { ApiError } from '../api/httpClient'
 import { useAuth } from '../context/useAuth'
 
@@ -8,8 +8,13 @@ export function OrderEntryForm() {
   const [quantity, setQuantity] = useState('1')
   const [totalAmount, setTotalAmount] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [createdOrder, setCreatedOrder] = useState<Order | null>(null)
+  const [order, setOrder] = useState<Order | null>(null)
   const auth = useAuth()
+  const stopStreamRef = useRef<(() => void) | null>(null)
+
+  // Stop listening if the component unmounts mid-order - an open SSE connection
+  // with nothing left to update would otherwise keep running in the background.
+  useEffect(() => () => stopStreamRef.current?.(), [])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -21,7 +26,7 @@ export function OrderEntryForm() {
     }
 
     try {
-      const order = await createOrder(
+      const created = await createOrder(
         {
           customerId: auth.customerId,
           itemCode,
@@ -30,19 +35,29 @@ export function OrderEntryForm() {
         },
         auth.token,
       )
-      setCreatedOrder(order)
+      // Set the just-created order immediately for instant feedback, then let the
+      // stream's own first event (the same current snapshot) confirm it and every
+      // status change after that arrive live.
+      setOrder(created)
+      stopStreamRef.current = streamOrder(created.id, auth.token, setOrder)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Order could not be created')
     }
   }
 
-  if (createdOrder) {
+  function startNewOrder() {
+    stopStreamRef.current?.()
+    stopStreamRef.current = null
+    setOrder(null)
+  }
+
+  if (order) {
     return (
       <div>
         <p>
-          Order {createdOrder.id} created - status: {createdOrder.status}
+          Order {order.id} - status: {order.status}
         </p>
-        <button type="button" onClick={() => setCreatedOrder(null)}>
+        <button type="button" onClick={startNewOrder}>
           New order
         </button>
       </div>
