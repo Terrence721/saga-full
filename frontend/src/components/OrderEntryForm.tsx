@@ -2,6 +2,10 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { createOrder, streamOrder, type Order } from '../api/orderClient'
 import { ApiError } from '../api/httpClient'
 import { useAuth } from '../context/useAuth'
+import { Button } from './ui/Button'
+import { Card } from './ui/Card'
+import { Input } from './ui/Input'
+import { StatusBadge } from './ui/StatusBadge'
 
 export function OrderEntryForm() {
   const [itemCode, setItemCode] = useState('')
@@ -12,8 +16,6 @@ export function OrderEntryForm() {
   const auth = useAuth()
   const stopStreamRef = useRef<(() => void) | null>(null)
 
-  // Stop listening if the component unmounts mid-order - an open SSE connection
-  // with nothing left to update would otherwise keep running in the background.
   useEffect(() => () => stopStreamRef.current?.(), [])
 
   async function handleSubmit(event: FormEvent) {
@@ -35,9 +37,6 @@ export function OrderEntryForm() {
         },
         auth.token,
       )
-      // Set the just-created order immediately for instant feedback, then let the
-      // stream's own first event (the same current snapshot) confirm it and every
-      // status change after that arrive live.
       setOrder(created)
       stopStreamRef.current = streamOrder(created.id, auth.token, setOrder)
     } catch (err) {
@@ -53,45 +52,59 @@ export function OrderEntryForm() {
 
   if (order) {
     return (
-      <div>
-        <p>
-          Order {order.id} - status: {order.status}
-        </p>
-        <button type="button" onClick={startNewOrder}>
-          New order
-        </button>
-      </div>
+      <Card>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-slate-500">Current order</p>
+            <p className="mt-1 text-lg font-semibold text-slate-900">
+              {order.id} — status: {order.status}
+            </p>
+          </div>
+          <StatusBadge status={order.status} />
+        </div>
+        <div className="mt-6">
+          <Button type="button" variant="secondary" onClick={startNewOrder}>
+            New order
+          </Button>
+        </div>
+      </Card>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Item code"
-        value={itemCode}
-        onChange={(e) => setItemCode(e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Quantity"
-        min="1"
-        value={quantity}
-        onChange={(e) => setQuantity(e.target.value)}
-        required
-      />
-      <input
-        type="number"
-        placeholder="Total amount"
-        min="0.01"
-        step="0.01"
-        value={totalAmount}
-        onChange={(e) => setTotalAmount(e.target.value)}
-        required
-      />
-      {error && <p role="alert">{error}</p>}
-      <button type="submit">Place order</button>
-    </form>
+    <Card className="max-w-xl">
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-slate-900">Place an order</h2>
+        <p className="mt-1 text-sm text-slate-500">Capture an item and total, then send it into the saga.</p>
+      </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          type="text"
+          placeholder="Item code"
+          value={itemCode}
+          onChange={(e) => setItemCode(e.target.value)}
+          required
+        />
+        <Input
+          type="number"
+          placeholder="Quantity"
+          min="1"
+          value={quantity}
+          onChange={(e) => setQuantity(e.target.value)}
+          required
+        />
+        <Input
+          type="number"
+          placeholder="Total amount"
+          min="0.01"
+          step="0.01"
+          value={totalAmount}
+          onChange={(e) => setTotalAmount(e.target.value)}
+          required
+        />
+        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+        <Button type="submit">Place order</Button>
+      </form>
+    </Card>
   )
 }
