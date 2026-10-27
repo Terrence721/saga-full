@@ -87,6 +87,17 @@ spring:
                 - JwtPerimeterGuard
                 - RemoveRequestHeader=Cookie
 
+
+            # Route 5: Guarded Edge Route to Reservation Microservice
+            - id: reservation-service-route
+              uri: 'http://${RESERVATION_SERVICE_HOST:localhost}:${RESERVATION_SERVICE_PORT:8084}'
+              predicates:
+                - Path=/reservations,/reservations/**
+                - Method=GET,POST,DELETE,OPTIONS
+              filters:
+                - JwtPerimeterGuard
+                - RemoveRequestHeader=Cookie
+
 # ===================================================================
 # 3. ACTUATOR HEALTH PROBES
 # ===================================================================

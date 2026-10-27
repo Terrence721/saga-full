@@ -16,6 +16,7 @@ COPY user-service ./user-service
 COPY order-service ./order-service
 COPY payment-service ./payment-service
 COPY restaurant-service ./restaurant-service
+COPY reservation-service ./reservation-service
 COPY api-gateway-service ./api-gateway-service
 
 # Cache mount, not a plain layer: without it, any change under payment-service/ (even a

@@ -137,6 +137,18 @@ services:
       GRPC_PORT: "9090"
       ORDER_SERVICE_HOST: order-service
       ORDER_SERVICE_PORT: "8081"
+      RESERVATION_SERVICE_HOST: reservation-service
+      RESERVATION_SERVICE_PORT: "8084"
     depends_on:
       - user-service
       - order-service
+
+
+  reservation-service:
+    build:
+      context: .
+      dockerfile: reservation-service/Dockerfile
+    ports:
+      - "8184:8084"
+    environment:
+      SERVER_PORT: "8084"
