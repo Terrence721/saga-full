@@ -63,9 +63,12 @@ services:
       SPRING_PROFILES_ACTIVE: postgres
       DATABASE_HOST: postgres-db
       DATABASE_PORT: "5432"
+      KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
       JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
     depends_on:
       postgres-db:
+        condition: service_healthy
+      kafka-broker:
         condition: service_healthy
 
   order-service:
@@ -155,7 +158,10 @@ services:
       SERVER_PORT: "8084"
       DATABASE_HOST: postgres-db
       DATABASE_PORT: "5432"
+      KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
       JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
     depends_on:
       postgres-db:
+        condition: service_healthy
+      kafka-broker:
         condition: service_healthy
