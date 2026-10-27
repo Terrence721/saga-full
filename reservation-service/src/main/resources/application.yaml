@@ -1,16 +1,49 @@
 spring:
   application:
     name: reservation-service
+  sql:
+    init:
+      mode: always
+
+server:
+  port: ${SERVER_PORT:8084}
+
+management:
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: default
   datasource:
     url: jdbc:h2:mem:reservation;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
+    username: sa
+    password: password
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
-server:
-  port: 8084
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
+
+---
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/saga_db?currentSchema=reservation_service_schema
+    driver-class-name: org.postgresql.Driver
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  sql:
+    init:
+      mode: always
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update

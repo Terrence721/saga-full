@@ -151,4 +151,11 @@ services:
     ports:
       - "8184:8084"
     environment:
+      SPRING_PROFILES_ACTIVE: postgres
       SERVER_PORT: "8084"
+      DATABASE_HOST: postgres-db
+      DATABASE_PORT: "5432"
+      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
+    depends_on:
+      postgres-db:
+        condition: service_healthy
