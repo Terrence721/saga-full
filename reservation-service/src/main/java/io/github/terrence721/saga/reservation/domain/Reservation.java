@@ -30,7 +30,7 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "order_id", nullable = false, unique = true)
+    @Column(name = "order_id")
     private UUID orderId;
 
     @Column(name = "customer_id", nullable = false)
