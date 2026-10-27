@@ -24,7 +24,6 @@ public class OutboxRecordFactory {
         this.objectMapper = objectMapper;
     }
 
-    @SuppressWarnings("null") // Lombok's generated build() never returns null.
     public OutboxRecord create(String aggregateId, String eventType, Object event) {
         String payload;
         try {

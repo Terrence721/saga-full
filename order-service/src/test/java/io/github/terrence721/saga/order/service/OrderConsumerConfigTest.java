@@ -18,7 +18,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-@SuppressWarnings("null") // test fixtures/mocks here are always real, non-null values.
 class OrderConsumerConfigTest {
 
     @Mock

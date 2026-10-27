@@ -7,6 +7,7 @@ import io.github.terrence721.saga.reservation.repository.ReservationRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -26,7 +27,7 @@ public class ReservationService {
                 .startTime(request.startTime())
                 .status(ReservationStatus.CONFIRMED)
                 .build();
-        return repository.save(reservation);
+        return repository.save(Objects.requireNonNull(reservation));
     }
 
     public List<Reservation> findAll() {
@@ -34,7 +35,7 @@ public class ReservationService {
     }
 
     public Reservation findById(UUID id) {
-        return repository.findById(id)
+        return repository.findById(Objects.requireNonNull(id, "id"))
                 .orElseThrow(() -> new IllegalArgumentException("Reservation not found: " + id));
     }
 

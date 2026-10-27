@@ -58,9 +58,14 @@ public class OrderService {
         return findOrder(orderId);
     }
 
-    @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void confirmOrder(RestaurantApprovedEvent event) {
+        if (event == null) {
+            throw new IllegalArgumentException("event is required");
+        }
+        if (event.orderId() == null) {
+            throw new IllegalArgumentException("orderId is required for approval event");
+        }
         if (orderRepository.existsByIdAndStatus(event.orderId(), OrderStatus.SUCCESS)) {
             log.debug("Order {} already SUCCESS; skipping duplicate approval event", event.orderId());
             return;
@@ -82,9 +87,14 @@ public class OrderService {
         log.info("Order {} marked SUCCESS", event.orderId());
     }
 
-    @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void cancelOrder(RestaurantRejectedEvent event) {
+        if (event == null) {
+            throw new IllegalArgumentException("event is required");
+        }
+        if (event.orderId() == null) {
+            throw new IllegalArgumentException("orderId is required for rejection event");
+        }
         if (orderRepository.existsByIdAndStatus(event.orderId(), OrderStatus.CANCELLED)) {
             log.debug("Order {} already CANCELLED; skipping duplicate rejection event", event.orderId());
             return;
@@ -108,8 +118,10 @@ public class OrderService {
         log.warn("Order {} cancelled: {}", event.orderId(), sanitizedReason);
     }
 
-    @SuppressWarnings("null") // orderId is always a real, non-null UUID from a real caller.
     private Order findOrder(UUID orderId) {
+        if (orderId == null) {
+            throw new IllegalArgumentException("orderId is required");
+        }
         return orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
     }

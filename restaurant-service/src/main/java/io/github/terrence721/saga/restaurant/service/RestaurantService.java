@@ -38,7 +38,6 @@ public class RestaurantService {
         this.outboxRecordFactory = outboxRecordFactory;
     }
 
-    @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void processRestaurantStep(PaymentProcessedEvent event) {
         if (ticketRepository.existsByOrderId(event.orderId())) {

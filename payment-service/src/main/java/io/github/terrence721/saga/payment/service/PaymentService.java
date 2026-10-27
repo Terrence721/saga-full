@@ -67,7 +67,6 @@ public class PaymentService {
         outboxRepository.save(buildOutboxRecord(savedPayment, event));
     }
 
-    @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void handleOrderCompensation(RestaurantRejectedEvent event) {
         if (paymentRepository.existsByOrderIdAndStatus(event.orderId(), PaymentStatus.REFUNDED)) {
