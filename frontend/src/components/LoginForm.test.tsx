@@ -68,4 +68,20 @@ describe('LoginForm', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Login failed')
   })
+
+  it('toggles password visibility without submitting the form', async () => {
+    const user = userEvent.setup()
+    renderLoginForm()
+
+    const passwordInput = screen.getByPlaceholderText('Password')
+    expect(passwordInput).toHaveAttribute('type', 'password')
+
+    await user.click(screen.getByRole('button', { name: 'Show password' }))
+    expect(passwordInput).toHaveAttribute('type', 'text')
+    expect(login).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'Hide password' }))
+    expect(passwordInput).toHaveAttribute('type', 'password')
+  })
+
 })
