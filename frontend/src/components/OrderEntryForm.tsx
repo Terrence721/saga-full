@@ -59,15 +59,35 @@ export function OrderEntryForm() {
   if (order) {
     return (
       <Card>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-sm text-slate-500">Current order</p>
             <p className="mt-1 text-lg font-semibold text-slate-900">
               {order.id} — status: {order.status}
             </p>
+            <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+              <Spinner className="h-3 w-3 border-slate-300 border-t-indigo-600" />
+              <span>Live updates connected</span>
+            </div>
           </div>
           <StatusBadge status={order.status} />
         </div>
+
+        <dl className="mt-6 grid grid-cols-3 gap-4 rounded-xl bg-slate-50 p-4 text-sm">
+          <div>
+            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">Item</dt>
+            <dd className="mt-1 font-medium text-slate-900">{order.itemCode}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">Quantity</dt>
+            <dd className="mt-1 font-medium text-slate-900">{order.quantity}</dd>
+          </div>
+          <div>
+            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">Total</dt>
+            <dd className="mt-1 font-medium text-slate-900">{order.totalAmount}</dd>
+          </div>
+        </dl>
+
         <div className="mt-6">
           <Button type="button" variant="secondary" onClick={startNewOrder}>
             New order
