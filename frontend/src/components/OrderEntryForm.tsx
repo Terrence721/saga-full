@@ -85,14 +85,40 @@ export function OrderEntryForm() {
           onChange={(e) => setItemCode(e.target.value)}
           required
         />
-        <Input
-          type="number"
-          placeholder="Quantity"
-          min="1"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          required
-        />
+        <div>
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
+            Quantity
+          </label>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setQuantity((v) => String(Math.max(1, (Number(v) || 1) - 1)))}
+              disabled={Number(quantity) <= 1}
+              aria-label="Decrease quantity"
+            >
+              −
+            </Button>
+            <Input
+              type="number"
+              min="1"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              required
+              className="text-center"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setQuantity((v) => String((Number(v) || 0) + 1))}
+              aria-label="Increase quantity"
+            >
+              +
+            </Button>
+          </div>
+        </div>
         <Input
           type="number"
           placeholder="Total amount"
