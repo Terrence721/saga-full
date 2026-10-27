@@ -133,6 +133,7 @@ export function OrderEntryForm() {
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               required
+              aria-label="Quantity"
               disabled={isSubmitting}
               className="text-center"
             />
