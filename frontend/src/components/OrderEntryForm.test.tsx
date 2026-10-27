@@ -109,6 +109,25 @@ describe('OrderEntryForm', () => {
     expect(screen.getByPlaceholderText('Item code')).toBeInTheDocument()
   })
 
+
+  it('steppers quantity up and down and disables decrement at the minimum', async () => {
+    const user = userEvent.setup()
+    renderForm()
+
+    const quantityInput = screen.getByRole('spinbutton', { name: 'Quantity' })
+    expect(quantityInput).toHaveValue(1)
+    expect(screen.getByRole('button', { name: 'Decrease quantity' })).toBeDisabled()
+
+    await user.click(screen.getByRole('button', { name: 'Increase quantity' }))
+    expect(quantityInput).toHaveValue(2)
+
+    await user.click(screen.getByRole('button', { name: 'Decrease quantity' }))
+    expect(quantityInput).toHaveValue(1)
+    expect(screen.getByRole('button', { name: 'Decrease quantity' })).toBeDisabled()
+
+    expect(createOrder).not.toHaveBeenCalled()
+  })
+
   it('refuses to submit without a logged-in customerId, and never calls createOrder', async () => {
     const user = userEvent.setup()
     renderForm({ token: null, customerId: null, login: vi.fn(), logout: vi.fn() })
