@@ -6,12 +6,14 @@ import { Button } from './ui/Button'
 import { Card } from './ui/Card'
 import { Input } from './ui/Input'
 import { StatusBadge } from './ui/StatusBadge'
+import { Spinner } from './ui/Spinner'
 
 export function OrderEntryForm() {
   const [itemCode, setItemCode] = useState('')
   const [quantity, setQuantity] = useState('1')
   const [totalAmount, setTotalAmount] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [order, setOrder] = useState<Order | null>(null)
   const auth = useAuth()
   const stopStreamRef = useRef<(() => void) | null>(null)
@@ -21,9 +23,11 @@ export function OrderEntryForm() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError(null)
+    setIsSubmitting(true)
 
     if (!auth.token || !auth.customerId) {
       setError('You must be logged in to place an order')
+      setIsSubmitting(false)
       return
     }
 
@@ -41,6 +45,8 @@ export function OrderEntryForm() {
       stopStreamRef.current = streamOrder(created.id, auth.token, setOrder)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Order could not be created')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -81,6 +87,7 @@ export function OrderEntryForm() {
         <Input
           type="text"
           placeholder="Item code"
+          disabled={isSubmitting}
           value={itemCode}
           onChange={(e) => setItemCode(e.target.value)}
           required
@@ -95,7 +102,7 @@ export function OrderEntryForm() {
               variant="secondary"
               size="sm"
               onClick={() => setQuantity((v) => String(Math.max(1, (Number(v) || 1) - 1)))}
-              disabled={Number(quantity) <= 1}
+              disabled={Number(quantity) <= 1 || isSubmitting}
               aria-label="Decrease quantity"
             >
               −
@@ -106,6 +113,7 @@ export function OrderEntryForm() {
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               required
+              disabled={isSubmitting}
               className="text-center"
             />
             <Button
@@ -114,6 +122,7 @@ export function OrderEntryForm() {
               size="sm"
               onClick={() => setQuantity((v) => String((Number(v) || 0) + 1))}
               aria-label="Increase quantity"
+              disabled={isSubmitting}
             >
               +
             </Button>
@@ -122,6 +131,7 @@ export function OrderEntryForm() {
         <Input
           type="number"
           placeholder="Total amount"
+          disabled={isSubmitting}
           min="0.01"
           step="0.01"
           value={totalAmount}
@@ -129,7 +139,10 @@ export function OrderEntryForm() {
           required
         />
         {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-        <Button type="submit">Place order</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting && <Spinner className="border-white border-t-transparent" />}
+          {isSubmitting ? 'Placing…' : 'Place order'}
+        </Button>
       </form>
     </Card>
   )
