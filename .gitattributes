@@ -1,0 +1,6 @@
+# Force LF for Gradle wrapper and Docker build inputs; CRLF breaks the
+# shebang (#!/bin/sh\r) that Docker's linux containers rely on.
+gradlew          text eol=lf
+*.sh             text eol=lf
+**/Dockerfile    text eol=lf
+docker-compose.yml text eol=lf
