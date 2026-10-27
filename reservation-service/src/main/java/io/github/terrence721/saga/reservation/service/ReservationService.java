@@ -1,22 +1,45 @@
 package io.github.terrence721.saga.reservation.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.terrence721.saga.reservation.domain.Reservation;
 import io.github.terrence721.saga.reservation.domain.ReservationStatus;
 import io.github.terrence721.saga.reservation.dto.CreateReservationRequest;
+import io.github.terrence721.saga.reservation.dto.ReservationConfirmedEvent;
+import io.github.terrence721.saga.reservation.dto.ReservationRejectedEvent;
+import io.github.terrence721.saga.reservation.dto.RestaurantApprovedEvent;
+import io.github.terrence721.saga.reservation.dto.RestaurantRejectedEvent;
 import io.github.terrence721.saga.reservation.repository.ReservationRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@Slf4j
 public class ReservationService {
 
     private final ReservationRepository repository;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
-    public ReservationService(ReservationRepository repository) {
+    @Value("${app.outbox.confirmed-topic:reservation-confirmed-topic}")
+    private String confirmedTopic;
+
+    @Value("${app.outbox.rejected-topic:reservation-rejected-topic}")
+    private String rejectedTopic;
+
+    public ReservationService(ReservationRepository repository,
+            KafkaTemplate<String, String> kafkaTemplate,
+            ObjectMapper objectMapper) {
         this.repository = repository;
+        this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
     }
 
     public Reservation create(CreateReservationRequest request) {
@@ -27,7 +50,7 @@ public class ReservationService {
                 .startTime(request.startTime())
                 .status(ReservationStatus.CONFIRMED)
                 .build();
-        return repository.save(Objects.requireNonNull(reservation));
+        return repository.save(reservation);
     }
 
     public List<Reservation> findAll() {
@@ -35,7 +58,7 @@ public class ReservationService {
     }
 
     public Reservation findById(UUID id) {
-        return repository.findById(Objects.requireNonNull(id, "id"))
+        return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Reservation not found: " + id));
     }
 
@@ -43,5 +66,48 @@ public class ReservationService {
         Reservation reservation = findById(id);
         reservation.setStatus(ReservationStatus.CANCELLED);
         repository.save(reservation);
+    }
+
+    @Transactional
+    public void handleRestaurantApproved(RestaurantApprovedEvent event) {
+        try {
+            Reservation reservation = repository.findByOrderId(event.orderId()).orElseGet(() -> {
+                int tableNumber = Math.abs(event.orderId().hashCode()) % 5 + 1;
+                Reservation created = Reservation.builder()
+                        .orderId(event.orderId())
+                        .customerId(event.customerId().toString())
+                        .tableNumber("T-" + tableNumber)
+                        .partySize(4)
+                        .startTime(java.time.Instant.now())
+                        .status(ReservationStatus.CONFIRMED)
+                        .build();
+                return repository.save(created);
+            });
+            ReservationConfirmedEvent confirmed = new ReservationConfirmedEvent(
+                    event.orderId(), event.customerId(), reservation.getTableNumber(), reservation.getPartySize());
+            publish(confirmedTopic, event.orderId().toString(), confirmed);
+            log.info("Reservation confirmed for order {}", event.orderId());
+        } catch (Exception e) {
+            log.error("Reservation allocation failed for order {}: {}", event.orderId(), e.getMessage());
+            try {
+                publish(rejectedTopic, event.orderId().toString(), new ReservationRejectedEvent(event.orderId(), event.customerId(), "allocation failed"));
+            } catch (Exception ignored) {
+                // no-op
+            }
+        }
+    }
+
+    @Transactional
+    public void handleRestaurantRejected(RestaurantRejectedEvent event) {
+        repository.findByOrderId(event.orderId()).ifPresent(reservation -> {
+            reservation.setStatus(ReservationStatus.CANCELLED);
+            repository.save(reservation);
+            log.info("Reservation cancelled for rejected order {}", event.orderId());
+        });
+    }
+
+    private void publish(String topic, String key, Object event) throws JsonProcessingException {
+        String payload = objectMapper.writeValueAsString(event);
+        kafkaTemplate.send(topic, key, payload);
     }
 }

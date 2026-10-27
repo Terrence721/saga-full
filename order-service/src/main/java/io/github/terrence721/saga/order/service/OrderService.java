@@ -7,6 +7,8 @@ import io.github.terrence721.saga.order.dto.CreateOrderRequest;
 import io.github.terrence721.saga.order.dto.OrderCreatedEvent;
 import io.github.terrence721.saga.order.dto.RestaurantApprovedEvent;
 import io.github.terrence721.saga.order.dto.RestaurantRejectedEvent;
+import io.github.terrence721.saga.order.dto.ReservationConfirmedEvent;
+import io.github.terrence721.saga.order.dto.ReservationRejectedEvent;
 import io.github.terrence721.saga.order.exception.OrderNotFoundException;
 import io.github.terrence721.saga.order.repository.OrderRepository;
 import io.github.terrence721.saga.order.repository.OutboxRepository;
@@ -116,6 +118,60 @@ public class OrderService {
         // logging (see that class) before it's safe to log.
         String sanitizedReason = String.valueOf(event.reason()).replaceAll("[\r\n]", "_");
         log.warn("Order {} cancelled: {}", event.orderId(), sanitizedReason);
+    }
+
+
+    @Transactional
+    public void handleReservationConfirmed(ReservationConfirmedEvent event) {
+        if (event == null) {
+            throw new IllegalArgumentException("event is required");
+        }
+        if (event.orderId() == null) {
+            throw new IllegalArgumentException("orderId is required for reservation confirmation");
+        }
+        if (orderRepository.existsByIdAndStatus(event.orderId(), OrderStatus.SUCCESS)) {
+            log.debug("Order {} already SUCCESS; skipping duplicate reservation confirmation", event.orderId());
+            return;
+        }
+        Order order = findOrder(event.orderId());
+        if (order.getStatus() == OrderStatus.SUCCESS) {
+            log.debug("Order {} already SUCCESS after load; skipping", event.orderId());
+            return;
+        }
+        validateCustomerMatches(order, event.customerId());
+
+        order.setStatus(OrderStatus.SUCCESS);
+        orderRepository.save(order);
+        orderUpdatePublisher.publish(order);
+        log.info("Order {} marked SUCCESS after reservation confirmed (table {})", event.orderId(), event.tableNumber());
+    }
+
+    @Transactional
+    public void handleReservationRejected(ReservationRejectedEvent event) {
+        if (event == null) {
+            throw new IllegalArgumentException("event is required");
+        }
+        if (event.orderId() == null) {
+            throw new IllegalArgumentException("orderId is required for reservation rejection");
+        }
+        if (orderRepository.existsByIdAndStatus(event.orderId(), OrderStatus.CANCELLED)) {
+            log.debug("Order {} already CANCELLED; skipping duplicate reservation rejection", event.orderId());
+            return;
+        }
+
+        Order order = findOrder(event.orderId());
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            log.debug("Order {} already CANCELLED after load; skipping", event.orderId());
+            return;
+        }
+        validateCustomerMatches(order, event.customerId());
+
+        order.setStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
+        orderUpdatePublisher.publish(order);
+
+        String sanitizedReason = String.valueOf(event.reason()).replaceAll("[\r\n]", "_");
+        log.warn("Order {} cancelled after reservation rejected: {}", event.orderId(), sanitizedReason);
     }
 
     private Order findOrder(UUID orderId) {

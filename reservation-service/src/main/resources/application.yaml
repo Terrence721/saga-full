@@ -4,6 +4,20 @@ spring:
   sql:
     init:
       mode: always
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+app:
+  outbox:
+    confirmed-topic: ${RESERVATION_CONFIRMED_TOPIC:reservation-confirmed-topic}
+    rejected-topic: ${RESERVATION_REJECTED_TOPIC:reservation-rejected-topic}
 
 server:
   port: ${SERVER_PORT:8084}

@@ -31,7 +31,7 @@ class OrderConsumerConfigTest {
     }
 
     @Test
-    void onRestaurantApproved_deserializesPayloadAndDelegatesToConfirmOrder() throws Exception {
+    void onRestaurantApproved_deserializesPayloadWithoutMutatingOrder() throws Exception {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         UUID ticketId = UUID.randomUUID();
@@ -40,11 +40,8 @@ class OrderConsumerConfigTest {
 
         consumerConfig.onRestaurantApproved(payload);
 
-        ArgumentCaptor<RestaurantApprovedEvent> captor = ArgumentCaptor.forClass(RestaurantApprovedEvent.class);
-        verify(orderService).confirmOrder(captor.capture());
-        assertThat(captor.getValue().orderId()).isEqualTo(orderId);
-        assertThat(captor.getValue().customerId()).isEqualTo(customerId);
-        assertThat(captor.getValue().ticketId()).isEqualTo(ticketId);
+        // Order finalization now waits for reservation confirmation instead.
+        verify(orderService, never()).confirmOrder(any());
         verify(orderService, never()).cancelOrder(any());
     }
 

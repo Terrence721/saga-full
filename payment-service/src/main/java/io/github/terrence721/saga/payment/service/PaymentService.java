@@ -6,6 +6,7 @@ import io.github.terrence721.saga.payment.domain.PaymentStatus;
 import io.github.terrence721.saga.payment.dto.OrderCreatedEvent;
 import io.github.terrence721.saga.payment.dto.PaymentProcessedEvent;
 import io.github.terrence721.saga.payment.dto.RestaurantRejectedEvent;
+import io.github.terrence721.saga.payment.dto.ReservationRejectedEvent;
 import io.github.terrence721.saga.payment.exception.PaymentNotFoundException;
 import io.github.terrence721.saga.payment.repository.OutboxRepository;
 import io.github.terrence721.saga.payment.repository.PaymentRepository;
@@ -69,27 +70,36 @@ public class PaymentService {
 
     @Transactional
     public void handleOrderCompensation(RestaurantRejectedEvent event) {
-        if (paymentRepository.existsByOrderIdAndStatus(event.orderId(), PaymentStatus.REFUNDED)) {
-            log.debug("Payment for order {} already REFUNDED; skipping duplicate compensation", event.orderId());
+        handleCompensation(event.orderId(), event.customerId(), event.reason());
+    }
+
+    @Transactional
+    public void handleReservationCompensation(ReservationRejectedEvent event) {
+        handleCompensation(event.orderId(), event.customerId(), event.reason());
+    }
+
+    private void handleCompensation(UUID orderId, UUID customerId, String reason) {
+        if (paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)) {
+            log.debug("Payment for order {} already REFUNDED; skipping duplicate compensation", orderId);
             return;
         }
 
-        Payment payment = paymentRepository.findByOrderId(event.orderId())
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found for order: " + event.orderId()));
+        Payment payment = paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found for order: " + orderId));
 
         if (payment.getStatus() == PaymentStatus.REFUNDED) {
-            log.debug("Payment for order {} already REFUNDED after load; skipping", event.orderId());
+            log.debug("Payment for order {} already REFUNDED after load; skipping", orderId);
             return;
         }
         if (payment.getStatus() == PaymentStatus.FAILED) {
-            log.debug("Payment for order {} already FAILED; nothing was captured, skipping compensation", event.orderId());
+            log.debug("Payment for order {} already FAILED; nothing was captured, skipping compensation", orderId);
             return;
         }
-        validateCustomerMatches(payment, event.customerId());
+        validateCustomerMatches(payment, customerId);
 
         payment.setStatus(PaymentStatus.REFUNDED);
         paymentRepository.save(payment);
-        log.info("Payment for order {} refunded: {}", event.orderId(), event.reason());
+        log.info("Payment for order {} refunded: {}", orderId, reason);
     }
 
     // customerId crosses the wire on the inbound event but this instance already knows the real

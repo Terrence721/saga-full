@@ -2,6 +2,7 @@ package io.github.terrence721.saga.payment.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.terrence721.saga.payment.dto.OrderCreatedEvent;
+import io.github.terrence721.saga.payment.dto.ReservationRejectedEvent;
 import io.github.terrence721.saga.payment.dto.RestaurantRejectedEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -31,5 +32,12 @@ public class PaymentConsumerConfig {
         RestaurantRejectedEvent event = objectMapper.readValue(payload, RestaurantRejectedEvent.class);
         log.info("Received RestaurantRejectedEvent for order {}", event.orderId());
         paymentService.handleOrderCompensation(event);
+    }
+
+    @KafkaListener(topics = "reservation-rejected-topic", groupId = "payment-reservation-compensation-group")
+    public void onReservationRejected(String payload) throws Exception {
+        ReservationRejectedEvent event = objectMapper.readValue(payload, ReservationRejectedEvent.class);
+        log.info("Received ReservationRejectedEvent for order {}", event.orderId());
+        paymentService.handleReservationCompensation(event);
     }
 }
