@@ -1,5 +1,6 @@
 plugins {
     java
+    jacoco
     id("org.springframework.boot") version "3.5.16"
     id("io.spring.dependency-management") version "1.1.7"
 }
@@ -43,6 +44,14 @@ dependencies {
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("io.projectreactor:reactor-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+tasks.withType<Test> {
+    finalizedBy(tasks.jacocoTestReport)
 }
 
 tasks.withType<Test> {

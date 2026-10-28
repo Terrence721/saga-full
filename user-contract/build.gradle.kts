@@ -1,5 +1,6 @@
 plugins {
     `java-library`
+    jacoco
     id("com.google.protobuf") version "0.9.4"
 }
 
@@ -61,3 +62,21 @@ protobuf {
         }
     }
 }
+
+
+jacoco {
+    toolVersion = "0.8.13"
+}
+
+tasks.withType<Test> {
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
+}
+
