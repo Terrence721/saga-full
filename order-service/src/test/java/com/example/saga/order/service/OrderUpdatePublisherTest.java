@@ -64,4 +64,19 @@ class OrderUpdatePublisherTest {
 
         publisher.publish(order);
     }
+
+    @Test
+    void publish_logsWarning_whenSinkHasTerminated() throws Exception {
+        // Force the multicast sink into a terminal state so tryEmitNext reports an
+        // isFailure() result other than FAIL_ZERO_SUBSCRIBER, exercising the warn branch.
+        OrderUpdatePublisher terminatedPublisher = new OrderUpdatePublisher();
+        java.lang.reflect.Field field = OrderUpdatePublisher.class.getDeclaredField("orderUpdates");
+        field.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        reactor.core.publisher.Sinks.Many<Order> sink =
+                (reactor.core.publisher.Sinks.Many<Order>) field.get(terminatedPublisher);
+        sink.tryEmitComplete();
+
+        terminatedPublisher.publish(pendingOrder(UUID.randomUUID()));
+    }
 }
