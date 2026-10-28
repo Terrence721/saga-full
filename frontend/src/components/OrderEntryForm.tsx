@@ -3,6 +3,7 @@ import { createOrder, streamOrder, type Order } from '../api/orderClient'
 import { ApiError } from '../api/httpClient'
 import { useAuth } from '../context/useAuth'
 import { Button } from './ui/Button'
+import { fetchMenu, type MenuItem } from '../api/menuClient'
 import { Card } from './ui/Card'
 import { Input } from './ui/Input'
 import { StatusBadge } from './ui/StatusBadge'
@@ -13,12 +14,18 @@ export function OrderEntryForm() {
   const [quantity, setQuantity] = useState('1')
   const [totalAmount, setTotalAmount] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [menu, setMenu] = useState<MenuItem[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [order, setOrder] = useState<Order | null>(null)
   const auth = useAuth()
   const stopStreamRef = useRef<(() => void) | null>(null)
 
   useEffect(() => () => stopStreamRef.current?.(), [])
+
+  useEffect(() => {
+    if (!auth.token) return
+    fetchMenu(auth.token).then(setMenu).catch(() => setMenu([]))
+  }, [auth.token])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -104,6 +111,29 @@ export function OrderEntryForm() {
         <p className="mt-1 text-sm text-slate-500">Capture an item and total, then send it into the saga.</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-4">
+        {menu.length > 0 && (
+          <select
+            aria-label="Menu item"
+            value={itemCode}
+            disabled={isSubmitting}
+            onChange={(e) => {
+              const code = e.target.value
+              setItemCode(code)
+              const selected = menu.find((item) => item.itemCode === code)
+              if (selected) {
+                setTotalAmount((selected.price * (Number(quantity) || 1)).toFixed(2))
+              }
+            }}
+            className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+          >
+            <option value="">Choose a menu item…</option>
+            {menu.map((item) => (
+              <option key={item.itemCode} value={item.itemCode}>
+                {item.name} — {item.price.toFixed(2)}
+              </option>
+            ))}
+          </select>
+        )}
         <Input
           type="text"
           placeholder="Item code"
