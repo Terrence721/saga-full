@@ -114,7 +114,7 @@ export function OrderEntryForm() {
         {menu.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-baseline justify-between">
-              <h3 className="text-sm font-semibold text-slate-900">Menu</h3>
+              <h3 className="text-sm font-semibold text-slate-900">Menu (click to fill the order line)</h3>
               <span className="text-xs text-slate-500">{menu.length} items</span>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
