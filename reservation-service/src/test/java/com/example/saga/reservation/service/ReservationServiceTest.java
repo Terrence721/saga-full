@@ -155,7 +155,7 @@ class ReservationServiceTest {
     @Test
     void findById_throwsWhenMissing() {
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        when(repository.findById(java.util.Objects.requireNonNull(id))).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findById(id))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -164,7 +164,7 @@ class ReservationServiceTest {
     @Test
     void cancel_throwsWhenMissing() {
         UUID id = UUID.randomUUID();
-        when(repository.findById(id)).thenReturn(Optional.empty());
+        when(repository.findById(java.util.Objects.requireNonNull(id))).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.cancel(id))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -175,13 +175,15 @@ class ReservationServiceTest {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         when(repository.findByOrderId(orderId)).thenReturn(Optional.empty());
-        when(repository.save(any(Reservation.class))).thenThrow(new IllegalStateException("db down"));
+        when(repository.save(java.util.Objects.requireNonNull(any(Reservation.class))))
+            .thenThrow(new IllegalStateException("db down"));
 
         // Must not throw: allocation failure is logged and (best effort) reported.
         service.handleRestaurantApproved(new RestaurantApprovedEvent(orderId, customerId, UUID.randomUUID()));
     }
 
     @Test
+    @SuppressWarnings("null")
     void handleRestaurantRejected_isNoOpWhenNoReservationExists() {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
