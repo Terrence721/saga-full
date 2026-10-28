@@ -59,13 +59,11 @@ public class OrderController {
         // inline replaceAll on the parameter) was still flagged post-PR #55, confirmed
         // against real CodeQL runs.
         if (perimeterUserId == null) {
-            log.warn("Rejected create order request: X-Perimeter-User-Id header missing, customerId={}",
-                    sanitizeForLog(request.customerId().toString()));
+            log.warn("Rejected create order request: X-Perimeter-User-Id header missing");
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
         }
         if (!perimeterUserId.equals(request.customerId().toString())) {
-            log.warn("Rejected create order request: X-Perimeter-User-Id ({}) does not match customerId ({})",
-                    sanitizeForLog(perimeterUserId), sanitizeForLog(request.customerId().toString()));
+            log.warn("Rejected create order request: X-Perimeter-User-Id does not match customerId");
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
         }
 
