@@ -42,6 +42,9 @@ public class Order {
     @Column(nullable = false)
     private int quantity;
 
+    @Column(name = "table_name")
+    private String tableName;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;

@@ -62,7 +62,7 @@ class OrderControllerTest {
         when(orderService.createOrder(any(CreateOrderRequest.class))).thenReturn(savedOrder);
 
         String requestBody = objectMapper.writeValueAsString(
-                new CreateOrderRequest(customerId, new BigDecimal("25.50"), "BURGER_01", 2));
+                new CreateOrderRequest(customerId, new BigDecimal("25.50"), "BURGER_01", 2, null));
         mockMvc.perform(post("/orders")
                         .header("X-Perimeter-User-Id", customerId.toString())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -76,7 +76,7 @@ class OrderControllerTest {
     @Test
     void createOrder_returnsBadRequest_whenPayloadFailsValidation() throws Exception {
         String requestBody = objectMapper.writeValueAsString(
-                new CreateOrderRequest(null, new BigDecimal("-10.00"), "", 0));
+                new CreateOrderRequest(null, new BigDecimal("-10.00"), "", 0, null));
         mockMvc.perform(post("/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -88,7 +88,7 @@ class OrderControllerTest {
         String tooLongItemCode = "A".repeat(256);
 
         String requestBody = objectMapper.writeValueAsString(
-                new CreateOrderRequest(UUID.randomUUID(), new BigDecimal("25.50"), tooLongItemCode, 2));
+                new CreateOrderRequest(UUID.randomUUID(), new BigDecimal("25.50"), tooLongItemCode, 2, null));
         mockMvc.perform(post("/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -100,7 +100,7 @@ class OrderControllerTest {
         BigDecimal tooLarge = new BigDecimal("123456789012345678.00");
 
         String requestBody = objectMapper.writeValueAsString(
-                new CreateOrderRequest(UUID.randomUUID(), tooLarge, "BURGER_01", 2));
+                new CreateOrderRequest(UUID.randomUUID(), tooLarge, "BURGER_01", 2, null));
         mockMvc.perform(post("/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -112,7 +112,7 @@ class OrderControllerTest {
         UUID customerId = UUID.randomUUID();
 
         String requestBody = objectMapper.writeValueAsString(
-                new CreateOrderRequest(customerId, new BigDecimal("25.50"), "BURGER_01", 2));
+                new CreateOrderRequest(customerId, new BigDecimal("25.50"), "BURGER_01", 2, null));
         mockMvc.perform(post("/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -125,7 +125,7 @@ class OrderControllerTest {
         UUID differentCallerId = UUID.randomUUID();
 
         String requestBody = objectMapper.writeValueAsString(
-                new CreateOrderRequest(customerId, new BigDecimal("25.50"), "BURGER_01", 2));
+                new CreateOrderRequest(customerId, new BigDecimal("25.50"), "BURGER_01", 2, null));
         mockMvc.perform(post("/orders")
                         .header("X-Perimeter-User-Id", differentCallerId.toString())
                         .contentType(MediaType.APPLICATION_JSON)

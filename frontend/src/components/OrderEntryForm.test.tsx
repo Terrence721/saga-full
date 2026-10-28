@@ -64,7 +64,7 @@ describe('OrderEntryForm', () => {
 
     expect(await screen.findByText(/status: PENDING/)).toBeInTheDocument()
     expect(createOrder).toHaveBeenCalledWith(
-      { customerId: 'customer-1', itemCode: 'PIZZA_01', quantity: 1, totalAmount: 5 },
+      { customerId: 'customer-1', itemCode: 'PIZZA_01', quantity: 1, totalAmount: 5, tableName: null },
       'test-token',
     )
     expect(streamOrder).toHaveBeenCalledWith('order-1', 'test-token', expect.any(Function))
