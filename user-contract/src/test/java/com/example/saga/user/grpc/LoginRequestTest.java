@@ -185,4 +185,82 @@ class LoginRequestTest {
         LoginRequest request = LoginRequest.newBuilder().setEmail("x").build();
         assertThat(request.isInitialized()).isTrue();
     }
+
+
+    @Test
+    void parseFromInputStreamWithRegistryRoundTrips() throws Exception {
+        LoginRequest original = LoginRequest.newBuilder()
+                .setEmail("user@example.com")
+                .setPassword("hunter2")
+                .build();
+        LoginRequest parsed = LoginRequest.parseFrom(
+                new java.io.ByteArrayInputStream(original.toByteArray()),
+                com.google.protobuf.ExtensionRegistryLite.getEmptyRegistry());
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void parseFromByteStringRoundTrips() throws com.google.protobuf.InvalidProtocolBufferException {
+        LoginRequest original = LoginRequest.newBuilder()
+                .setEmail("user@example.com")
+                .setPassword("hunter2")
+                .build();
+        LoginRequest parsed = LoginRequest.parseFrom(com.google.protobuf.ByteString.copyFrom(original.toByteArray()));
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void parseDelimitedFromWithRegistryRoundTrips() throws Exception {
+        LoginRequest original = LoginRequest.newBuilder()
+                .setEmail("user@example.com")
+                .setPassword("hunter2")
+                .build();
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        original.writeDelimitedTo(out);
+        LoginRequest parsed = LoginRequest.parseDelimitedFrom(
+                new java.io.ByteArrayInputStream(out.toByteArray()),
+                com.google.protobuf.ExtensionRegistryLite.getEmptyRegistry());
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void parseFromParserRoundTrips() throws Exception {
+        LoginRequest original = LoginRequest.newBuilder()
+                .setEmail("user@example.com")
+                .setPassword("hunter2")
+                .build();
+        com.google.protobuf.Parser<LoginRequest> parser = LoginRequest.parser();
+        LoginRequest parsed = parser.parseFrom(original.toByteArray());
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void hashCodeVariesWithFields() {
+        LoginRequest first = LoginRequest.newBuilder().setEmail("u").setPassword("p").build();
+        LoginRequest second = LoginRequest.newBuilder().setEmail("u").setPassword("p").build();
+        LoginRequest empty = LoginRequest.getDefaultInstance();
+        assertThat(first.hashCode()).isEqualTo(second.hashCode());
+        assertThat(empty.hashCode()).isNotEqualTo(first.hashCode());
+    }
+
+    @Test
+    void equalsHandlesMismatchedAndEmpty() {
+        LoginRequest first = LoginRequest.newBuilder().setEmail("u").setPassword("p").build();
+        assertThat(first.equals(first)).isTrue();
+        assertThat(first.equals(null)).isFalse();
+        assertThat(first.equals("not-a-message")).isFalse();
+        assertThat(LoginRequest.getDefaultInstance().equals(LoginRequest.getDefaultInstance())).isTrue();
+    }
+
+    @Test
+    void toStringHandlesEmptyInstance() {
+        assertThat(LoginRequest.getDefaultInstance().toString()).isNotNull();
+    }
+
+    @Test
+    void invalidParseThrows() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                LoginRequest.parseFrom(new byte[]{(byte) 0xff}))
+                .isInstanceOf(com.google.protobuf.InvalidProtocolBufferException.class);
+    }
 }
