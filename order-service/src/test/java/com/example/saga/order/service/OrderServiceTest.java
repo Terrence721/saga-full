@@ -8,6 +8,8 @@ import com.example.saga.order.dto.CreateOrderRequest;
 import com.example.saga.order.dto.OrderCreatedEvent;
 import com.example.saga.order.dto.RestaurantApprovedEvent;
 import com.example.saga.order.dto.RestaurantRejectedEvent;
+import com.example.saga.order.dto.ReservationConfirmedEvent;
+import com.example.saga.order.dto.ReservationRejectedEvent;
 import com.example.saga.order.exception.OrderNotFoundException;
 import com.example.saga.order.repository.OrderRepository;
 import com.example.saga.order.repository.OutboxRepository;
@@ -241,4 +243,131 @@ class OrderServiceTest {
         assertThat(existing.getStatus()).isEqualTo(OrderStatus.CANCELLED);
         verify(orderRepository).save(existing);
     }
+
+    @Test
+    void getOrder_returnsPersistedOrder() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+
+        assertThat(orderService.getOrder(orderId)).isEqualTo(existing);
+    }
+
+    @Test
+    void handleReservationConfirmed_shortCircuits_whenAlreadySuccess() {
+        UUID orderId = UUID.randomUUID();
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(true);
+
+        orderService.handleReservationConfirmed(new ReservationConfirmedEvent(orderId, UUID.randomUUID(), "T-1", 4));
+
+        verify(orderRepository, never()).findById(any());
+        verify(orderRepository, never()).save(any());
+        verify(orderUpdatePublisher, never()).publish(any());
+    }
+
+    @Test
+    void handleReservationConfirmed_transitionsToSuccess_whenPending() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+
+        orderService.handleReservationConfirmed(new ReservationConfirmedEvent(orderId, existing.getCustomerId(), "T-1", 4));
+
+        assertThat(existing.getStatus()).isEqualTo(OrderStatus.SUCCESS);
+        verify(orderRepository).save(existing);
+        verify(orderUpdatePublisher).publish(existing);
+    }
+
+    @Test
+    void handleReservationConfirmed_throwsOrderNotFoundException_whenOrderMissing() {
+        UUID orderId = UUID.randomUUID();
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> orderService.handleReservationConfirmed(
+                new ReservationConfirmedEvent(orderId, UUID.randomUUID(), "T-1", 4)))
+                .isInstanceOf(OrderNotFoundException.class);
+    }
+
+    @Test
+    void handleReservationConfirmed_throwsIllegalArgumentException_whenCustomerIdDoesNotMatchOrder() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+        UUID mismatchedCustomerId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> orderService.handleReservationConfirmed(
+                new ReservationConfirmedEvent(orderId, mismatchedCustomerId, "T-1", 4)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(existing.getCustomerId().toString())
+                .hasMessageContaining(mismatchedCustomerId.toString());
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void handleReservationRejected_shortCircuits_whenAlreadyCancelled() {
+        UUID orderId = UUID.randomUUID();
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(true);
+
+        orderService.handleReservationRejected(new ReservationRejectedEvent(orderId, UUID.randomUUID(), "no table"));
+
+        verify(orderRepository, never()).findById(any());
+        verify(orderRepository, never()).save(any());
+        verify(orderUpdatePublisher, never()).publish(any());
+    }
+
+    @Test
+    void handleReservationRejected_transitionsToCancelled_whenPending() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+
+        orderService.handleReservationRejected(new ReservationRejectedEvent(orderId, existing.getCustomerId(), "no table"));
+
+        assertThat(existing.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        verify(orderRepository).save(existing);
+        verify(orderUpdatePublisher).publish(existing);
+    }
+
+    @Test
+    void handleReservationRejected_throwsOrderNotFoundException_whenOrderMissing() {
+        UUID orderId = UUID.randomUUID();
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> orderService.handleReservationRejected(
+                new ReservationRejectedEvent(orderId, UUID.randomUUID(), "no table")))
+                .isInstanceOf(OrderNotFoundException.class);
+    }
+
+    @Test
+    void handleReservationRejected_throwsIllegalArgumentException_whenCustomerIdDoesNotMatchOrder() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+        UUID mismatchedCustomerId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> orderService.handleReservationRejected(
+                new ReservationRejectedEvent(orderId, mismatchedCustomerId, "no table")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(existing.getCustomerId().toString())
+                .hasMessageContaining(mismatchedCustomerId.toString());
+        verify(orderRepository, never()).save(any());
+    }
+
+    @Test
+    void confirmOrder_transitionsToSuccess_afterDoubleCheck() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        // existsByIdAndStatus first call returns false, then upon find it's already? This exercises the second guard line.
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+        orderService.confirmOrder(new RestaurantApprovedEvent(orderId, existing.getCustomerId(), UUID.randomUUID()));
+        assertThat(existing.getStatus()).isEqualTo(OrderStatus.SUCCESS);
+    }
+
 }
