@@ -124,8 +124,9 @@ export function OrderEntryForm() {
           <div>
             <p className="text-sm text-slate-500">Current order</p>
             <p className="mt-1 text-lg font-semibold text-slate-900">
-              {order.id} — status: {order.status}
+              {menu.find((item) => item.itemCode === order.itemCode)?.name ?? order.itemCode} — {order.id}
             </p>
+            <p className="mt-0.5 text-sm text-slate-500">Status: {order.status}</p>
             <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
               <Spinner className="h-3 w-3 border-slate-300 border-t-indigo-600" />
               <span>Live updates connected</span>
