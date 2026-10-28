@@ -18,8 +18,8 @@
         <body>
         <h1>saga-full - Aggregated Test Report</h1>
         <div class="summary">
-            <span><strong>Total:</strong> 359</span>
-            <span style="color:#1a7f37"><strong>Passed:</strong> 359</span>
+            <span><strong>Total:</strong> 360</span>
+            <span style="color:#1a7f37"><strong>Passed:</strong> 360</span>
             <span style="color:#cf222e"><strong>Failed:</strong> 0</span>
             <span style="color:#9a6700"><strong>Skipped:</strong> 0</span>
         </div>
@@ -2670,10 +2670,18 @@
 </tr>
 <tr>
     <td>user-service</td>
+    <td>com.example.saga.user.UserServiceApplicationConstructorTest</td>
+    <td>applicationCanBeInstantiated()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.096s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-service</td>
     <td>com.example.saga.user.UserServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.726s</td>
+    <td>0.335s</td>
     <td></td>
 </tr>
 <tr>
@@ -2681,7 +2689,7 @@
     <td>com.example.saga.user.config.SecurityConfigTest</td>
     <td>encodesAndVerifiesARealPassword()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.211s</td>
+    <td>0.132s</td>
     <td></td>
 </tr>
 <tr>
@@ -2689,7 +2697,7 @@
     <td>com.example.saga.user.config.SecurityConfigTest</td>
     <td>rejectsAWrongPassword()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.322s</td>
+    <td>0.158s</td>
     <td></td>
 </tr>
 <tr>
@@ -2697,7 +2705,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>constructor_canBeInstantiated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2705,7 +2713,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>execute_MapsAnUnexpectedException_ToInternalStatus()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.04s</td>
+    <td>0.012s</td>
     <td></td>
 </tr>
 <tr>
@@ -2713,7 +2721,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>execute_mapsIllegalArgumentException_toInvalidArgument()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2721,7 +2729,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>execute_mapsInvalidCredentialsException_toUnauthenticated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2737,7 +2745,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>execute_mapsUserNotFoundException_toUnauthenticated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2745,7 +2753,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>execute_returnsActionValueAndCompletes()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2753,7 +2761,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>loginComparesAgainstADummyHashWhenUserNotFound_forTimingSafety()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.021s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -2761,7 +2769,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>loginFailsWithGenericUnauthenticatedWhenPasswordWrong()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2769,7 +2777,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>loginFailsWithGenericUnauthenticatedWhenUserInactive()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.61s</td>
+    <td>0.369s</td>
     <td></td>
 </tr>
 <tr>
@@ -2777,7 +2785,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>loginFailsWithGenericUnauthenticatedWhenUserMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -2785,7 +2793,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>loginStillComparesPasswordWhenUserInactive_forTimingSafety()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.016s</td>
+    <td>0.013s</td>
     <td></td>
 </tr>
 <tr>
@@ -2793,7 +2801,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplErrorTest</td>
     <td>validateTokenReturnsInvalidWhenTokenVerificationFails()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.011s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -2801,7 +2809,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
     <td>loginSucceedsAndReturnsAccessToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.01s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -2809,7 +2817,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
     <td>validateTokenReturnsValidWhenTokenVerifies()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.136s</td>
+    <td>0.116s</td>
     <td></td>
 </tr>
 <tr>
@@ -2817,7 +2825,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceIntegrationTest</td>
     <td>loginOverGrpcPropagatesGenericUnauthenticatedStatus()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.196s</td>
+    <td>0.186s</td>
     <td></td>
 </tr>
 <tr>
@@ -2825,7 +2833,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceIntegrationTest</td>
     <td>loginOverGrpcReturnsAccessToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2833,7 +2841,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceIntegrationTest</td>
     <td>validateTokenOverGrpcReturnsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -2841,7 +2849,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>createdTokenVerifiesSuccessfullyWithMatchingClaims()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -2857,7 +2865,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForMalformedToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2865,7 +2873,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForTamperedSignature()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.163s</td>
+    <td>0.219s</td>
     <td></td>
 </tr>
 <tr>
@@ -2873,7 +2881,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForWrongIssuer()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -2881,7 +2889,7 @@
     <td>com.example.saga.user.repository.UserRepositoryTest</td>
     <td>findByEmail_returnsEmpty_whenEmailDoesNotExist()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.014s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2889,7 +2897,7 @@
     <td>com.example.saga.user.repository.UserRepositoryTest</td>
     <td>findByEmail_returnsUser_whenEmailExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.449s</td>
+    <td>0.175s</td>
     <td></td>
 </tr>
 <tr>
@@ -2897,7 +2905,7 @@
     <td>com.example.saga.user.repository.UserRepositoryTest</td>
     <td>save_rejectsADuplicateEmail_becauseTheColumnIsGenuinelyUnique()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.157s</td>
+    <td>0.107s</td>
     <td></td>
 </tr>
             </tbody>
