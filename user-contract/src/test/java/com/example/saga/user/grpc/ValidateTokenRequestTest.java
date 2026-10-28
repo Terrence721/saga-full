@@ -141,4 +141,70 @@ class ValidateTokenRequestTest {
 
         assertThat(request.toString()).contains("token");
     }
+
+
+    @Test
+    void parseFromInputStreamWithRegistryRoundTrips() throws Exception {
+        ValidateTokenRequest original = ValidateTokenRequest.newBuilder().setAccessToken("token").build();
+        ValidateTokenRequest parsed = ValidateTokenRequest.parseFrom(
+                new java.io.ByteArrayInputStream(original.toByteArray()),
+                com.google.protobuf.ExtensionRegistryLite.getEmptyRegistry());
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void parseFromByteStringRoundTrips() throws com.google.protobuf.InvalidProtocolBufferException {
+        ValidateTokenRequest original = ValidateTokenRequest.newBuilder().setAccessToken("token").build();
+        ValidateTokenRequest parsed = ValidateTokenRequest.parseFrom(com.google.protobuf.ByteString.copyFrom(original.toByteArray()));
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void parseDelimitedFromWithRegistryRoundTrips() throws Exception {
+        ValidateTokenRequest original = ValidateTokenRequest.newBuilder().setAccessToken("token").build();
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        original.writeDelimitedTo(out);
+        ValidateTokenRequest parsed = ValidateTokenRequest.parseDelimitedFrom(
+                new java.io.ByteArrayInputStream(out.toByteArray()),
+                com.google.protobuf.ExtensionRegistryLite.getEmptyRegistry());
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void parseFromParserRoundTrips() throws Exception {
+        ValidateTokenRequest original = ValidateTokenRequest.newBuilder().setAccessToken("token").build();
+        com.google.protobuf.Parser<ValidateTokenRequest> parser = ValidateTokenRequest.parser();
+        ValidateTokenRequest parsed = parser.parseFrom(original.toByteArray());
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void hashCodeVariesWithField() {
+        ValidateTokenRequest first = ValidateTokenRequest.newBuilder().setAccessToken("token").build();
+        ValidateTokenRequest second = ValidateTokenRequest.newBuilder().setAccessToken("token").build();
+        ValidateTokenRequest empty = ValidateTokenRequest.getDefaultInstance();
+        assertThat(first.hashCode()).isEqualTo(second.hashCode());
+        assertThat(empty.hashCode()).isNotEqualTo(first.hashCode());
+    }
+
+    @Test
+    void equalsHandlesMismatchedAndEmpty() {
+        ValidateTokenRequest first = ValidateTokenRequest.newBuilder().setAccessToken("token").build();
+        assertThat(first.equals(first)).isTrue();
+        assertThat(first.equals(null)).isFalse();
+        assertThat(first.equals("not-a-message")).isFalse();
+        assertThat(ValidateTokenRequest.getDefaultInstance().equals(ValidateTokenRequest.getDefaultInstance())).isTrue();
+    }
+
+    @Test
+    void toStringHandlesEmptyInstance() {
+        assertThat(ValidateTokenRequest.getDefaultInstance().toString()).isNotNull();
+    }
+
+    @Test
+    void invalidParseThrows() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                ValidateTokenRequest.parseFrom(new byte[]{(byte) 0xff}))
+                .isInstanceOf(com.google.protobuf.InvalidProtocolBufferException.class);
+    }
 }
