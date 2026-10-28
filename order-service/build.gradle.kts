@@ -59,6 +59,38 @@ tasks.jacocoTestReport {
 }
 
 
+// Opt-in (pass -Pnullaway, ideally on a JDK 21 toolchain): runs ErrorProne + NullAway.
+// Experimental due JDK 25 / Error Prone compatibility - hence continue-on-error in CI.
+if (project.hasProperty("nullaway")) {
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+    dependencies {
+        annotationProcessor("com.google.errorprone:error_prone_core:2.43.0")
+        annotationProcessor("com.uber.nullaway:nullaway:0.13.1")
+    }
+    tasks.withType<JavaCompile> {
+        options.isFork = true
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED")
+        options.compilerArgs.addAll(listOf(
+            "-XDcompilePolicy=simple",
+            "--should-stop=ifError=FLOW",
+            "-Xplugin:ErrorProne -Xep:NullAway:WARN -XepOpt:NullAway:AnnotatedPackages=com.example.saga -XepOpt:NullAway:HandleTestAssertionLibraries=false"
+        ))
+    }
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
