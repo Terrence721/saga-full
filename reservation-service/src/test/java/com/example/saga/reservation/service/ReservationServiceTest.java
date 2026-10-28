@@ -106,10 +106,12 @@ class ReservationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void create_persistsAndReturns() {
         CreateReservationRequest request = new CreateReservationRequest("customer-1", "T-1", 4,
                 java.time.Instant.parse("2026-10-28T18:00:00Z"));
-        when(repository.save(any(Reservation.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(repository.save(any(Reservation.class))).thenAnswer(
+            inv -> java.util.Objects.requireNonNull(inv.getArgument(0, Reservation.class)));
 
         Reservation result = service.create(request);
 
@@ -128,7 +130,7 @@ class ReservationServiceTest {
         UUID id = UUID.randomUUID();
         Reservation existing = Reservation.builder().id(id).customerId("c").tableNumber("T1")
                 .partySize(2).startTime(Instant.now()).status(ReservationStatus.CONFIRMED).build();
-        when(repository.findById(id)).thenReturn(Optional.of(existing));
+        when(repository.findById(java.util.Objects.requireNonNull(id))).thenReturn(Optional.of(existing));
         assertThat(service.findById(id)).isEqualTo(existing);
     }
 
@@ -137,8 +139,9 @@ class ReservationServiceTest {
         UUID id = UUID.randomUUID();
         Reservation existing = Reservation.builder().id(id).customerId("c").tableNumber("T1")
                 .partySize(2).startTime(Instant.now()).status(ReservationStatus.CONFIRMED).build();
-        when(repository.findById(id)).thenReturn(Optional.of(existing));
-        when(repository.save(existing)).thenReturn(existing);
+        when(repository.findById(java.util.Objects.requireNonNull(id))).thenReturn(Optional.of(existing));
+        when(repository.save(java.util.Objects.requireNonNull(existing)))
+            .thenReturn(java.util.Objects.requireNonNull(existing));
 
         service.cancel(id);
 
