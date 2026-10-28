@@ -231,5 +231,78 @@ class PaymentServiceTest {
         verify(paymentRepository).save(payment);
     }
 
+    @Test
+    void processPaymentSaga_approvesPayment_whenAmountEqualsMaxAmount() {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                orderId, customerId, "ITEM-1", 2, MAX_AMOUNT, OrderStatus.PENDING);
+
+        when(paymentRepository.existsByOrderId(orderId)).thenReturn(false);
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> {
+            Payment payment = invocation.getArgument(0);
+            payment.setId(UUID.randomUUID());
+            return payment;
+        });
+
+        paymentService.processPaymentSaga(event);
+
+        ArgumentCaptor<Payment> paymentCaptor = ArgumentCaptor.forClass(Payment.class);
+        verify(paymentRepository).save(paymentCaptor.capture());
+        assertThat(paymentCaptor.getValue().getStatus()).isEqualTo(PaymentStatus.APPROVED);
+    }
+
+    @Test
+    void handleReservationCompensation_shortCircuits_whenAlreadyRefunded() {
+        UUID orderId = UUID.randomUUID();
+        when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).thenReturn(true);
+
+        paymentService.handleReservationCompensation(new ReservationRejectedEvent(orderId, UUID.randomUUID(), "no table"));
+
+        verify(paymentRepository, never()).findByOrderId(any());
+        verify(paymentRepository, never()).save(any());
+    }
+
+    @Test
+    void handleReservationCompensation_skipsRefund_whenPaymentAlreadyFailed() {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        Payment failed = approvedPayment(orderId, customerId);
+        failed.setStatus(PaymentStatus.FAILED);
+        when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).thenReturn(false);
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(failed));
+
+        paymentService.handleReservationCompensation(new ReservationRejectedEvent(orderId, customerId, "no table"));
+
+        assertThat(failed.getStatus()).isEqualTo(PaymentStatus.FAILED);
+        verify(paymentRepository, never()).save(any());
+    }
+
+    @Test
+    void handleReservationCompensation_throwsPaymentNotFoundException_whenPaymentMissing() {
+        UUID orderId = UUID.randomUUID();
+        when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).thenReturn(false);
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> paymentService.handleReservationCompensation(
+                new ReservationRejectedEvent(orderId, UUID.randomUUID(), "no table")))
+                .isInstanceOf(PaymentNotFoundException.class);
+    }
+
+    @Test
+    void handleReservationCompensation_throwsIllegalArgumentException_whenCustomerIdDoesNotMatchPayment() {
+        UUID orderId = UUID.randomUUID();
+        Payment existing = approvedPayment(orderId, UUID.randomUUID());
+        when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).thenReturn(false);
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(existing));
+        UUID mismatchedCustomerId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> paymentService.handleReservationCompensation(
+                new ReservationRejectedEvent(orderId, mismatchedCustomerId, "no table")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining(existing.getCustomerId().toString())
+                .hasMessageContaining(mismatchedCustomerId.toString());
+        verify(paymentRepository, never()).save(any());
+    }
 
 }
