@@ -8,6 +8,7 @@ import com.example.saga.payment.dto.OrderCreatedEvent;
 import com.example.saga.payment.dto.OrderStatus;
 import com.example.saga.payment.dto.PaymentProcessedEvent;
 import com.example.saga.payment.dto.RestaurantRejectedEvent;
+import com.example.saga.payment.dto.ReservationRejectedEvent;
 import com.example.saga.payment.exception.PaymentNotFoundException;
 import com.example.saga.payment.repository.OutboxRepository;
 import com.example.saga.payment.repository.PaymentRepository;
@@ -215,4 +216,20 @@ class PaymentServiceTest {
                 new RestaurantRejectedEvent(orderId, UUID.randomUUID(), "Out of stock")))
                 .isInstanceOf(PaymentNotFoundException.class);
     }
+
+    @Test
+    void handleReservationCompensation_transitionsToRefunded_whenApproved() {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        Payment payment = approvedPayment(orderId, customerId);
+        when(paymentRepository.findByOrderId(orderId)).thenReturn(Optional.of(payment));
+        when(paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)).thenReturn(false);
+
+        paymentService.handleReservationCompensation(new ReservationRejectedEvent(orderId, customerId, "no table"));
+
+        assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+        verify(paymentRepository).save(payment);
+    }
+
+
 }
