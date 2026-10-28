@@ -101,8 +101,12 @@ export function OrderEntryForm() {
           {placed.map((placedOrder) => (
             <li key={placedOrder.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
               <div>
-                <p className="font-medium text-slate-900">{placedOrder.itemCode}</p>
-                <p className="text-xs text-slate-500">{placedOrder.id}</p>
+                <p className="font-medium text-slate-900">{menu.find((item) => item.itemCode === placedOrder.itemCode)?.name ?? placedOrder.itemCode}</p>
+                {(placedOrder.tableNumber || placedOrder.customerName) && (
+                  <p className="text-xs text-slate-500">
+                    {placedOrder.tableNumber ? `Table ${placedOrder.tableNumber}` : ''}{placedOrder.tableNumber && placedOrder.customerName ? ' · ' : ''}{placedOrder.customerName ?? ''}
+                  </p>
+                )}
               </div>
               <span className="text-slate-700">×{placedOrder.quantity} — status: {placedOrder.status}</span>
             </li>
