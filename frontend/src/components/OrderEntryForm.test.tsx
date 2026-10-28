@@ -35,12 +35,13 @@ const sampleOrder: Order = {
   status: 'PENDING',
 }
 
-async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, itemCode = 'BURGER') {
-  // paste, not type - user.type() simulates one keystroke at a time, which is what
-  // makes the 300-character validation-error test realistic, but also slow enough
-  // to flake past the default test timeout.
-  await user.click(screen.getByPlaceholderText('Item code'))
-  await user.paste(itemCode)
+async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, itemCode = 'PIZZA_01') {
+  // Selecting a menu item also auto-fills the total amount from the catalogue;
+  // overwrite it with the explicit test value so the expected payload stays 5.
+  await user.selectOptions(screen.getByRole('combobox'), itemCode)
+  await user.clear(screen.getByRole('spinbutton', { name: 'Quantity' }))
+  await user.type(screen.getByRole('spinbutton', { name: 'Quantity' }), '1')
+  await user.clear(screen.getByPlaceholderText('Total amount'))
   await user.type(screen.getByPlaceholderText('Total amount'), '5.00')
   await user.click(screen.getByRole('button', { name: 'Place order' }))
 }
@@ -63,7 +64,7 @@ describe('OrderEntryForm', () => {
 
     expect(await screen.findByText(/status: PENDING/)).toBeInTheDocument()
     expect(createOrder).toHaveBeenCalledWith(
-      { customerId: 'customer-1', itemCode: 'BURGER', quantity: 1, totalAmount: 5 },
+      { customerId: 'customer-1', itemCode: 'PIZZA_01', quantity: 1, totalAmount: 5 },
       'test-token',
     )
     expect(streamOrder).toHaveBeenCalledWith('order-1', 'test-token', expect.any(Function))
@@ -90,7 +91,7 @@ describe('OrderEntryForm', () => {
     const user = userEvent.setup()
     renderForm()
 
-    await fillAndSubmit(user, 'x'.repeat(300))
+    await fillAndSubmit(user)
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Bad Request')
     expect(streamOrder).not.toHaveBeenCalled()
@@ -106,7 +107,7 @@ describe('OrderEntryForm', () => {
     await user.click(screen.getByRole('button', { name: 'New order' }))
 
     expect(stopStream).toHaveBeenCalledOnce()
-    expect(screen.getByPlaceholderText('Item code')).toBeInTheDocument()
+    expect(screen.getByRole('combobox', { name: 'Menu item' })).toBeInTheDocument()
   })
 
 
