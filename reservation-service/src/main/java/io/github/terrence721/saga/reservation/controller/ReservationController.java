@@ -5,6 +5,7 @@ import io.github.terrence721.saga.reservation.dto.CreateReservationRequest;
 import io.github.terrence721.saga.reservation.service.ReservationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,13 +40,13 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}")
-    public Reservation get(@PathVariable UUID id) {
+    public Reservation get(@PathVariable @NonNull UUID id) {
         return service.findById(id);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void cancel(@PathVariable UUID id) {
+    public void cancel(@PathVariable @NonNull UUID id) {
         service.cancel(id);
     }
 }

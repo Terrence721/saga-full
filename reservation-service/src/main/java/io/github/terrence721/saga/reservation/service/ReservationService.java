@@ -11,6 +11,7 @@ import io.github.terrence721.saga.reservation.dto.RestaurantApprovedEvent;
 import io.github.terrence721.saga.reservation.dto.RestaurantRejectedEvent;
 import io.github.terrence721.saga.reservation.repository.ReservationRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -49,19 +50,19 @@ public class ReservationService {
                 .startTime(request.startTime())
                 .status(ReservationStatus.CONFIRMED)
                 .build();
-        return repository.save(reservation);
+        return repository.save(java.util.Objects.requireNonNull(reservation));
     }
 
     public List<Reservation> findAll() {
         return repository.findAll();
     }
 
-    public Reservation findById(UUID id) {
+    public Reservation findById(@NonNull UUID id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Reservation not found: " + id));
     }
 
-    public void cancel(UUID id) {
+    public void cancel(@NonNull UUID id) {
         Reservation reservation = findById(id);
         reservation.setStatus(ReservationStatus.CANCELLED);
         repository.save(reservation);
@@ -80,7 +81,7 @@ public class ReservationService {
                         .startTime(java.time.Instant.now())
                         .status(ReservationStatus.CONFIRMED)
                         .build();
-                return repository.save(created);
+                return repository.save(java.util.Objects.requireNonNull(created));
             });
             ReservationConfirmedEvent confirmed = new ReservationConfirmedEvent(
                     event.orderId(), event.customerId(), reservation.getTableNumber(), reservation.getPartySize());
@@ -107,6 +108,9 @@ public class ReservationService {
 
     private void publish(String topic, String key, Object event) throws JsonProcessingException {
         String payload = objectMapper.writeValueAsString(event);
-        kafkaTemplate.send(topic, key, payload);
+        kafkaTemplate.send(
+            java.util.Objects.requireNonNull(topic),
+            java.util.Objects.requireNonNull(key),
+            java.util.Objects.requireNonNull(payload));
     }
 }
