@@ -34,6 +34,7 @@ dependencies {
     // manages for the other 5 modules (bumped alongside Spring Boot 3.5.16),
     // rather than adopting a newer JUnit major version here and splitting
     // the repo across two.
+    testImplementation("org.jspecify:jspecify:1.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
     testImplementation("org.assertj:assertj-core:3.27.7")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

@@ -33,6 +33,7 @@ dependencies {
     implementation("com.google.protobuf:protobuf-java:4.28.2")
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.jspecify:jspecify:1.0.0")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
