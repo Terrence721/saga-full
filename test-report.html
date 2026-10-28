@@ -18,8 +18,8 @@
         <body>
         <h1>saga-full - Aggregated Test Report</h1>
         <div class="summary">
-            <span><strong>Total:</strong> 202</span>
-            <span style="color:#1a7f37"><strong>Passed:</strong> 202</span>
+            <span><strong>Total:</strong> 206</span>
+            <span style="color:#1a7f37"><strong>Passed:</strong> 206</span>
             <span style="color:#cf222e"><strong>Failed:</strong> 0</span>
             <span style="color:#9a6700"><strong>Skipped:</strong> 0</span>
         </div>
@@ -1049,7 +1049,7 @@
     <td>com.example.saga.reservation.ReservationServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>1.229s</td>
+    <td>0.478s</td>
     <td></td>
 </tr>
 <tr>
@@ -1057,7 +1057,7 @@
     <td>com.example.saga.reservation.controller.ReservationControllerTest</td>
     <td>create_returnsCreated_whenRequestIsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.427s</td>
+    <td>0.23s</td>
     <td></td>
 </tr>
 <tr>
@@ -1065,7 +1065,7 @@
     <td>com.example.saga.reservation.controller.ReservationControllerTest</td>
     <td>list_returnsAll()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.619s</td>
+    <td>0.308s</td>
     <td></td>
 </tr>
 <tr>
@@ -1073,7 +1073,7 @@
     <td>com.example.saga.reservation.repository.ReservationRepositoryTest</td>
     <td>findAll_returnsPersistedRows()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>1.077s</td>
+    <td>0.375s</td>
     <td></td>
 </tr>
 <tr>
@@ -1081,7 +1081,39 @@
     <td>com.example.saga.reservation.repository.ReservationRepositoryTest</td>
     <td>saveAndFindByOrderId_roundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>1.212s</td>
+    <td>0.528s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>reservation-service</td>
+    <td>com.example.saga.reservation.service.ReservationServiceTest</td>
+    <td>cancel_marksReservationCancelled()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.004s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>reservation-service</td>
+    <td>com.example.saga.reservation.service.ReservationServiceTest</td>
+    <td>create_persistsAndReturns()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.003s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>reservation-service</td>
+    <td>com.example.saga.reservation.service.ReservationServiceTest</td>
+    <td>findAll_returnsRepositoryRows()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.01s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>reservation-service</td>
+    <td>com.example.saga.reservation.service.ReservationServiceTest</td>
+    <td>findById_returnsExisting()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -1089,7 +1121,7 @@
     <td>com.example.saga.reservation.service.ReservationServiceTest</td>
     <td>handleRestaurantApproved_allocatesAndPublishesConfirmation()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.069s</td>
+    <td>0.023s</td>
     <td></td>
 </tr>
 <tr>
@@ -1097,7 +1129,7 @@
     <td>com.example.saga.reservation.service.ReservationServiceTest</td>
     <td>handleRestaurantApproved_isIdempotent()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -1105,7 +1137,7 @@
     <td>com.example.saga.reservation.service.ReservationServiceTest</td>
     <td>handleRestaurantRejected_cancelsExistingReservation()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>2.526s</td>
+    <td>0.936s</td>
     <td></td>
 </tr>
 <tr>
