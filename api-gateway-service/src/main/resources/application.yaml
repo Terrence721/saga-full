@@ -57,7 +57,7 @@ spring:
                 - Path=/orders
                 - Method=POST,OPTIONS
               filters:
-                # Invokes io.github.terrence721.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactory
+                # Invokes com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactory
                 - JwtPerimeterGuard
                 - RemoveRequestHeader=Cookie
                 - name: CircuitBreaker

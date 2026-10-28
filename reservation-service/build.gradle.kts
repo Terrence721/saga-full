@@ -8,7 +8,7 @@ group = "com.example.saga"
 version = "1.0.0"
 
 springBoot {
-    mainClass.set("io.github.terrence721.saga.reservation.ReservationServiceApplication")
+    mainClass.set("com.example.saga.reservation.ReservationServiceApplication")
 }
 
 java {

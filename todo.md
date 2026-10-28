@@ -12,7 +12,7 @@ The big checkpoints, distinct from the phase-by-phase log below — the story ar
 
 | # | Milestone | Date | Detail |
 | - | - | - | - |
-| 1 | Repo bootstrap & tooling foundation | 2026-08-10 | Gradle over Maven, `io.github.terrence721.saga` namespace decided, CI (`quality.yml`/`codeql.yml`) green — Phases 1-3, 5 |
+| 1 | Repo bootstrap & tooling foundation | 2026-08-10 | Gradle over Maven, `com.example.saga` namespace decided, CI (`quality.yml`/`codeql.yml`) green — Phases 1-3, 5 |
 | 2 | `user-contract` + `user-service` complete | 2026-08-10 | Shared gRPC contract plus the identity/auth service, all 3 planned `user-service` test suites passing. Found and fixed a real production bug along the way: `spring-grpc`'s BOM was silently downgrading `protobuf-java` below what generated code needs, on the actual runtime classpath since Phase 7 — Phases 4, 7-9, 11-12, 14-15 |
 | 3 | Consolidated test reporting live | 2026-08-10 | One aggregated HTML report across every module, committed and kept current by CI on every push, linked from the README — Phases 10, 13 |
 | 4 | `order-service` complete | 2026-08-10 | The saga's entry point and sole owner of an order's lifecycle state. Found and fixed a real repo-wide risk: Spring Boot 3.4.1 couldn't boot at all under JDK 25 (not just a Gradle-plugin issue like Phase 8) — bumped to 3.5.16 across every Spring Boot module — Phases 16-25 |
@@ -46,7 +46,7 @@ The big checkpoints, distinct from the phase-by-phase log below — the story ar
 | - | - | - |
 | Repo bootstrap | git init, README, MIT LICENSE (Terrence Daniels), docs/ skeletons, .gitignore, CONTRIBUTING.md | Phase 1 |
 | Build tool: Gradle | Chosen over Maven (source's own tool) for incremental/cached builds across this six-module project — a build-time win, not a runtime one; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 2 |
-| Root namespace: `io.github.terrence721.saga` | Anchors the package/group ID to an identity actually owned (this repo's GitHub account) rather than an unowned domain like the first proposal, `com.sagafull.saga`; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 3 |
+| Root namespace: `com.example.saga` | Anchors the package/group ID to an identity actually owned (this repo's GitHub account) rather than an unowned domain like the first proposal, `com.sagafull.saga`; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 3 |
 | `user-contract` module | `settings.gradle.kts`, `build.gradle.kts`, and an original `user.proto` (gRPC login + token validation contract) written; `./gradlew :user-contract:build` verified green end-to-end, including a real Gradle-version incompatibility and a real missing-symbol compile error found and fixed along the way, not just written on faith; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 4 |
 | CI: quality + CodeQL | `quality.yml` (build/test jobs) and `codeql.yml` (java-kotlin) added; first real run failed (`gradlew` committed without its executable bit from Windows), fixed and confirmed green on a second real run; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 5 |
 | `user-service` core | Entry point, config, `User` entity (UUID id), `UserRepository`, exception types, `JwtTokenProvider`, and `UserGrpcServiceImpl` (`Login` + `ValidateToken`) written; hit and fixed a real Lombok/JDK 25 incompatibility along the way; `./gradlew :user-service:compileJava` verified green; reasoning in [docs/architecture.md](docs/architecture.md) | Phase 7 |
@@ -137,7 +137,7 @@ Every test suite added to this repo, and its last confirmed real run. Updated as
 | - | - | - |
 | 1 | 2026-08-10 | `git init`; README.md written describing the project and its scope; MIT LICENSE added under Terrence Daniels; `docs/architecture.md` and `docs/case-study.md` skeletons added; `.gitignore` added; `CONTRIBUTING.md` added |
 | 2 | 2026-08-10 | Build tool decided: Gradle (Kotlin DSL) over Maven, for incremental compilation and build caching across this six-module project — faster local/CI build turnaround, with no effect on the running services' own performance. `.gitignore` and `CONTRIBUTING.md` updated from Maven to Gradle conventions; full reasoning in [docs/architecture.md](docs/architecture.md) |
-| 3 | 2026-08-10 | Root package/group namespace decided: `io.github.terrence721.saga`, after ruling out `com.sagafull.saga` (implies ownership of an unowned domain) in favor of the GitHub-identity convention. Full reasoning in [docs/architecture.md](docs/architecture.md) |
+| 3 | 2026-08-10 | Root package/group namespace decided: `com.example.saga`, after ruling out `com.sagafull.saga` (implies ownership of an unowned domain) in favor of the GitHub-identity convention. Full reasoning in [docs/architecture.md](docs/architecture.md) |
 
 ### `user-contract` module
 

@@ -8,7 +8,7 @@ group = "com.example.saga"
 version = "1.0.0"
 
 springBoot {
-    mainClass.set("io.github.terrence721.saga.payment.PaymentServiceApplication")
+    mainClass.set("com.example.saga.payment.PaymentServiceApplication")
 }
 
 java {

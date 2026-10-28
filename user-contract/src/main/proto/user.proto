@@ -3,7 +3,7 @@ syntax = "proto3";
 package saga.user.v1;
 
 option java_multiple_files = true;
-option java_package = "io.github.terrence721.saga.user.grpc";
+option java_package = "com.example.saga.user.grpc";
 option java_outer_classname = "UserProto";
 
 // Identity and access surface for the platform: issuing tokens at login,

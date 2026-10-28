@@ -59,7 +59,7 @@ Added `javax.annotation:javax.annotation-api:1.3.2` to `user-contract/build.grad
 - `./gradlew :user-contract:build` now passes end-to-end: proto generation, Java compilation, jar assembly all verified with a real build run, not assumed from the source files alone.
 - Every future module that generates gRPC stubs (`order-service`, `payment-service`, `restaurant-service`, `user-service`, `api-gateway-service`) will hit this exact same missing-symbol error and needs the same `compileOnly` dependency.
 
-## Root package/group namespace: `io.github.terrence721.saga`
+## Root package/group namespace: `com.example.saga`
 
 **Status:** Done — `user-contract` bootstrap, Phase 3.
 
@@ -71,12 +71,12 @@ The first concrete proposal was `com.sagafull.saga`, matching this repo's own na
 
 ### Decision: root namespace
 
-The root namespace is `io.github.terrence721.saga`, following the common convention (used widely for GitHub-hosted-only projects, e.g. Maven Central's own guidance for `io.github.<username>` group IDs) of anchoring the package to an identity actually owned — this repo's own GitHub account — rather than a domain that isn't owned. `saga` is appended as the project-specific segment, so `user-contract`'s generated gRPC classes live under `io.github.terrence721.saga.user.grpc`, `order-service` code would live under `io.github.terrence721.saga.order`, and so on per module.
+The root namespace is `com.example.saga`, following the common convention (used widely for GitHub-hosted-only projects, e.g. Maven Central's own guidance for `io.github.<username>` group IDs) of anchoring the package to an identity actually owned — this repo's own GitHub account — rather than a domain that isn't owned. `saga` is appended as the project-specific segment, so `user-contract`'s generated gRPC classes live under `com.example.saga.user.grpc`, `order-service` code would live under `com.example.saga.order`, and so on per module.
 
 ### Consequences: root namespace
 
-- Every module's `build.gradle.kts` uses `group = "io.github.terrence721.saga"`.
-- Generated protobuf/gRPC Java sources use `io.github.terrence721.saga.<module>.grpc` as the `java_package` option, not the source's `dev.tunmin.saga.*` namespace.
+- Every module's `build.gradle.kts` uses `group = "com.example.saga"`.
+- Generated protobuf/gRPC Java sources use `com.example.saga.<module>.grpc` as the `java_package` option, not the source's `dev.tunmin.saga.*` namespace.
 
 ## CI: quality (build+test) and CodeQL workflows
 
@@ -94,7 +94,7 @@ Both workflows were pushed and their first real run confirmed — not assumed to
 
 - The first real run of both workflows failed immediately: `./gradlew: Permission denied`, exit code 126. `gradlew` was committed from Windows, which doesn't track Unix executable permissions, so git stored it as file mode `100644` instead of `100755` — the Linux CI runner couldn't execute it at all. Fixed with `git update-index --chmod=+x gradlew`, confirmed by a second real run that both workflows pass.
 - This is a real risk for every future module and every future contributor committing from Windows: a script added without its executable bit will build fine locally (Windows doesn't enforce the bit) and fail silently in CI until someone actually runs it there.
-- Hand-written service code follows the same root, e.g. `io.github.terrence721.saga.<module>`.
+- Hand-written service code follows the same root, e.g. `com.example.saga.<module>`.
 
 ## `user-service`: password hashing via Spring Security Crypto, not the source's `jbcrypt`
 
@@ -173,7 +173,7 @@ The first real CI run of `quality.yml`'s `build` job (`./gradlew assemble`) agai
 
 ### Decision: `resolveMainClassName` failure
 
-`user-service/build.gradle.kts` sets `springBoot { mainClass.set("io.github.terrence721.saga.user.UserServiceApplication") }`, which tells the plugin the answer instead of asking it to derive one by reading bytecode — this skips the ASM scan entirely rather than working around a bug inside it. Confirmed locally by reproducing the exact CI failure with `./gradlew assemble` before the fix, then a second run succeeding (through `resolveMainClassName` → `bootJar` → `assemble`) after it.
+`user-service/build.gradle.kts` sets `springBoot { mainClass.set("com.example.saga.user.UserServiceApplication") }`, which tells the plugin the answer instead of asking it to derive one by reading bytecode — this skips the ASM scan entirely rather than working around a bug inside it. Confirmed locally by reproducing the exact CI failure with `./gradlew assemble` before the fix, then a second run succeeding (through `resolveMainClassName` → `bootJar` → `assemble`) after it.
 
 ### Consequences: `resolveMainClassName` failure
 
@@ -736,7 +736,7 @@ Every module so far (`user-service`, `order-service`, `payment-service`, `restau
 
 ### Decision: the last module, and the first genuinely different tech stack
 
-Stayed on Boot 3.5.16 (Phase 17's repo-wide floor) instead of jumping to 4.0.6, paired with Spring Cloud's matching **2025.0.0** BOM (the train that actually targets Boot 3.5.x) and the same spring-grpc **0.7.0** milestone `user-service` already depends on — resolved and compiled clean on the first attempt, no version conflicts. OTel is dropped entirely, the same call made for every other module since Phase 16: no collector infrastructure exists in this repo, so `TracingConfig`, `ObservationConfig`, and the OTLP config blocks would just be unused code. The `k8sdb` profile is dropped too — no Kubernetes manifests exist yet, and no other module has per-environment routing profiles; `application.yaml` just defaults every downstream target to `localhost` (`order-service` on `:8081`, `user-service`'s gRPC port on `:9090`), consistent with how every other module already assumes local dev. No `Dockerfile` yet either, matching `order-service`/`payment-service`/`restaurant-service` — none of the four are containerized as app images, only their infrastructure (Postgres/Kafka) is. Package root `io.github.terrence721.saga.gateway`, module name `api-gateway-service` as already named in the four-service plan.
+Stayed on Boot 3.5.16 (Phase 17's repo-wide floor) instead of jumping to 4.0.6, paired with Spring Cloud's matching **2025.0.0** BOM (the train that actually targets Boot 3.5.x) and the same spring-grpc **0.7.0** milestone `user-service` already depends on — resolved and compiled clean on the first attempt, no version conflicts. OTel is dropped entirely, the same call made for every other module since Phase 16: no collector infrastructure exists in this repo, so `TracingConfig`, `ObservationConfig`, and the OTLP config blocks would just be unused code. The `k8sdb` profile is dropped too — no Kubernetes manifests exist yet, and no other module has per-environment routing profiles; `application.yaml` just defaults every downstream target to `localhost` (`order-service` on `:8081`, `user-service`'s gRPC port on `:9090`), consistent with how every other module already assumes local dev. No `Dockerfile` yet either, matching `order-service`/`payment-service`/`restaurant-service` — none of the four are containerized as app images, only their infrastructure (Postgres/Kafka) is. Package root `com.example.saga.gateway`, module name `api-gateway-service` as already named in the four-service plan.
 
 ### Consequences: the last module, and the first genuinely different tech stack
 
