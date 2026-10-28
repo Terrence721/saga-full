@@ -107,11 +107,18 @@ export function OrderEntryForm() {
         <Input
           type="text"
           placeholder="Item code"
+          list="menu-items"
           disabled={isSubmitting}
           value={itemCode}
           onChange={(e) => setItemCode(e.target.value)}
           required
         />
+        <datalist id="menu-items">
+          {['PIZZA_01','PIZZA_02','PIZZA_03','PIZZA_04','PIZZA_05',
+            'PIZZA_06','PIZZA_07','PIZZA_08','PIZZA_09','PIZZA_10'].map((code) => (
+            <option key={code} value={code} />
+          ))}
+        </datalist>
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
             Quantity
