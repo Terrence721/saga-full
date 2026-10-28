@@ -4,7 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
 }
 
-group = "io.github.terrence721.saga"
+group = "com.example.saga"
 version = "1.0.0"
 
 springBoot {

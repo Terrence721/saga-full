@@ -3,7 +3,7 @@ plugins {
     id("com.google.protobuf") version "0.9.4"
 }
 
-group = "io.github.terrence721.saga"
+group = "com.example.saga"
 version = "1.0.0"
 
 java {
