@@ -94,6 +94,31 @@ class ReservationControllerTest {
     }
 
     @Test
+    void list_returnsMultipleReservations() throws Exception {
+        Reservation first = Reservation.builder()
+                .id(UUID.randomUUID()).customerId("customer-1").tableNumber("T4").partySize(4)
+                .startTime(Instant.parse("2026-10-28T18:00:00Z")).status(ReservationStatus.CONFIRMED).build();
+        Reservation second = Reservation.builder()
+                .id(UUID.randomUUID()).customerId("customer-2").tableNumber("T5").partySize(2)
+                .startTime(Instant.parse("2026-10-28T19:00:00Z")).status(ReservationStatus.CONFIRMED).build();
+        when(reservationService.findAll()).thenReturn(List.of(first, second));
+
+        mockMvc.perform(get("/reservations"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    @Test
+    void create_returnsBadRequest_whenPayloadIsMalformed() throws Exception {
+        mockMvc.perform(post("/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{not json}"))
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
     void create_returnsBadRequest_whenRequestInvalid() throws Exception {
         CreateReservationRequest request = new CreateReservationRequest("", "T4", 0, Instant.parse("2026-10-28T18:00:00Z"));
         mockMvc.perform(post("/reservations")
