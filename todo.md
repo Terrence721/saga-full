@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** October 27, 2026 (NullAway follow-up doc expanded with compatibility analysis & opt-in snippet; rest unchanged)
+**Last Updated:** October 27, 2026 (POS now has DB-backed menu picker, cart line totals, table/customer fields; all tests + build green; CodeQL clear; 0 open issues)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
