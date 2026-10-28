@@ -1,0 +1,26 @@
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: dns-egress-policy
+  namespace: saga-ecosystem
+
+spec:
+  endpointSelector:
+    matchExpressions:
+    - key: app.kubernetes.io/component
+      operator: In
+      values:
+      - gateway
+      - backend
+
+  egress:
+  - toServices:
+    - k8sService:
+        serviceName: kube-dns
+        namespace: kube-system
+    toPorts:
+    - ports:
+      - port: "53"
+        protocol: UDP
+      - port: "53"
+        protocol: TCP
