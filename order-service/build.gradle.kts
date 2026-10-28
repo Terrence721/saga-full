@@ -54,6 +54,11 @@ tasks.withType<Test> {
     finalizedBy(tasks.jacocoTestReport)
 }
 
+tasks.jacocoTestReport {
+    reports.xml.required.set(true)
+}
+
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
