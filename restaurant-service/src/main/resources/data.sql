@@ -32,3 +32,33 @@ INSERT INTO restaurant_inventory (item_code, stock_count)
 SELECT 'PIZZA_09', 45 WHERE NOT EXISTS (SELECT 1 FROM restaurant_inventory WHERE item_code = 'PIZZA_09');
 INSERT INTO restaurant_inventory (item_code, stock_count)
 SELECT 'PIZZA_10', 15 WHERE NOT EXISTS (SELECT 1 FROM restaurant_inventory WHERE item_code = 'PIZZA_10');
+INSERT INTO restaurant_inventory (item_code, stock_count) SELECT 'DRINK_01', 100 WHERE NOT EXISTS (SELECT 1 FROM restaurant_inventory WHERE item_code = 'DRINK_01');
+INSERT INTO restaurant_inventory (item_code, stock_count) SELECT 'DRINK_02', 100 WHERE NOT EXISTS (SELECT 1 FROM restaurant_inventory WHERE item_code = 'DRINK_02');
+INSERT INTO restaurant_inventory (item_code, stock_count) SELECT 'SIDE_01', 60 WHERE NOT EXISTS (SELECT 1 FROM restaurant_inventory WHERE item_code = 'SIDE_01');
+
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'PIZZA_01','Margherita','Tomato, mozzarella, basil','Pizza',8.50,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='PIZZA_01');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'PIZZA_02','Pepperoni','Tomato, mozzarella, pepperoni','Pizza',10.00,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='PIZZA_02');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'PIZZA_03','Heat Wave','Spicy salami, jalapeño, chili oil','Pizza',11.50,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='PIZZA_03');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'PIZZA_04','Quattro Formaggi','Mozzarella, gorgonzola, fontina, parmesan','Pizza',12.00,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='PIZZA_04');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'PIZZA_05','Veggie','Artichoke, mushroom, bell pepper, olive','Pizza',11.00,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='PIZZA_05');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'PIZZA_06','Capricciosa','Ham, artichoke, mushroom, olive, egg','Pizza',13.00,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='PIZZA_06');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'PIZZA_07','Diavola','Spicy nduja, mozzarella, chili','Pizza',12.50,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='PIZZA_07');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'PIZZA_08','Truffle','Mushroom, truffle oil, parmesan (low stock)','Pizza',14.00,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='PIZZA_08');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'PIZZA_09','Hawaiian','Ham, pineapple, mozzarella','Pizza',10.50,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='PIZZA_09');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'PIZZA_10','Spinach Ricotta','Ricotta, spinach, garlic, parmesan','Pizza',11.50,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='PIZZA_10');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'DRINK_01','Cola','330 ml','Drink',2.50,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='DRINK_01');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'DRINK_02','Lemonade','330 ml','Drink',2.50,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='DRINK_02');
+INSERT INTO menu_items (item_code, name, description, category, price, available)
+SELECT 'SIDE_01','Garlic Bread','4 pieces','Side',4.00,true WHERE NOT EXISTS (SELECT 1 FROM menu_items WHERE item_code='SIDE_01');

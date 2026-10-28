@@ -162,6 +162,8 @@ services:
       MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://otel-collector:4318/v1/traces"
       RESERVATION_SERVICE_HOST: reservation-service
       RESERVATION_SERVICE_PORT: "8084"
+      RESTAURANT_SERVICE_HOST: restaurant-service
+      RESTAURANT_SERVICE_PORT: "8083"
     depends_on:
       - user-service
       - order-service

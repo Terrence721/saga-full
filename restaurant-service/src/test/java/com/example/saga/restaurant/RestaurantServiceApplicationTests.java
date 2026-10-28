@@ -28,7 +28,8 @@ class RestaurantServiceApplicationTests {
         assertThat(seeded).extracting(InventoryItem::getItemCode)
                 .containsExactlyInAnyOrder(
                         "PIZZA_01", "PIZZA_02", "PIZZA_03", "PIZZA_04", "PIZZA_05",
-                        "PIZZA_06", "PIZZA_07", "PIZZA_08", "PIZZA_09", "PIZZA_10");
+                        "PIZZA_06", "PIZZA_07", "PIZZA_08", "PIZZA_09", "PIZZA_10",
+                        "DRINK_01", "DRINK_02", "SIDE_01");
         assertThat(inventoryItemRepository.findById("PIZZA_03"))
                 .hasValueSatisfying(item -> assertThat(item.getStockCount()).isEqualTo(2));
         assertThat(inventoryItemRepository.findById("PIZZA_08"))
