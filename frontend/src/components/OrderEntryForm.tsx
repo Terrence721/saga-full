@@ -4,6 +4,7 @@ import { ApiError } from '../api/httpClient'
 import { useAuth } from '../context/useAuth'
 import { Button } from './ui/Button'
 import { fetchMenu, type MenuItem } from '../api/menuClient'
+import { MENU } from '../data/menu'
 import { Card } from './ui/Card'
 import { Input } from './ui/Input'
 import { StatusBadge } from './ui/StatusBadge'
@@ -21,7 +22,7 @@ export function OrderEntryForm() {
   const [error, setError] = useState<string | null>(null)
   const [cart, setCart] = useState<CartLine[]>([])
   const [placed, setPlaced] = useState<Order[]>([])
-  const [menu, setMenu] = useState<MenuItem[]>([])
+  const [menu, setMenu] = useState<MenuItem[]>(() => MENU.map((item) => ({ ...item, available: true })))
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [order, setOrder] = useState<Order | null>(null)
   const auth = useAuth()
@@ -31,7 +32,7 @@ export function OrderEntryForm() {
 
   useEffect(() => {
     if (!auth.token) return
-    fetchMenu(auth.token).then(setMenu).catch(() => setMenu([]))
+    fetchMenu(auth.token).then((items) => { if (items.length) setMenu(items) }).catch(() => {})
   }, [auth.token])
 
   async function handleSubmit(event: FormEvent) {
@@ -233,6 +234,7 @@ export function OrderEntryForm() {
             aria-label="Menu item"
             value={itemCode}
             disabled={isSubmitting}
+            required
             onChange={(e) => {
               const code = e.target.value
               setItemCode(code)
@@ -251,21 +253,6 @@ export function OrderEntryForm() {
             ))}
           </select>
         )}
-        <Input
-          type="text"
-          placeholder="Custom item code (optional)"
-          list="menu-items"
-          disabled={isSubmitting}
-          value={itemCode}
-          onChange={(e) => setItemCode(e.target.value)}
-          required
-        />
-        <datalist id="menu-items">
-          {['PIZZA_01','PIZZA_02','PIZZA_03','PIZZA_04','PIZZA_05',
-            'PIZZA_06','PIZZA_07','PIZZA_08','PIZZA_09','PIZZA_10'].map((code) => (
-            <option key={code} value={code} />
-          ))}
-        </datalist>
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
             Quantity
