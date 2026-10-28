@@ -1,6 +1,8 @@
 package com.example.saga.order.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.saga.order.dto.ReservationConfirmedEvent;
+import com.example.saga.order.dto.ReservationRejectedEvent;
 import com.example.saga.order.dto.RestaurantApprovedEvent;
 import com.example.saga.order.dto.RestaurantRejectedEvent;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +33,7 @@ class OrderConsumerConfigTest {
     }
 
     @Test
-    void onRestaurantApproved_deserializesPayloadWithoutMutatingOrder() throws Exception {
+    void onRestaurantApproved_deserializesPayloadAndDoesNotMutateOrder() throws Exception {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         UUID ticketId = UUID.randomUUID();
@@ -40,9 +42,10 @@ class OrderConsumerConfigTest {
 
         consumerConfig.onRestaurantApproved(payload);
 
-        // Order finalization now waits for reservation confirmation instead.
         verify(orderService, never()).confirmOrder(any());
         verify(orderService, never()).cancelOrder(any());
+        verify(orderService, never()).handleReservationConfirmed(any());
+        verify(orderService, never()).handleReservationRejected(any());
     }
 
     @Test
@@ -59,6 +62,36 @@ class OrderConsumerConfigTest {
         assertThat(captor.getValue().orderId()).isEqualTo(orderId);
         assertThat(captor.getValue().customerId()).isEqualTo(customerId);
         assertThat(captor.getValue().reason()).isEqualTo("Out of stock");
-        verify(orderService, never()).confirmOrder(any());
+    }
+
+    @Test
+    void onReservationConfirmed_deserializesPayloadAndDelegates() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        String payload = new ObjectMapper().writeValueAsString(
+                new ReservationConfirmedEvent(orderId, customerId, "T-1", 4));
+
+        consumerConfig.onReservationConfirmed(payload);
+
+        ArgumentCaptor<ReservationConfirmedEvent> captor = ArgumentCaptor.forClass(ReservationConfirmedEvent.class);
+        verify(orderService).handleReservationConfirmed(captor.capture());
+        assertThat(captor.getValue().orderId()).isEqualTo(orderId);
+        assertThat(captor.getValue().tableNumber()).isEqualTo("T-1");
+        assertThat(captor.getValue().partySize()).isEqualTo(4);
+    }
+
+    @Test
+    void onReservationRejected_deserializesPayloadAndDelegates() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        String payload = new ObjectMapper().writeValueAsString(
+                new ReservationRejectedEvent(orderId, customerId, "no table"));
+
+        consumerConfig.onReservationRejected(payload);
+
+        ArgumentCaptor<ReservationRejectedEvent> captor = ArgumentCaptor.forClass(ReservationRejectedEvent.class);
+        verify(orderService).handleReservationRejected(captor.capture());
+        assertThat(captor.getValue().orderId()).isEqualTo(orderId);
+        assertThat(captor.getValue().reason()).isEqualTo("no table");
     }
 }
