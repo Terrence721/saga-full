@@ -156,4 +156,73 @@ class ValidateTokenResponseTest {
 
         assertThat(response.toString()).contains("u");
     }
+
+
+    @Test
+    void parseFromInputStreamWithRegistryRoundTrips() throws Exception {
+        ValidateTokenResponse original = ValidateTokenResponse.newBuilder()
+                .setValid(true)
+                .setUserId("u")
+                .build();
+        ValidateTokenResponse parsed = ValidateTokenResponse.parseFrom(
+                new java.io.ByteArrayInputStream(original.toByteArray()),
+                com.google.protobuf.ExtensionRegistryLite.getEmptyRegistry());
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void parseFromByteStringRoundTrips() throws com.google.protobuf.InvalidProtocolBufferException {
+        ValidateTokenResponse original = ValidateTokenResponse.newBuilder().setValid(true).build();
+        ValidateTokenResponse parsed = ValidateTokenResponse.parseFrom(com.google.protobuf.ByteString.copyFrom(original.toByteArray()));
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void parseDelimitedFromWithRegistryRoundTrips() throws Exception {
+        ValidateTokenResponse original = ValidateTokenResponse.newBuilder().setValid(true).build();
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        original.writeDelimitedTo(out);
+        ValidateTokenResponse parsed = ValidateTokenResponse.parseDelimitedFrom(
+                new java.io.ByteArrayInputStream(out.toByteArray()),
+                com.google.protobuf.ExtensionRegistryLite.getEmptyRegistry());
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void parseFromParserRoundTrips() throws Exception {
+        ValidateTokenResponse original = ValidateTokenResponse.newBuilder().setValid(true).build();
+        com.google.protobuf.Parser<ValidateTokenResponse> parser = ValidateTokenResponse.parser();
+        ValidateTokenResponse parsed = parser.parseFrom(original.toByteArray());
+        assertThat(parsed).isEqualTo(original);
+    }
+
+    @Test
+    void hashCodeVariesWithFields() {
+        ValidateTokenResponse first = ValidateTokenResponse.newBuilder().setValid(true).setUserId("u").build();
+        ValidateTokenResponse second = ValidateTokenResponse.newBuilder().setValid(true).setUserId("u").build();
+        ValidateTokenResponse empty = ValidateTokenResponse.getDefaultInstance();
+        assertThat(first.hashCode()).isEqualTo(second.hashCode());
+        assertThat(empty.hashCode()).isNotEqualTo(first.hashCode());
+    }
+
+    @Test
+    void equalsHandlesMismatchedAndEmpty() {
+        ValidateTokenResponse first = ValidateTokenResponse.newBuilder().setValid(true).setUserId("u").build();
+        assertThat(first.equals(first)).isTrue();
+        assertThat(first.equals(null)).isFalse();
+        assertThat(first.equals("not-a-message")).isFalse();
+        assertThat(ValidateTokenResponse.getDefaultInstance().equals(ValidateTokenResponse.getDefaultInstance())).isTrue();
+    }
+
+    @Test
+    void toStringHandlesEmptyInstance() {
+        assertThat(ValidateTokenResponse.getDefaultInstance().toString()).isNotNull();
+    }
+
+    @Test
+    void invalidParseThrows() {
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                ValidateTokenResponse.parseFrom(new byte[]{(byte) 0xff}))
+                .isInstanceOf(com.google.protobuf.InvalidProtocolBufferException.class);
+    }
 }
