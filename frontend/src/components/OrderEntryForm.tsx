@@ -205,7 +205,7 @@ export function OrderEntryForm() {
                       </div>
                       <span className="text-xs font-semibold text-indigo-600">{item.price.toFixed(2)}</span>
                     </div>
-                    <p className="mt-2 text-xs text-slate-400">{item.itemCode} · {item.category}</p>
+                    <p className="mt-2 text-xs text-slate-400">{item.category}</p>
                   </button>
                 )
               })}
@@ -253,7 +253,7 @@ export function OrderEntryForm() {
         )}
         <Input
           type="text"
-          placeholder="Item code"
+          placeholder="Custom item code (optional)"
           list="menu-items"
           disabled={isSubmitting}
           value={itemCode}
