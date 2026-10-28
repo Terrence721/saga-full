@@ -175,7 +175,7 @@ class ReservationServiceTest {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         when(repository.findByOrderId(orderId)).thenReturn(Optional.empty());
-        when(repository.save(java.util.Objects.requireNonNull(any(Reservation.class))))
+        when(repository.save(any(Reservation.class)))
             .thenThrow(new IllegalStateException("db down"));
 
         // Must not throw: allocation failure is logged and (best effort) reported.
