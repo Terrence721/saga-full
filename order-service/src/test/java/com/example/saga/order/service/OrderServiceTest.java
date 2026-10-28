@@ -370,4 +370,127 @@ class OrderServiceTest {
         assertThat(existing.getStatus()).isEqualTo(OrderStatus.SUCCESS);
     }
 
+    @Test
+    void confirmOrder_throwsIllegalArgumentException_whenEventIsNull() {
+        assertThatThrownBy(() -> orderService.confirmOrder(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("event is required");
+    }
+
+    @Test
+    void confirmOrder_throwsIllegalArgumentException_whenOrderIdIsNull() {
+        assertThatThrownBy(() -> orderService.confirmOrder(
+                new RestaurantApprovedEvent(null, UUID.randomUUID(), UUID.randomUUID())))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("orderId is required for approval event");
+    }
+
+    @Test
+    void confirmOrder_skips_whenAlreadySuccessAfterLoad() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        existing.setStatus(OrderStatus.SUCCESS);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+
+        orderService.confirmOrder(new RestaurantApprovedEvent(orderId, existing.getCustomerId(), UUID.randomUUID()));
+
+        verify(orderRepository, never()).save(any());
+        verify(orderUpdatePublisher, never()).publish(any());
+    }
+
+    @Test
+    void cancelOrder_throwsIllegalArgumentException_whenEventIsNull() {
+        assertThatThrownBy(() -> orderService.cancelOrder(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("event is required");
+    }
+
+    @Test
+    void cancelOrder_throwsIllegalArgumentException_whenOrderIdIsNull() {
+        assertThatThrownBy(() -> orderService.cancelOrder(
+                new RestaurantRejectedEvent(null, UUID.randomUUID(), "Out of stock")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("orderId is required for rejection event");
+    }
+
+    @Test
+    void cancelOrder_skips_whenAlreadyCancelledAfterLoad() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        existing.setStatus(OrderStatus.CANCELLED);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+
+        orderService.cancelOrder(new RestaurantRejectedEvent(orderId, existing.getCustomerId(), "Out of stock"));
+
+        verify(orderRepository, never()).save(any());
+        verify(orderUpdatePublisher, never()).publish(any());
+    }
+
+    @Test
+    void handleReservationConfirmed_throwsIllegalArgumentException_whenEventIsNull() {
+        assertThatThrownBy(() -> orderService.handleReservationConfirmed(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("event is required");
+    }
+
+    @Test
+    void handleReservationConfirmed_throwsIllegalArgumentException_whenOrderIdIsNull() {
+        assertThatThrownBy(() -> orderService.handleReservationConfirmed(
+                new ReservationConfirmedEvent(null, UUID.randomUUID(), "T-1", 4)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("orderId is required for reservation confirmation");
+    }
+
+    @Test
+    void handleReservationConfirmed_skips_whenAlreadySuccessAfterLoad() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        existing.setStatus(OrderStatus.SUCCESS);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.SUCCESS)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+
+        orderService.handleReservationConfirmed(new ReservationConfirmedEvent(orderId, existing.getCustomerId(), "T-1", 4));
+
+        verify(orderRepository, never()).save(any());
+        verify(orderUpdatePublisher, never()).publish(any());
+    }
+
+    @Test
+    void handleReservationRejected_throwsIllegalArgumentException_whenEventIsNull() {
+        assertThatThrownBy(() -> orderService.handleReservationRejected(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("event is required");
+    }
+
+    @Test
+    void handleReservationRejected_throwsIllegalArgumentException_whenOrderIdIsNull() {
+        assertThatThrownBy(() -> orderService.handleReservationRejected(
+                new ReservationRejectedEvent(null, UUID.randomUUID(), "no table")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("orderId is required for reservation rejection");
+    }
+
+    @Test
+    void handleReservationRejected_skips_whenAlreadyCancelledAfterLoad() {
+        UUID orderId = UUID.randomUUID();
+        Order existing = pendingOrder(orderId);
+        existing.setStatus(OrderStatus.CANCELLED);
+        when(orderRepository.existsByIdAndStatus(orderId, OrderStatus.CANCELLED)).thenReturn(false);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(existing));
+
+        orderService.handleReservationRejected(new ReservationRejectedEvent(orderId, existing.getCustomerId(), "no table"));
+
+        verify(orderRepository, never()).save(any());
+        verify(orderUpdatePublisher, never()).publish(any());
+    }
+
+    @Test
+    void getOrder_throwsIllegalArgumentException_whenOrderIdIsNull() {
+        assertThatThrownBy(() -> orderService.getOrder(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("orderId is required");
+    }
+
 }
