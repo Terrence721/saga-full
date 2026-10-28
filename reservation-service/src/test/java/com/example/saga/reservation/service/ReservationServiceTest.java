@@ -3,6 +3,7 @@ package com.example.saga.reservation.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.saga.reservation.domain.Reservation;
 import com.example.saga.reservation.domain.ReservationStatus;
+import com.example.saga.reservation.dto.CreateReservationRequest;
 import com.example.saga.reservation.dto.RestaurantApprovedEvent;
 import com.example.saga.reservation.dto.RestaurantRejectedEvent;
 import com.example.saga.reservation.repository.ReservationRepository;
@@ -18,6 +19,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 
 import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -102,4 +104,45 @@ class ReservationServiceTest {
         verify(repository).save(java.util.Objects.requireNonNull(existing));
         assertThat(existing.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
     }
+
+    @Test
+    void create_persistsAndReturns() {
+        CreateReservationRequest request = new CreateReservationRequest("customer-1", "T-1", 4,
+                java.time.Instant.parse("2026-10-28T18:00:00Z"));
+        when(repository.save(any(Reservation.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Reservation result = service.create(request);
+
+        assertThat(result.getCustomerId()).isEqualTo("customer-1");
+        assertThat(result.getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
+    }
+
+    @Test
+    void findAll_returnsRepositoryRows() {
+        when(repository.findAll()).thenReturn(List.of());
+        assertThat(service.findAll()).isEmpty();
+    }
+
+    @Test
+    void findById_returnsExisting() {
+        UUID id = UUID.randomUUID();
+        Reservation existing = Reservation.builder().id(id).customerId("c").tableNumber("T1")
+                .partySize(2).startTime(Instant.now()).status(ReservationStatus.CONFIRMED).build();
+        when(repository.findById(id)).thenReturn(Optional.of(existing));
+        assertThat(service.findById(id)).isEqualTo(existing);
+    }
+
+    @Test
+    void cancel_marksReservationCancelled() {
+        UUID id = UUID.randomUUID();
+        Reservation existing = Reservation.builder().id(id).customerId("c").tableNumber("T1")
+                .partySize(2).startTime(Instant.now()).status(ReservationStatus.CONFIRMED).build();
+        when(repository.findById(id)).thenReturn(Optional.of(existing));
+        when(repository.save(existing)).thenReturn(existing);
+
+        service.cancel(id);
+
+        assertThat(existing.getStatus()).isEqualTo(ReservationStatus.CANCELLED);
+}
+
 }
