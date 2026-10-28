@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,29 +21,30 @@ class ReservationRepositoryTest {
     @Test
     void saveAndFindByOrderId_roundTrips() {
         UUID orderId = UUID.randomUUID();
-        Reservation saved = repository.save(Reservation.builder()
+        Reservation saved = repository.save(Objects.requireNonNull(Reservation.builder()
                 .orderId(orderId)
                 .customerId("customer-1")
                 .tableNumber("T-1")
                 .partySize(4)
                 .startTime(Instant.parse("2026-10-28T18:00:00Z"))
                 .status(ReservationStatus.CONFIRMED)
-                .build());
+            .build()));
 
-        assertThat(repository.findById(saved.getId())).isPresent();
+        assertThat(repository.findById(Objects.requireNonNull(saved.getId()))).isPresent();
         assertThat(repository.findByOrderId(orderId)).isPresent()
-                .get().extracting(Reservation::getTableNumber).isEqualTo("T-1");
+            .get().satisfies(reservation ->
+                assertThat(reservation.getTableNumber()).isEqualTo("T-1"));
     }
 
     @Test
     void findAll_returnsPersistedRows() {
-        repository.save(Reservation.builder()
+        repository.save(Objects.requireNonNull(Reservation.builder()
                 .customerId("customer-2")
                 .tableNumber("T-2")
                 .partySize(2)
                 .startTime(Instant.now())
                 .status(ReservationStatus.CANCELLED)
-                .build());
+            .build()));
 
         assertThat(repository.count()).isPositive();
     }
