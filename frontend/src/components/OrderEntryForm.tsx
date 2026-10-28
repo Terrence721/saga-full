@@ -9,11 +9,18 @@ import { Input } from './ui/Input'
 import { StatusBadge } from './ui/StatusBadge'
 import { Spinner } from './ui/Spinner'
 
+interface CartLine {
+  item: MenuItem
+  quantity: number
+}
+
 export function OrderEntryForm() {
   const [itemCode, setItemCode] = useState('')
   const [quantity, setQuantity] = useState('1')
   const [totalAmount, setTotalAmount] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [cart, setCart] = useState<CartLine[]>([])
+  const [placed, setPlaced] = useState<Order[]>([])
   const [menu, setMenu] = useState<MenuItem[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [order, setOrder] = useState<Order | null>(null)
@@ -38,18 +45,29 @@ export function OrderEntryForm() {
       return
     }
 
+    const lines = cart.length > 0
+      ? cart
+      : [{ item: { itemCode, name: itemCode, description: '', category: 'Pizza', price: Number(totalAmount) || 0, available: true }, quantity: Number(quantity) || 1 }]
+
     try {
-      const created = await createOrder(
-        {
-          customerId: auth.customerId,
-          itemCode,
-          quantity: Number(quantity),
-          totalAmount: Number(totalAmount),
-        },
-        auth.token,
-      )
-      setOrder(created)
-      stopStreamRef.current = streamOrder(created.id, auth.token, setOrder)
+      const createdOrders: Order[] = []
+      for (const line of lines) {
+        const created = await createOrder(
+          {
+            customerId: auth.customerId,
+            itemCode: line.item.itemCode,
+            quantity: line.quantity,
+            totalAmount: line.item.price * line.quantity,
+          },
+          auth.token,
+        )
+        createdOrders.push(created)
+        stopStreamRef.current = streamOrder(created.id, auth.token, (updated) => {
+          setPlaced((current) => current.map((row) => (row.id === updated.id ? updated : row)))
+        })
+      }
+      setPlaced(createdOrders)
+      setCart([])
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Order could not be created')
     } finally {
@@ -61,6 +79,40 @@ export function OrderEntryForm() {
     stopStreamRef.current?.()
     stopStreamRef.current = null
     setOrder(null)
+  }
+
+  if (placed.length > 0) {
+    return (
+      <Card>
+        <div className="mb-6 flex items-baseline justify-between">
+          <div>
+            <h2 className="text-xl font-semibold text-slate-900">Placed orders</h2>
+            <p className="mt-1 text-sm text-slate-500">Live statuses update below.</p>
+          </div>
+          <StatusBadge status={placed.every((o) => o.status === 'SUCCESS') ? 'SUCCESS' : 'PENDING'} />
+        </div>
+        <ul className="space-y-3">
+          {placed.map((placedOrder) => (
+            <li key={placedOrder.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+              <div>
+                <p className="font-medium text-slate-900">{placedOrder.itemCode}</p>
+                <p className="text-xs text-slate-500">{placedOrder.id}</p>
+              </div>
+              <span className="text-slate-700">×{placedOrder.quantity} — status: {placedOrder.status}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-6">
+          <Button type="button" variant="secondary" onClick={() => {
+            stopStreamRef.current?.()
+            stopStreamRef.current = null
+            setPlaced([])
+          }}>
+            New order
+          </Button>
+        </div>
+      </Card>
+    )
   }
 
   if (order) {
@@ -128,6 +180,17 @@ export function OrderEntryForm() {
                     onClick={() => {
                       setItemCode(item.itemCode)
                       setTotalAmount((item.price * (Number(quantity) || 1)).toFixed(2))
+                      setCart((current) => {
+                        const existing = current.find((line) => line.item.itemCode === item.itemCode)
+                        if (existing) {
+                          return current.map((line) =>
+                            line.item.itemCode === item.itemCode
+                              ? { ...line, quantity: line.quantity + 1 }
+                              : line,
+                          )
+                        }
+                        return [...current, { item, quantity: 1 }]
+                      })
                     }}
                     className={`rounded-xl border px-4 py-3 text-left transition-colors ${
                       selected
@@ -149,6 +212,20 @@ export function OrderEntryForm() {
             </div>
           </div>
         )}
+
+      {cart.length > 0 && (
+        <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 text-sm">
+          <p className="mb-2 font-semibold text-slate-900">Cart ({cart.length})</p>
+          <ul className="space-y-2">
+            {cart.map((line) => (
+              <li key={line.item.itemCode} className="flex items-center justify-between">
+                <span>{line.item.name} × {line.quantity}</span>
+                <span className="font-medium">{(line.item.price * line.quantity).toFixed(2)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {menu.length > 0 && (
