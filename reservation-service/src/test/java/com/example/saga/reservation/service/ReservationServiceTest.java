@@ -50,8 +50,9 @@ class ReservationServiceTest {
     @SuppressWarnings("null")
     void setUp() throws Exception {
         service = new ReservationService(repository, kafkaTemplate, objectMapper);
+        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
         when(kafkaTemplate.send(anyString(), anyString(), anyString()))
-            .thenReturn(CompletableFuture.completedFuture(null));
+                .thenReturn(CompletableFuture.completedFuture(null));
     }
 
     @Test
