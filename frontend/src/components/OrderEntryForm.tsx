@@ -35,6 +35,7 @@ export function OrderEntryForm() {
     fetchMenu(auth.token).then((items) => { if (items.length) setMenu(items) }).catch(() => {})
   }, [auth.token])
 
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError(null)
@@ -183,14 +184,16 @@ export function OrderEntryForm() {
                       setTotalAmount((item.price * (Number(quantity) || 1)).toFixed(2))
                       setCart((current) => {
                         const existing = current.find((line) => line.item.itemCode === item.itemCode)
-                        if (existing) {
-                          return current.map((line) =>
-                            line.item.itemCode === item.itemCode
-                              ? { ...line, quantity: line.quantity + 1 }
-                              : line,
-                          )
-                        }
-                        return [...current, { item, quantity: 1 }]
+                        const next = existing
+                          ? current.map((line) =>
+                              line.item.itemCode === item.itemCode
+                                ? { ...line, quantity: line.quantity + 1 }
+                                : line,
+                            )
+                          : [...current, { item, quantity: 1 }]
+                        const total = next.reduce((sum, line) => sum + line.item.price * line.quantity, 0)
+                        setTotalAmount(total.toFixed(2))
+                        return next
                       })
                     }}
                     className={`rounded-xl border px-4 py-3 text-left transition-colors ${
@@ -217,11 +220,52 @@ export function OrderEntryForm() {
       {cart.length > 0 && (
         <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 text-sm">
           <p className="mb-2 font-semibold text-slate-900">Cart ({cart.length})</p>
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {cart.map((line) => (
-              <li key={line.item.itemCode} className="flex items-center justify-between">
-                <span>{line.item.name} × {line.quantity}</span>
-                <span className="font-medium">{(line.item.price * line.quantity).toFixed(2)}</span>
+              <li key={line.item.itemCode} className="flex items-center justify-between gap-3">
+                <div className="flex-1">
+                  <p className="font-medium text-slate-900">{line.item.name}</p>
+                  <p className="text-xs text-slate-500">{line.item.itemCode}</p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    disabled={isSubmitting}
+                    onClick={() =>
+                      setCart((current) =>
+                        current
+                          .map((l) =>
+                            l.item.itemCode === line.item.itemCode ? { ...l, quantity: Math.max(1, l.quantity - 1) } : l,
+                          )
+                          .filter((l) => l.quantity > 0),
+                      )
+                    }
+                  >
+                    -
+                  </Button>
+                  <span className="w-6 text-center text-sm">{line.quantity}</span>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    disabled={isSubmitting}
+                    onClick={() =>
+                      setCart((current) => {
+                        const next = current.map((l) =>
+                          l.item.itemCode === line.item.itemCode ? { ...l, quantity: l.quantity + 1 } : l,
+                        )
+                        const total = next.reduce((sum, l) => sum + l.item.price * l.quantity, 0)
+                        setTotalAmount(total.toFixed(2))
+                        return next
+                      })
+                    }
+                  >
+                    +
+                  </Button>
+                </div>
+                <span className="w-16 text-right font-medium">{(line.item.price * line.quantity).toFixed(2)}</span>
               </li>
             ))}
           </ul>
