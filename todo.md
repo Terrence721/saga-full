@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** October 27, 2026 (frontend visual pass + E2E doc — #228; reservation-service complete with saga participation — #16; K8s manifests + runbook — #229 manifests-only; observability baseline; JSpecify 1.0.0 baseline)
+**Last Updated:** October 27, 2026 (NullAway follow-up doc expanded with compatibility analysis & opt-in snippet; rest unchanged)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
