@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.example.saga.payment.dto.OrderCreatedEvent;
 import com.example.saga.payment.dto.OrderStatus;
 import com.example.saga.payment.dto.RestaurantRejectedEvent;
+import com.example.saga.payment.dto.ReservationRejectedEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,4 +66,21 @@ class PaymentConsumerConfigTest {
         assertThat(captor.getValue().reason()).isEqualTo("Out of stock");
         verify(paymentService, never()).processPaymentSaga(any());
     }
+
+    @Test
+    void onReservationRejected_deserializesPayloadAndDelegatesToHandleReservationCompensation() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        UUID customerId = UUID.randomUUID();
+        String payload = new ObjectMapper().writeValueAsString(
+                new ReservationRejectedEvent(orderId, customerId, "no table"));
+
+        consumerConfig.onReservationRejected(payload);
+
+        ArgumentCaptor<ReservationRejectedEvent> captor = ArgumentCaptor.forClass(ReservationRejectedEvent.class);
+        verify(paymentService).handleReservationCompensation(captor.capture());
+        assertThat(captor.getValue().orderId()).isEqualTo(orderId);
+        assertThat(captor.getValue().customerId()).isEqualTo(customerId);
+        assertThat(captor.getValue().reason()).isEqualTo("no table");
+    }
+
 }
