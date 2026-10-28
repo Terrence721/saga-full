@@ -1,13 +1,78 @@
 package com.example.saga.user.infra.grpc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.Test;
-
+import com.example.saga.user.exception.InvalidCredentialsException;
+import com.example.saga.user.exception.UserInactiveException;
+import com.example.saga.user.exception.UserNotFoundException;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class GrpcExecutorTest {
+
+    @Test
+    void execute_returnsActionValueAndCompletes() {
+        RecordingStreamObserver<String> responseObserver = new RecordingStreamObserver<>();
+
+        GrpcExecutor.execute(responseObserver, () -> "ok");
+
+        assertThat(responseObserver.firstValue()).isEqualTo("ok");
+        assertThat(responseObserver.error()).isNull();
+    }
+
+    @Test
+    void execute_mapsUserNotFoundException_toUnauthenticated() {
+        RecordingStreamObserver<String> responseObserver = new RecordingStreamObserver<>();
+
+        GrpcExecutor.execute(responseObserver, () -> {
+            throw new UserNotFoundException("no user");
+        });
+
+        assertThat(responseObserver.error()).isInstanceOf(StatusRuntimeException.class);
+        StatusRuntimeException ex = (StatusRuntimeException) responseObserver.error();
+        assertThat(ex.getStatus().getCode()).isEqualTo(Status.UNAUTHENTICATED.getCode());
+        assertThat(ex.getStatus().getDescription()).isEqualTo("Invalid email or password");
+    }
+
+    @Test
+    void execute_mapsInvalidCredentialsException_toUnauthenticated() {
+        RecordingStreamObserver<String> responseObserver = new RecordingStreamObserver<>();
+
+        GrpcExecutor.execute(responseObserver, () -> {
+            throw new InvalidCredentialsException("bad pw");
+        });
+
+        StatusRuntimeException ex = (StatusRuntimeException) responseObserver.error();
+        assertThat(ex.getStatus().getCode()).isEqualTo(Status.UNAUTHENTICATED.getCode());
+        assertThat(ex.getStatus().getDescription()).isEqualTo("Invalid email or password");
+    }
+
+    @Test
+    void execute_mapsUserInactiveException_toUnauthenticated() {
+        RecordingStreamObserver<String> responseObserver = new RecordingStreamObserver<>();
+
+        GrpcExecutor.execute(responseObserver, () -> {
+            throw new UserInactiveException("inactive");
+        });
+
+        StatusRuntimeException ex = (StatusRuntimeException) responseObserver.error();
+        assertThat(ex.getStatus().getCode()).isEqualTo(Status.UNAUTHENTICATED.getCode());
+        assertThat(ex.getStatus().getDescription()).isEqualTo("Invalid email or password");
+    }
+
+    @Test
+    void execute_mapsIllegalArgumentException_toInvalidArgument() {
+        RecordingStreamObserver<String> responseObserver = new RecordingStreamObserver<>();
+
+        GrpcExecutor.execute(responseObserver, () -> {
+            throw new IllegalArgumentException("bad payload");
+        });
+
+        StatusRuntimeException ex = (StatusRuntimeException) responseObserver.error();
+        assertThat(ex.getStatus().getCode()).isEqualTo(Status.INVALID_ARGUMENT.getCode());
+        assertThat(ex.getStatus().getDescription()).isEqualTo("bad payload");
+    }
 
     /**
      * The other 3 branches (UserNotFoundException/InvalidCredentialsException/
