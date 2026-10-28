@@ -12,6 +12,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GrpcExecutorTest {
 
     @Test
+    void constructor_canBeInstantiated() {
+        GrpcExecutor executor = new GrpcExecutor();
+        org.assertj.core.api.Assertions.assertThat(executor).isNotNull();
+    }
+
+    @Test
     void execute_returnsActionValueAndCompletes() {
         RecordingStreamObserver<String> responseObserver = new RecordingStreamObserver<>();
 
