@@ -110,6 +110,46 @@ export function OrderEntryForm() {
         <h2 className="text-xl font-semibold text-slate-900">Place an order</h2>
         <p className="mt-1 text-sm text-slate-500">Capture an item and total, then send it into the saga.</p>
       </div>
+
+        {menu.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-baseline justify-between">
+              <h3 className="text-sm font-semibold text-slate-900">Menu</h3>
+              <span className="text-xs text-slate-500">{menu.length} items</span>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {menu.map((item) => {
+                const selected = item.itemCode === itemCode
+                return (
+                  <button
+                    key={item.itemCode}
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={() => {
+                      setItemCode(item.itemCode)
+                      setTotalAmount((item.price * (Number(quantity) || 1)).toFixed(2))
+                    }}
+                    className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+                      selected
+                        ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
+                        : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                        <p className="mt-0.5 text-xs text-slate-500">{item.description}</p>
+                      </div>
+                      <span className="text-xs font-semibold text-indigo-600">{item.price.toFixed(2)}</span>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-400">{item.itemCode} · {item.category}</p>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {menu.length > 0 && (
           <select
