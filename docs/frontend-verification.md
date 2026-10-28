@@ -41,3 +41,13 @@ Launch `yarn dev` (pinned to `http://localhost:5180`), open DevTools and lock th
   must match the dev port (default `http://localhost:5180`).
 - An unseeded item code (e.g. `BURGER`) exercises the compensation path (`CANCELLED`,
   payment refunded, reservation cancelled) — verify each in the gateway logs.
+
+
+## Verification record
+
+- Date: October 27, 2026
+- `yarn test`: **22/22 passing**
+- `yarn lint`: clean (exit 0)
+- `yarn build`: passes (Vite prod bundle emitted)
+- Frontend dev server (`http://localhost:5180`) and backend gateway (`http://localhost:8090`) both respond `200 OK`.
+- End-to-end saga (`PENDING → SUCCESS`) verified via the gateway with `PIZZA_01`, and the compensation path (`CANCELLED`) verified with `BURGER`.
