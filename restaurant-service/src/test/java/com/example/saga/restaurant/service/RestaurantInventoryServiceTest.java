@@ -65,4 +65,20 @@ class RestaurantInventoryServiceTest {
         assertThat(status).isEqualTo(InventoryStatus.ITEM_NOT_FOUND);
         verify(inventoryItemRepository, never()).save(any());
     }
+
+    @Test
+    void verifyAndDeductStock_returnsItemNotFound_whenItemCodeBlank() {
+        InventoryStatus status = inventoryService.verifyAndDeductStock("   ", 1);
+
+        assertThat(status).isEqualTo(InventoryStatus.ITEM_NOT_FOUND);
+    }
+
+    @Test
+    void verifyAndDeductStock_returnsItemNotFound_whenItemCodeNull() {
+        InventoryStatus status = inventoryService.verifyAndDeductStock(null, 1);
+
+        assertThat(status).isEqualTo(InventoryStatus.ITEM_NOT_FOUND);
+    }
+
+
 }
