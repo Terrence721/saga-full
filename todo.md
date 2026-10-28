@@ -1,6 +1,6 @@
 # 📝 TODO
 
-**Last Updated:** September 14, 2026 (register/POS frontend build complete — all 9 steps done, issue #15 closed; a professional visual layout pass now planned as a follow-up ([#228](https://github.com/Terrence721/saga-full/issues/228)); a real Docker build-concurrency regression found and fixed; a separate DRY/SOLID/composition audit closed with 0 findings left open — see Milestones 16-25)
+**Last Updated:** October 27, 2026 (frontend visual pass + E2E doc — #228; reservation-service complete with saga participation — #16; K8s manifests + runbook — #229 manifests-only; observability baseline; JSpecify 1.0.0 baseline)
 
 A phase-by-phase log of what's been done on this repo and what's still open. This is the source of truth for progress.
 
