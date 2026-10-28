@@ -11,11 +11,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.annotation.KafkaListener;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -46,8 +49,27 @@ class PaymentConsumerConfigTest {
         verify(paymentService).processPaymentSaga(captor.capture());
         assertThat(captor.getValue().orderId()).isEqualTo(orderId);
         assertThat(captor.getValue().customerId()).isEqualTo(customerId);
+        assertThat(captor.getValue().itemCode()).isEqualTo("ITEM-1");
+        assertThat(captor.getValue().quantity()).isEqualTo(2);
         assertThat(captor.getValue().totalAmount()).isEqualByComparingTo(new BigDecimal("19.99"));
+        assertThat(captor.getValue().status()).isEqualTo(OrderStatus.PENDING);
+
         verify(paymentService, never()).handleOrderCompensation(any());
+        verify(paymentService, never()).handleReservationCompensation(any());
+    }
+
+    @Test
+    void onOrderCreated_rejectsMalformedJson() {
+        assertThatThrownBy(() -> consumerConfig.onOrderCreated("{not json}"))
+                .isInstanceOf(IOException.class);
+        verify(paymentService, never()).processPaymentSaga(any());
+    }
+
+    @Test
+    void onOrderCreated_rejectsNullPayload() {
+        assertThatThrownBy(() -> consumerConfig.onOrderCreated(null))
+                .isInstanceOf(Exception.class);
+        verify(paymentService, never()).processPaymentSaga(any());
     }
 
     @Test
@@ -64,7 +86,16 @@ class PaymentConsumerConfigTest {
         assertThat(captor.getValue().orderId()).isEqualTo(orderId);
         assertThat(captor.getValue().customerId()).isEqualTo(customerId);
         assertThat(captor.getValue().reason()).isEqualTo("Out of stock");
+
         verify(paymentService, never()).processPaymentSaga(any());
+        verify(paymentService, never()).handleReservationCompensation(any());
+    }
+
+    @Test
+    void onRestaurantRejected_rejectsMalformedJson() {
+        assertThatThrownBy(() -> consumerConfig.onRestaurantRejected("{not json}"))
+                .isInstanceOf(IOException.class);
+        verify(paymentService, never()).handleOrderCompensation(any());
     }
 
     @Test
@@ -81,6 +112,45 @@ class PaymentConsumerConfigTest {
         assertThat(captor.getValue().orderId()).isEqualTo(orderId);
         assertThat(captor.getValue().customerId()).isEqualTo(customerId);
         assertThat(captor.getValue().reason()).isEqualTo("no table");
+
+        verify(paymentService, never()).processPaymentSaga(any());
+        verify(paymentService, never()).handleOrderCompensation(any());
     }
 
+    @Test
+    void onReservationRejected_rejectsMalformedJson() {
+        assertThatThrownBy(() -> consumerConfig.onReservationRejected("{not json}"))
+                .isInstanceOf(IOException.class);
+        verify(paymentService, never()).handleReservationCompensation(any());
+    }
+
+    @Test
+    void onOrderCreated_isBoundToOrderCreatedTopic() throws NoSuchMethodException {
+        KafkaListener annotation = PaymentConsumerConfig.class
+                .getMethod("onOrderCreated", String.class)
+                .getAnnotation(KafkaListener.class);
+        assertThat(annotation).isNotNull();
+        assertThat(annotation.topics()).containsExactly("order-created-topic");
+        assertThat(annotation.groupId()).isEqualTo("payment-group");
+    }
+
+    @Test
+    void onRestaurantRejected_isBoundToRestaurantRejectedTopic() throws NoSuchMethodException {
+        KafkaListener annotation = PaymentConsumerConfig.class
+                .getMethod("onRestaurantRejected", String.class)
+                .getAnnotation(KafkaListener.class);
+        assertThat(annotation).isNotNull();
+        assertThat(annotation.topics()).containsExactly("restaurant-rejected-topic");
+        assertThat(annotation.groupId()).isEqualTo("payment-compensation-group");
+    }
+
+    @Test
+    void onReservationRejected_isBoundToReservationRejectedTopic() throws NoSuchMethodException {
+        KafkaListener annotation = PaymentConsumerConfig.class
+                .getMethod("onReservationRejected", String.class)
+                .getAnnotation(KafkaListener.class);
+        assertThat(annotation).isNotNull();
+        assertThat(annotation.topics()).containsExactly("reservation-rejected-topic");
+        assertThat(annotation.groupId()).isEqualTo("payment-reservation-compensation-group");
+    }
 }
