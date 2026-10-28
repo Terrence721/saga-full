@@ -272,7 +272,13 @@ export function OrderEntryForm() {
               type="number"
               min="1"
               value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
+              onChange={(e) => {
+            setQuantity(e.target.value)
+            const selected = menu.find((item) => item.itemCode === itemCode)
+            if (selected) {
+              setTotalAmount((selected.price * (Number(e.target.value) || 1)).toFixed(2))
+            }
+          }}
               required
               aria-label="Quantity"
               disabled={isSubmitting}
