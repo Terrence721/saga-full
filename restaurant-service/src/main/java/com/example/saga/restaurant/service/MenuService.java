@@ -16,6 +16,8 @@ public class MenuService {
     }
 
     public List<MenuItem> listAvailable() {
-        return repository.findAll().stream().filter(MenuItem::isAvailable).toList();
+        return repository.findAll().stream()
+            .filter(item -> item != null && item.isAvailable())
+            .toList();
     }
 }
