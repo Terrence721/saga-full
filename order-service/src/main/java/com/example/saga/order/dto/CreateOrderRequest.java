@@ -26,6 +26,9 @@ public record CreateOrderRequest(
         @Positive(message = "Quantity must be > 0")
         int quantity,
 
-        @Size(max = 100, message = "Table name must be at most 100 characters")
-        String tableName
+        @Size(max = 50, message = "Table number must be at most 50 characters")
+        String tableNumber,
+
+        @Size(max = 100, message = "Customer name must be at most 100 characters")
+        String customerName
 ) {}

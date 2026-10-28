@@ -19,7 +19,8 @@ export function OrderEntryForm() {
   const [itemCode, setItemCode] = useState('')
   const [quantity, setQuantity] = useState('1')
   const [totalAmount, setTotalAmount] = useState('')
-  const [tableName, setTableName] = useState('')
+  const [tableNumber, setTableNumber] = useState('')
+  const [customerName, setCustomerName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [cart, setCart] = useState<CartLine[]>([])
   const [placed, setPlaced] = useState<Order[]>([])
@@ -61,7 +62,8 @@ export function OrderEntryForm() {
             itemCode: line.item.itemCode,
             quantity: line.quantity,
             totalAmount: line.item.price * line.quantity,
-            tableName: tableName || null,
+            tableNumber: tableNumber || null,
+            customerName: customerName || null,
           },
           auth.token,
         )
@@ -129,6 +131,11 @@ export function OrderEntryForm() {
               {menu.find((item) => item.itemCode === order.itemCode)?.name ?? order.itemCode}
             </p>
             <p className="mt-0.5 text-sm text-slate-500">Status: {order.status}</p>
+            {(order.tableNumber || order.customerName) && (
+              <p className="mt-0.5 text-xs text-slate-400">
+                {order.tableNumber ? `Table ${order.tableNumber}` : ''}{order.tableNumber && order.customerName ? ' · ' : ''}{order.customerName ?? ''}
+              </p>
+            )}
             {order.tableName && <p className="mt-0.5 text-xs text-slate-400">Table / customer: {order.tableName}</p>}
             <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
               <Spinner className="h-3 w-3 border-slate-300 border-t-indigo-600" />
@@ -303,10 +310,17 @@ export function OrderEntryForm() {
         )}
         <Input
           type="text"
-          placeholder="Table / customer name (optional)"
+          placeholder="Table number (optional)"
           disabled={isSubmitting}
-          value={tableName}
-          onChange={(e) => setTableName(e.target.value)}
+          value={tableNumber}
+          onChange={(e) => setTableNumber(e.target.value)}
+        />
+        <Input
+          type="text"
+          placeholder="Customer name (optional)"
+          disabled={isSubmitting}
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
         />
 
         <div>

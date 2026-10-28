@@ -43,7 +43,8 @@ public class OrderService {
                 .totalAmount(request.totalAmount())
                 .itemCode(request.itemCode())
                 .quantity(request.quantity())
-                .tableName(request.tableName())
+                .tableNumber(request.tableNumber())
+                .customerName(request.customerName())
                 .status(OrderStatus.PENDING)
                 .build();
 

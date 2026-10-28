@@ -5,7 +5,8 @@ export interface CreateOrderRequest {
   totalAmount: number
   itemCode: string
   quantity: number
-  tableName?: string | null
+  tableNumber?: string | null
+  customerName?: string | null
 }
 
 export type OrderStatus = 'PENDING' | 'SUCCESS' | 'CANCELLED'
@@ -13,6 +14,8 @@ export type OrderStatus = 'PENDING' | 'SUCCESS' | 'CANCELLED'
 export interface Order {
   id: string
   customerId: string
+  tableNumber?: string | null
+  customerName?: string | null
   tableName?: string | null
   totalAmount: number
   itemCode: string

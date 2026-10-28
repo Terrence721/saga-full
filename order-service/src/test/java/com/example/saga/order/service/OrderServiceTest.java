@@ -64,7 +64,7 @@ class OrderServiceTest {
 
     @Test
     void createOrder_savesOrderAndStagesOutboxWithRealSerializedPayload() throws Exception {
-        CreateOrderRequest request = new CreateOrderRequest(UUID.randomUUID(), new BigDecimal("19.99"), "ITEM-1", 2, null);
+        CreateOrderRequest request = new CreateOrderRequest(UUID.randomUUID(), new BigDecimal("19.99"), "ITEM-1", 2, null, null);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order order = invocation.getArgument(0);
             order.setId(UUID.randomUUID());
@@ -93,7 +93,7 @@ class OrderServiceTest {
 
     @Test
     void createOrder_publishesOrderUpdateOnCreation() {
-        CreateOrderRequest request = new CreateOrderRequest(UUID.randomUUID(), new BigDecimal("19.99"), "ITEM-1", 2, null);
+        CreateOrderRequest request = new CreateOrderRequest(UUID.randomUUID(), new BigDecimal("19.99"), "ITEM-1", 2, null, null);
         when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
             Order order = invocation.getArgument(0);
             order.setId(UUID.randomUUID());

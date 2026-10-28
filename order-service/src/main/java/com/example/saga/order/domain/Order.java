@@ -42,8 +42,11 @@ public class Order {
     @Column(nullable = false)
     private int quantity;
 
-    @Column(name = "table_name")
-    private String tableName;
+    @Column(name = "table_number")
+    private String tableNumber;
+
+    @Column(name = "customer_name")
+    private String customerName;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
