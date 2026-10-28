@@ -18,8 +18,8 @@
         <body>
         <h1>saga-full - Aggregated Test Report</h1>
         <div class="summary">
-            <span><strong>Total:</strong> 283</span>
-            <span style="color:#1a7f37"><strong>Passed:</strong> 283</span>
+            <span><strong>Total:</strong> 300</span>
+            <span style="color:#1a7f37"><strong>Passed:</strong> 300</span>
             <span style="color:#cf222e"><strong>Failed:</strong> 0</span>
             <span style="color:#9a6700"><strong>Skipped:</strong> 0</span>
         </div>
@@ -1985,7 +1985,7 @@
     <td>com.example.saga.user.grpc.UserContractSerializationTest</td>
     <td>loginRequestRoundTripsThroughSerialization()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.046s</td>
+    <td>0.016s</td>
     <td></td>
 </tr>
 <tr>
@@ -1993,7 +1993,7 @@
     <td>com.example.saga.user.grpc.UserContractSerializationTest</td>
     <td>loginResponseRoundTripsAtInt64Boundary()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.594s</td>
+    <td>0.279s</td>
     <td></td>
 </tr>
 <tr>
@@ -2001,7 +2001,7 @@
     <td>com.example.saga.user.grpc.UserContractSerializationTest</td>
     <td>loginResponseRoundTripsThroughSerialization()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2009,7 +2009,7 @@
     <td>com.example.saga.user.grpc.UserContractSerializationTest</td>
     <td>validateTokenRequestRoundTripsThroughSerialization()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.011s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -2017,7 +2017,7 @@
     <td>com.example.saga.user.grpc.UserContractSerializationTest</td>
     <td>validateTokenResponseRoundTripsWhenInvalid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.011s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -2030,10 +2030,146 @@
 </tr>
 <tr>
     <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>asyncService_defaultMethods_callUnimplemented()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.003s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>asyncStub_login_andValidateToken_invokeClientPath()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.023s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>blockingStub_login_returnsResponse()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.001s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>blockingStub_validateToken_returnsResponse()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.001s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>descriptorSuppliers_returnDescriptors()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.208s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>futureStub_login_returnsResponse()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.008s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>futureStub_validateToken_returnsResponse()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.0s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>getLoginMethod_andValidateTokenMethod_areConfigured()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.01s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>implBase_bindService_exposesService()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.008s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>methodDescriptorSuppliers_returnDescriptors()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.0s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>methodHandlers_defaultUnaryCase_throwsAssertionError()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.002s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>methodHandlers_streamingInvoke_throwsAssertionError()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.004s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>methodHandlers_unaryInvoke_coversBothMethods()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.007s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>newStub_factory_methods_returnStubs()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.001s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>privateConstructorCanBeInstantiated()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.001s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>serviceDescriptor_containsBothMethods()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.007s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
+    <td>com.example.saga.user.grpc.UserIdentityServiceGrpcTest</td>
+    <td>stubBuildMethods_canBeInvokedByReflection()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>0.016s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>user-contract</td>
     <td>com.example.saga.user.grpc.UserProtoTest</td>
     <td>getDescriptor_isNotNullAndNamedUserProto()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.041s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2049,7 +2185,7 @@
     <td>com.example.saga.user.grpc.UserProtoTest</td>
     <td>registerAllExtensions_doesNotThrowForLiteRegistry()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2057,7 +2193,7 @@
     <td>com.example.saga.user.grpc.UserProtoTest</td>
     <td>userProtoClass_canBeInstantiatedViaReflection()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.589s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
