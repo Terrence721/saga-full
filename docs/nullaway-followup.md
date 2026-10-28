@@ -21,3 +21,42 @@ unnamed module, and opening them all with `--add-exports` (via `forkOptions.jvmA
 ## Interim (advisory) option
 Eclipse JDT null analysis is configured in `.vscode/settings.json` for IDE feedback without changing
 the build; keep `@SuppressWarnings("null")` where JDT can't infer non-null (especially mocked deps).
+
+## Proposed (currently non-compiling) snippet
+
+```kotlin
+// opt-in: ./gradlew ... -Pnullaway (run on JDK 21 toolchain to avoid Error Prone internals issues)
+if (project.hasProperty("nullaway")) {
+    dependencies {
+        annotationProcessor("com.google.errorprone:error_prone_core:2.43.0")
+        annotationProcessor("com.uber.nullaway:nullaway:0.13.1")
+    }
+    tasks.withType<JavaCompile> {
+        options.isFork = true
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED")
+        options.forkOptions.jvmArgs!!.add("--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED")
+        options.compilerArgs.addAll(listOf(
+            "-XDcompilePolicy=simple",
+            "--should-stop=ifError=FLOW",
+            "-Xplugin:ErrorProne -Xep:NullAway:WARN " +
+                "-XepOpt:NullAway:AnnotatedPackages=com.example.saga " +
+                "-XepOpt:NullAway:HandleTestAssertionLibraries=false"
+        ))
+    }
+}
+```
+
+## Continuation criteria
+
+- Wait for an ErrorProne release that declares first-party support for JDK 25.
+- Alternatively down-grade *only the compile task* toolchain to Java 21 while keeping runtime on 25.
+- Any non-opt-in enablement requires a clean green run on at least one module (currently `order-service`)
+  before rolling out to the rest.
