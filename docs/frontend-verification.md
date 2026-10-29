@@ -27,7 +27,7 @@ Launch `yarn dev` (pinned to `http://localhost:5180`), open DevTools and lock th
    - Invalid credentials surface an `role="alert"` message and stay logged out
 2. **Order entry**
    - Quantity stepper increments/decrements; decrement disabled at 1
-   - Submit with a seeded item (`PIZZA_01`, qty 1, total e.g. 5.00) locks the form
+   - Submit with a seeded item (`MARGHERITA`, qty 1, total e.g. 5.00) locks the form
      and shows the spinner (“Placing…”)
 3. **Live status**
    - Status card renders order id, badge, item/qty/total, and “Live updates connected”
@@ -50,4 +50,4 @@ Launch `yarn dev` (pinned to `http://localhost:5180`), open DevTools and lock th
 - `yarn lint`: clean (exit 0)
 - `yarn build`: passes (Vite prod bundle emitted)
 - Frontend dev server (`http://localhost:5180`) and backend gateway (`http://localhost:8090`) both respond `200 OK`.
-- End-to-end saga (`PENDING → SUCCESS`) verified via the gateway with `PIZZA_01`, and the compensation path (`CANCELLED`) verified with `BURGER`.
+- End-to-end saga (`PENDING → SUCCESS`) verified via the gateway with `MARGHERITA`, and the compensation path (`CANCELLED`) verified with `BURGER`.

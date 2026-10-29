@@ -34,7 +34,7 @@ class RestaurantConsumerConfigTest {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         String payload = new ObjectMapper().writeValueAsString(
-                new PaymentProcessedEvent(orderId, customerId, "PIZZA_01", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED));
+                new PaymentProcessedEvent(orderId, customerId, "MARGHERITA", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED));
 
         consumerConfig.onPaymentProcessed(payload);
 

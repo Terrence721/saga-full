@@ -19,12 +19,12 @@ class InventoryItemRepositoryTest {
     @Test
     void findById_returnsItem_whenItExists() {
         InventoryItem item = InventoryItem.builder()
-                .itemCode("PIZZA_01")
+                .itemCode("MARGHERITA")
                 .stockCount(10)
                 .build();
         inventoryItemRepository.save(item);
 
-        Optional<InventoryItem> found = inventoryItemRepository.findById("PIZZA_01");
+        Optional<InventoryItem> found = inventoryItemRepository.findById("MARGHERITA");
 
         assertThat(found).isPresent();
         assertThat(found.get().getStockCount()).isEqualTo(10);

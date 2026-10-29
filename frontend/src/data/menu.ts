@@ -11,19 +11,19 @@ export interface MenuItem {
 }
 
 export const MENU: MenuItem[] = [
-  { itemCode: 'PIZZA_01', name: 'Margherita', description: 'Tomato, mozzarella, basil', category: 'Pizza', price: 8.5 },
-  { itemCode: 'PIZZA_02', name: 'Pepperoni', description: 'Tomato, mozzarella, pepperoni', category: 'Pizza', price: 10.0 },
-  { itemCode: 'PIZZA_03', name: 'Heat Wave', description: 'Spicy salami, jalapeño, chili oil', category: 'Pizza', price: 11.5, spicy: true },
-  { itemCode: 'PIZZA_04', name: 'Quattro Formaggi', description: 'Mozzarella, gorgonzola, fontina, parmesan', category: 'Pizza', price: 12.0 },
-  { itemCode: 'PIZZA_05', name: 'Veggie', description: 'Artichoke, mushroom, bell pepper, olive', category: 'Pizza', price: 11.0 },
-  { itemCode: 'PIZZA_06', name: 'Capricciosa', description: 'Ham, artichoke, mushroom, olive, egg', category: 'Pizza', price: 13.0 },
-  { itemCode: 'PIZZA_07', name: 'Diavola', description: 'Spicy nduja, mozzarella, chili', category: 'Pizza', price: 12.5, spicy: true },
-  { itemCode: 'PIZZA_08', name: 'Truffle', description: 'Mushroom, truffle oil, parmesan (low stock)', category: 'Pizza', price: 14.0 },
-  { itemCode: 'PIZZA_09', name: 'Hawaiian', description: 'Ham, pineapple, mozzarella', category: 'Pizza', price: 10.5 },
-  { itemCode: 'PIZZA_10', name: 'Spinach Ricotta', description: 'Ricotta, spinach, garlic, parmesan', category: 'Pizza', price: 11.5 },
-  { itemCode: 'DRINK_01', name: 'Cola', description: '330 ml', category: 'Drink', price: 2.5 },
-  { itemCode: 'DRINK_02', name: 'Lemonade', description: '330 ml', category: 'Drink', price: 2.5 },
-  { itemCode: 'SIDE_01', name: 'Garlic Bread', description: '4 pieces', category: 'Side', price: 4.0 },
+  { itemCode: 'MARGHERITA', name: 'Margherita', description: 'Tomato, mozzarella, basil', category: 'Pizza', price: 8.5 },
+  { itemCode: 'PEPPERONI', name: 'Pepperoni', description: 'Tomato, mozzarella, pepperoni', category: 'Pizza', price: 10.0 },
+  { itemCode: 'HEAT_WAVE', name: 'Heat Wave', description: 'Spicy salami, jalapeño, chili oil', category: 'Pizza', price: 11.5, spicy: true },
+  { itemCode: 'QUATTRO_FORMAGGI', name: 'Quattro Formaggi', description: 'Mozzarella, gorgonzola, fontina, parmesan', category: 'Pizza', price: 12.0 },
+  { itemCode: 'VEGGIE', name: 'Veggie', description: 'Artichoke, mushroom, bell pepper, olive', category: 'Pizza', price: 11.0 },
+  { itemCode: 'CAPRICCIOSA', name: 'Capricciosa', description: 'Ham, artichoke, mushroom, olive, egg', category: 'Pizza', price: 13.0 },
+  { itemCode: 'DIAVOLA', name: 'Diavola', description: 'Spicy nduja, mozzarella, chili', category: 'Pizza', price: 12.5, spicy: true },
+  { itemCode: 'TRUFFLE', name: 'Truffle', description: 'Mushroom, truffle oil, parmesan (low stock)', category: 'Pizza', price: 14.0 },
+  { itemCode: 'HAWAIIAN', name: 'Hawaiian', description: 'Ham, pineapple, mozzarella', category: 'Pizza', price: 10.5 },
+  { itemCode: 'SPINACH_RICOTTA', name: 'Spinach Ricotta', description: 'Ricotta, spinach, garlic, parmesan', category: 'Pizza', price: 11.5 },
+  { itemCode: 'COLA', name: 'Cola', description: '330 ml', category: 'Drink', price: 2.5 },
+  { itemCode: 'LEMONADE', name: 'Lemonade', description: '330 ml', category: 'Drink', price: 2.5 },
+  { itemCode: 'GARLIC_BREAD', name: 'Garlic Bread', description: '4 pieces', category: 'Side', price: 4.0 },
 ]
 
 export function findMenuItem(code: string): MenuItem | undefined {

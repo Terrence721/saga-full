@@ -51,7 +51,7 @@ class RestaurantServiceTest {
     }
 
     private PaymentProcessedEvent paymentProcessedEvent(UUID orderId, UUID customerId) {
-        return new PaymentProcessedEvent(orderId, customerId, "PIZZA_01", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED);
+        return new PaymentProcessedEvent(orderId, customerId, "MARGHERITA", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED);
     }
 
     @Test
@@ -69,7 +69,7 @@ class RestaurantServiceTest {
     void processRestaurantStep_throwsIllegalArgumentException_whenOrderIdIsNull() {
         when(ticketRepository.existsByOrderId(null)).thenReturn(false);
         PaymentProcessedEvent event = new PaymentProcessedEvent(
-                null, UUID.randomUUID(), "PIZZA_01", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED);
+                null, UUID.randomUUID(), "MARGHERITA", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED);
 
         assertThatThrownBy(() -> restaurantService.processRestaurantStep(event))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -80,7 +80,7 @@ class RestaurantServiceTest {
         UUID orderId = UUID.randomUUID();
         when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
         PaymentProcessedEvent event = new PaymentProcessedEvent(
-                orderId, null, "PIZZA_01", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED);
+                orderId, null, "MARGHERITA", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED);
 
         assertThatThrownBy(() -> restaurantService.processRestaurantStep(event))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -102,7 +102,7 @@ class RestaurantServiceTest {
         UUID orderId = UUID.randomUUID();
         when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
         PaymentProcessedEvent event = new PaymentProcessedEvent(
-                orderId, UUID.randomUUID(), "PIZZA_01", 2, new BigDecimal("19.99"), null);
+                orderId, UUID.randomUUID(), "MARGHERITA", 2, new BigDecimal("19.99"), null);
 
         assertThatThrownBy(() -> restaurantService.processRestaurantStep(event))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -113,7 +113,7 @@ class RestaurantServiceTest {
         UUID orderId = UUID.randomUUID();
         when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
         PaymentProcessedEvent event = new PaymentProcessedEvent(
-                orderId, UUID.randomUUID(), "PIZZA_01", 0, new BigDecimal("19.99"), PaymentStatus.APPROVED);
+                orderId, UUID.randomUUID(), "MARGHERITA", 0, new BigDecimal("19.99"), PaymentStatus.APPROVED);
 
         assertThatThrownBy(() -> restaurantService.processRestaurantStep(event))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -125,7 +125,7 @@ class RestaurantServiceTest {
         UUID orderId = UUID.randomUUID();
         when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
         PaymentProcessedEvent event = new PaymentProcessedEvent(
-                orderId, UUID.randomUUID(), "PIZZA_01", 2, BigDecimal.ZERO, PaymentStatus.APPROVED);
+                orderId, UUID.randomUUID(), "MARGHERITA", 2, BigDecimal.ZERO, PaymentStatus.APPROVED);
 
         assertThatThrownBy(() -> restaurantService.processRestaurantStep(event))
                 .isInstanceOf(IllegalArgumentException.class);
@@ -138,7 +138,7 @@ class RestaurantServiceTest {
         UUID customerId = UUID.randomUUID();
         UUID ticketId = UUID.randomUUID();
         when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
-        when(inventoryService.verifyAndDeductStock("PIZZA_01", 2)).thenReturn(InventoryStatus.ALLOCATED);
+        when(inventoryService.verifyAndDeductStock("MARGHERITA", 2)).thenReturn(InventoryStatus.ALLOCATED);
         when(ticketRepository.save(any(RestaurantTicket.class))).thenAnswer(invocation -> {
             RestaurantTicket ticket = invocation.getArgument(0);
             ticket.setId(ticketId);
@@ -169,7 +169,7 @@ class RestaurantServiceTest {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
-        when(inventoryService.verifyAndDeductStock("PIZZA_01", 2)).thenReturn(InventoryStatus.INSUFFICIENT_STOCK);
+        when(inventoryService.verifyAndDeductStock("MARGHERITA", 2)).thenReturn(InventoryStatus.INSUFFICIENT_STOCK);
         when(ticketRepository.save(any(RestaurantTicket.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         restaurantService.processRestaurantStep(paymentProcessedEvent(orderId, customerId));
@@ -194,7 +194,7 @@ class RestaurantServiceTest {
         when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
         when(ticketRepository.save(any(RestaurantTicket.class))).thenAnswer(invocation -> invocation.getArgument(0));
         PaymentProcessedEvent event = new PaymentProcessedEvent(
-                orderId, customerId, "PIZZA_01", 2, new BigDecimal("19.99"), PaymentStatus.FAILED);
+                orderId, customerId, "MARGHERITA", 2, new BigDecimal("19.99"), PaymentStatus.FAILED);
 
         restaurantService.processRestaurantStep(event);
 
@@ -218,7 +218,7 @@ class RestaurantServiceTest {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         when(ticketRepository.existsByOrderId(orderId)).thenReturn(false);
-        when(inventoryService.verifyAndDeductStock("PIZZA_01", 2)).thenReturn(InventoryStatus.ITEM_NOT_FOUND);
+        when(inventoryService.verifyAndDeductStock("MARGHERITA", 2)).thenReturn(InventoryStatus.ITEM_NOT_FOUND);
         when(ticketRepository.save(any(RestaurantTicket.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         restaurantService.processRestaurantStep(paymentProcessedEvent(orderId, customerId));

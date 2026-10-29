@@ -46,7 +46,7 @@ the endpoints defined in `manifests/monitoring/config/*-config.yaml`.
 # Healthy happy path lands in SUCCESS on the SSE stream
 curl -sS -X POST http://localhost:8090/orders -H "Authorization: Bearer <jwt>" \
   -H 'Content-Type: application/json' \
-  -d '{"customerId":"<id>","itemCode":"PIZZA_01","quantity":1,"totalAmount":5}'
+  -d '{"customerId":"<id>","itemCode":"MARGHERITA","quantity":1,"totalAmount":5}'
 # Then GET /orders/{id}/stream and watch PENDING -> SUCCESS.
 ```
 

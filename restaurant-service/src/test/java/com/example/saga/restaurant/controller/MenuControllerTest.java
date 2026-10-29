@@ -29,7 +29,7 @@ class MenuControllerTest {
     @Test
     void list_returnsAvailableItems() throws Exception {
         MenuItem item = MenuItem.builder()
-                .itemCode("PIZZA_01")
+                .itemCode("MARGHERITA")
                 .name("Margherita")
                 .description("Tomato, mozzarella, basil")
                 .category(MenuCategory.Pizza)
@@ -40,7 +40,7 @@ class MenuControllerTest {
 
         mockMvc.perform(get("/menu"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].itemCode").value("PIZZA_01"))
+                .andExpect(jsonPath("$[0].itemCode").value("MARGHERITA"))
                 .andExpect(jsonPath("$[0].category").value("Pizza"));
     }
 }

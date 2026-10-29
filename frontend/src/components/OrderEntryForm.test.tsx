@@ -35,7 +35,7 @@ const sampleOrder: Order = {
   status: 'PENDING',
 }
 
-async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, itemCode = 'PIZZA_01') {
+async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, itemCode = 'MARGHERITA') {
   // Selecting a menu item also auto-fills the total amount from the catalogue;
   // overwrite it with the explicit test value so the expected payload stays 5.
   await user.selectOptions(screen.getByRole('combobox', { name: 'Menu item' }), itemCode)
@@ -64,7 +64,7 @@ describe('OrderEntryForm', () => {
 
     expect(await screen.findByText(/status: PENDING/)).toBeInTheDocument()
     expect(createOrder).toHaveBeenCalledWith(
-      { customerId: 'customer-1', itemCode: 'PIZZA_01', quantity: 1, totalAmount: 5, tableNumber: null, customerName: null, paymentMethod: 'CASH', cardNumber: null, cardCvv: null },
+      { customerId: 'customer-1', itemCode: 'MARGHERITA', quantity: 1, totalAmount: 5, tableNumber: null, customerName: null, paymentMethod: 'CASH', cardNumber: null, cardCvv: null },
       'test-token',
     )
     expect(streamOrder).toHaveBeenCalledWith('order-1', 'test-token', expect.any(Function))

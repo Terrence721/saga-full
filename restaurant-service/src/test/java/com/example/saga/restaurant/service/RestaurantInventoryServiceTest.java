@@ -34,10 +34,10 @@ class RestaurantInventoryServiceTest {
 
     @Test
     void verifyAndDeductStock_returnsAllocatedAndDeducts_whenEnoughStock() {
-        InventoryItem item = InventoryItem.builder().itemCode("PIZZA_01").stockCount(10).build();
-        when(inventoryItemRepository.findByItemCodeForUpdate("PIZZA_01")).thenReturn(Optional.of(item));
+        InventoryItem item = InventoryItem.builder().itemCode("MARGHERITA").stockCount(10).build();
+        when(inventoryItemRepository.findByItemCodeForUpdate("MARGHERITA")).thenReturn(Optional.of(item));
 
-        InventoryStatus status = inventoryService.verifyAndDeductStock("PIZZA_01", 3);
+        InventoryStatus status = inventoryService.verifyAndDeductStock("MARGHERITA", 3);
 
         assertThat(status).isEqualTo(InventoryStatus.ALLOCATED);
         ArgumentCaptor<InventoryItem> captor = ArgumentCaptor.forClass(InventoryItem.class);
@@ -47,10 +47,10 @@ class RestaurantInventoryServiceTest {
 
     @Test
     void verifyAndDeductStock_returnsInsufficientStock_whenNotEnough() {
-        InventoryItem item = InventoryItem.builder().itemCode("PIZZA_01").stockCount(2).build();
-        when(inventoryItemRepository.findByItemCodeForUpdate("PIZZA_01")).thenReturn(Optional.of(item));
+        InventoryItem item = InventoryItem.builder().itemCode("MARGHERITA").stockCount(2).build();
+        when(inventoryItemRepository.findByItemCodeForUpdate("MARGHERITA")).thenReturn(Optional.of(item));
 
-        InventoryStatus status = inventoryService.verifyAndDeductStock("PIZZA_01", 3);
+        InventoryStatus status = inventoryService.verifyAndDeductStock("MARGHERITA", 3);
 
         assertThat(status).isEqualTo(InventoryStatus.INSUFFICIENT_STOCK);
         verify(inventoryItemRepository, never()).save(any());
