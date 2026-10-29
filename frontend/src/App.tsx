@@ -88,8 +88,7 @@ function ArrowIcon() {
 
 export default function App() {
   const [category, setCategory] = useState<(typeof categories)[number]>('All')
-  const visibleMenu =
-    category === 'All' ? menu : menu.filter((item) => item.category === category)
+  const visibleMenu = category === 'All' ? menu : menu.filter((item) => item.category === category)
 
   return (
     <main>
@@ -134,7 +133,10 @@ export default function App() {
         </div>
 
         <div className="hero-visual">
-          <img src="https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?auto=format&fit=crop&w=1400&q=90" alt="Two freshly baked Neapolitan pizzas on a table" />
+          <img
+            src="https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?auto=format&fit=crop&w=1400&q=90"
+            alt="Two freshly baked Neapolitan pizzas on a table"
+          />
           <div className="hero-stamp" aria-hidden="true">
             <span>48</span>
             <small>hour dough</small>
@@ -166,10 +168,14 @@ export default function App() {
 
       <section className="story" id="story">
         <p className="section-number">01 — Our approach</p>
-        <blockquote>“We make the kind of pizza we want to eat: simple, blistered, and full of life.”</blockquote>
+        <blockquote>
+          “We make the kind of pizza we want to eat: simple, blistered, and full
+          of life.”
+        </blockquote>
         <p className="story-copy">
-          Our dough starts two days before it reaches your plate. That time gives every crust its lightness, tang, and
-          signature chew. We source carefully and let every ingredient speak for itself.
+          Our dough starts two days before it reaches your plate. That time
+          gives every crust its lightness, tang, and signature chew. We source
+          carefully and let every ingredient speak for itself.
         </p>
       </section>
 
@@ -196,7 +202,11 @@ export default function App() {
 
         <div className="menu-grid landing-menu-grid" role="tabpanel">
           {visibleMenu.map((item, index) => (
-            <article className={`menu-card ${item.image ? 'with-image' : ''}`} key={item.id} style={{ animationDelay: `${index * 55}ms` }}>
+            <article
+              className={`menu-card ${item.image ? 'with-image' : ''}`}
+              key={item.id}
+              style={{ animationDelay: `${index * 55}ms` }}
+            >
               {item.image && <img src={item.image} alt="" />}
               <div className="menu-card-body">
                 <div className="item-meta">
@@ -205,7 +215,7 @@ export default function App() {
                 </div>
                 <div className="item-title">
                   <h3>{item.name}</h3>
-                  <strong>€{item.price.toFixed(2)}</strong>
+                  <strong>${item.price.toFixed(2)}</strong>
                 </div>
                 <p>{item.description}</p>
               </div>
@@ -216,12 +226,18 @@ export default function App() {
 
       <section className="visit-section" id="visit">
         <div className="visit-image">
-          <img src="https://images.unsplash.com/photo-1622880833523-7cf1c0bd4296?auto=format&fit=crop&w=1400&q=85" alt="Pizza baking in a wood-fired oven" />
+          <img
+            src="https://images.unsplash.com/photo-1622880833523-7cf1c0bd4296?auto=format&fit=crop&w=1400&q=85"
+            alt="Pizza baking in a wood-fired oven"
+          />
         </div>
         <div className="visit-copy">
           <p className="eyebrow">Come by tonight</p>
           <h2>A seat by the oven is waiting.</h2>
-          <p>Walk-ins are always welcome. For groups of six or more, give us a call and we’ll save you a table.</p>
+          <p>
+            Walk-ins are always welcome. For groups of six or more, give us a
+            call and we’ll save you a table.
+          </p>
           <div className="visit-details">
             <p>
               <span>Find us</span>
@@ -256,7 +272,11 @@ export default function App() {
         </div>
         <div className="footer-bottom">
           <p>© 2025 Forno Pizza Co.</p>
-          <a href="https://unsplash.com/s/photos/neapolitan-pizza" target="_blank" rel="noreferrer">
+          <a
+            href="https://unsplash.com/s/photos/neapolitan-pizza"
+            target="_blank"
+            rel="noreferrer"
+          >
             Photography via Unsplash
           </a>
         </div>
