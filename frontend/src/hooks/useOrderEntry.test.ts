@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createElement, type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { createElement as ce } from 'react'
 import { vi, beforeEach, describe, expect, it } from 'vitest'
 import { AuthContext, type AuthState } from '../context/AuthContext'
