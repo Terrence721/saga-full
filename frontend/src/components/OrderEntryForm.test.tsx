@@ -49,8 +49,8 @@ const sampleOrder: Order = {
 async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, itemCode = 'MARGHERITA') {
   // Selecting a menu item also auto-fills the total amount from the catalogue;
   // overwrite it with the explicit test value so the expected payload stays 5.
-  const menuSelect = screen.queryByRole('combobox', { name: 'Menu item' })
-  if (menuSelect) await user.selectOptions(menuSelect, itemCode)
+  const menuSelect = await screen.findByRole('combobox', { name: 'Menu item' })
+  await user.selectOptions(menuSelect, itemCode)
   await user.clear(screen.getByRole('spinbutton', { name: 'Quantity' }))
   await user.type(screen.getByRole('spinbutton', { name: 'Quantity' }), '1')
   await user.clear(screen.getByPlaceholderText('Total amount'))

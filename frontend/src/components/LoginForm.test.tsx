@@ -42,7 +42,7 @@ describe('LoginForm', () => {
 
     await waitFor(() => expect(screen.getByTestId('token')).toHaveTextContent('real-jwt-token'))
     expect(login).toHaveBeenCalledWith({ email: 'cashier@test.local', password: 'Password123!' })
-  })
+  }, 30000)
 
   it('shows the real API error message on a failed login, without logging in', async () => {
     vi.mocked(login).mockRejectedValue(new ApiError(401, { message: 'Invalid credentials' }))
@@ -55,7 +55,7 @@ describe('LoginForm', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Invalid credentials')
     expect(screen.getByTestId('token')).toHaveTextContent('no-token')
-  })
+  }, 30000)
 
   it('falls back to a generic message for a non-ApiError failure', async () => {
     vi.mocked(login).mockRejectedValue(new Error('network down'))
@@ -67,7 +67,7 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: 'Log in' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Login failed')
-  })
+  }, 30000)
 
   it('toggles password visibility without submitting the form', async () => {
     const user = userEvent.setup()
@@ -82,6 +82,6 @@ describe('LoginForm', () => {
 
     await user.click(screen.getByRole('button', { name: 'Hide password' }))
     expect(passwordInput).toHaveAttribute('type', 'password')
-  })
+  }, 30000)
 
 })

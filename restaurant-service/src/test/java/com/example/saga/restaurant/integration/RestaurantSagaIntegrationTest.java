@@ -1,11 +1,8 @@
 package com.example.saga.restaurant.integration;
 
-import com.example.saga.restaurant.domain.RestaurantTicket;
 import com.example.saga.restaurant.domain.RestaurantTicketStatus;
 import com.example.saga.restaurant.dto.PaymentProcessedEvent;
 import com.example.saga.restaurant.dto.PaymentStatus;
-import com.example.saga.restaurant.dto.RestaurantApprovedEvent;
-import com.example.saga.restaurant.dto.RestaurantRejectedEvent;
 import com.example.saga.restaurant.repository.RestaurantTicketRepository;
 import com.example.saga.restaurant.repository.OutboxRepository;
 import com.example.saga.restaurant.service.RestaurantService;
@@ -38,8 +35,11 @@ class RestaurantSagaIntegrationTest {
 
         restaurantService.processRestaurantStep(event);
 
-        assertThat(ticketRepository.findAll().stream().filter(t -> t.getOrderId().equals(orderId)).findFirst())
-                .isPresent().get().extracting(RestaurantTicket::getStatus).isEqualTo(RestaurantTicketStatus.PREPARING);
+        assertThat(ticketRepository.findAll().stream()
+            .filter(t -> t.getOrderId().equals(orderId))
+            .map(ticket -> ticket.getStatus())
+            .findFirst())
+            .contains(RestaurantTicketStatus.PREPARING);
         assertThat(outboxRepository.findAll()).anySatisfy(r -> assertThat(r.getEventType()).isEqualTo("RestaurantApprovedEvent"));
     }
 
@@ -52,8 +52,11 @@ class RestaurantSagaIntegrationTest {
 
         restaurantService.processRestaurantStep(event);
 
-        assertThat(ticketRepository.findAll().stream().filter(t -> t.getOrderId().equals(orderId)).findFirst())
-                .isPresent().get().extracting(RestaurantTicket::getStatus).isEqualTo(RestaurantTicketStatus.REJECTED);
+        assertThat(ticketRepository.findAll().stream()
+            .filter(t -> t.getOrderId().equals(orderId))
+            .map(ticket -> ticket.getStatus())
+            .findFirst())
+            .contains(RestaurantTicketStatus.REJECTED);
         assertThat(outboxRepository.findAll()).anySatisfy(r -> assertThat(r.getEventType()).isEqualTo("RestaurantRejectedEvent"));
     }
 }
