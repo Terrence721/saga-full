@@ -87,6 +87,8 @@ function ArrowIcon() {
   )
 }
 
+const defaultReservationStart = new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16)
+
 export default function App() {
   const [category, setCategory] = useState<(typeof categories)[number]>('All')
   const [showReservation, setShowReservation] = useState(false)
@@ -98,7 +100,7 @@ export default function App() {
     customerId: 'guest',
     tableNumber: 'T-1',
     partySize: '2',
-    startTime: new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16),
+    startTime: defaultReservationStart,
   })
   const visibleMenu = category === 'All' ? menu : menu.filter((item) => item.category === category)
 
