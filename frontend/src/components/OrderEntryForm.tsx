@@ -317,13 +317,18 @@ export function OrderEntryForm() {
             ))}
           </select>
         )}
-        <Input
-          type="text"
-          placeholder="Table number (optional)"
-          disabled={isSubmitting}
+        <select
+          aria-label="Table number"
           value={tableNumber}
+          disabled={isSubmitting}
           onChange={(e) => setTableNumber(e.target.value)}
-        />
+          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+        >
+          <option value="">No table (optional)</option>
+          {Array.from({ length: 10 }, (_, i) => `Table ${i + 1}`).map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
         <Input
           type="text"
           placeholder="Customer name (optional)"
