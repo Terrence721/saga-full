@@ -10,6 +10,8 @@ export interface MenuItem {
   spicy?: boolean
 }
 
+// Offline fallback only; the live menu is fetched from /menu at runtime.
+// Keep in sync with restaurant-service/src/main/resources/data.sql.
 export const MENU: MenuItem[] = [
   { itemCode: 'MARGHERITA', name: 'Margherita', description: 'Tomato, mozzarella, basil', category: 'MARGHERITA', price: 8.5 },
   { itemCode: 'PEPPERONI', name: 'Pepperoni', description: 'Tomato, mozzarella, pepperoni', category: 'PEPPERONI', price: 10.0 },

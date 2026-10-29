@@ -1,99 +1,15 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { createOrder, streamOrder, type Order } from '../api/orderClient'
-import { ApiError } from '../api/httpClient'
-import { useAuth } from '../context/useAuth'
+import { useOrderEntry } from '../hooks/useOrderEntry'
 import { Button } from './ui/Button'
-import { fetchMenu, type MenuItem } from '../api/menuClient'
-import { MENU } from '../data/menu'
 import { Card } from './ui/Card'
 import { Input } from './ui/Input'
 import { StatusBadge } from './ui/StatusBadge'
 import { Spinner } from './ui/Spinner'
 
-interface CartLine {
-  item: MenuItem
-  quantity: number
-}
-
 export function OrderEntryForm() {
-  const [itemCode, setItemCode] = useState('')
-  const [quantity, setQuantity] = useState('1')
-  const [totalAmount, setTotalAmount] = useState('')
-  const [tableNumber, setTableNumber] = useState('')
-  const [customerName, setCustomerName] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD'>('CASH')
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardCvv, setCardCvv] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [cart, setCart] = useState<CartLine[]>([])
-  const [placed, setPlaced] = useState<Order[]>([])
-  const [menu, setMenu] = useState<MenuItem[]>(() => MENU.map((item) => ({ ...item, available: true })))
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [order, setOrder] = useState<Order | null>(null)
-  const auth = useAuth()
-  const stopStreamRef = useRef<(() => void) | null>(null)
+  const h = useOrderEntry()
+  const auth = h.auth
 
-  useEffect(() => () => stopStreamRef.current?.(), [])
-
-  useEffect(() => {
-    if (!auth.token) return
-    fetchMenu(auth.token).then((items) => { if (items.length) setMenu(items) }).catch(() => {})
-  }, [auth.token])
-
-
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault()
-    setError(null)
-    setIsSubmitting(true)
-
-    if (!auth.token || !auth.customerId) {
-      setError('You must be logged in to place an order')
-      setIsSubmitting(false)
-      return
-    }
-
-    const lines = cart.length > 0
-      ? cart
-      : [{ item: { itemCode, name: itemCode, description: '', category: itemCode, price: Number(totalAmount) || 0, available: true }, quantity: Number(quantity) || 1 }]
-
-    try {
-      const createdOrders: Order[] = []
-      for (const line of lines) {
-        const created = await createOrder(
-          {
-            customerId: auth.customerId,
-            itemCode: line.item.itemCode,
-            quantity: line.quantity,
-            totalAmount: line.item.price * line.quantity,
-            tableNumber: tableNumber || null,
-            customerName: customerName || null,
-            paymentMethod,
-            cardNumber: paymentMethod === 'CARD' ? (cardNumber || null) : null,
-            cardCvv: paymentMethod === 'CARD' ? (cardCvv || null) : null,
-          },
-          auth.token,
-        )
-        createdOrders.push(created)
-        stopStreamRef.current = streamOrder(created.id, auth.token, (updated) => {
-          setPlaced((current) => current.map((row) => (row.id === updated.id ? updated : row)))
-        })
-      }
-      setPlaced(createdOrders)
-      setCart([])
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Order could not be created')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  function startNewOrder() {
-    stopStreamRef.current?.()
-    stopStreamRef.current = null
-    setOrder(null)
-  }
-
-  if (placed.length > 0) {
+  if (h.placed.length > 0) {
     return (
       <Card>
         <div className="mb-6 flex items-baseline justify-between">
@@ -101,13 +17,13 @@ export function OrderEntryForm() {
             <h2 className="text-xl font-semibold text-slate-900">Placed orders</h2>
             <p className="mt-1 text-sm text-slate-500">Live statuses update below.</p>
           </div>
-          <StatusBadge status={placed.every((o) => o.status === 'SUCCESS') ? 'SUCCESS' : 'PENDING'} />
+          <StatusBadge status={h.placed.every((o) => o.status === 'SUCCESS') ? 'SUCCESS' : 'PENDING'} />
         </div>
         <ul className="space-y-3">
-          {placed.map((placedOrder) => (
+          {h.placed.map((placedOrder) => (
             <li key={placedOrder.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
               <div>
-                <p className="font-medium text-slate-900">{menu.find((item) => item.itemCode === placedOrder.itemCode)?.name ?? placedOrder.itemCode}</p>
+                <p className="font-medium text-slate-900">{h.menu.find((item) => item.itemCode === placedOrder.itemCode)?.name ?? placedOrder.itemCode}</p>
                 {(placedOrder.tableNumber || placedOrder.customerName) && (
                   <p className="text-xs text-slate-500">
                     {placedOrder.tableNumber ? `Table ${placedOrder.tableNumber}` : ''}{placedOrder.tableNumber && placedOrder.customerName ? ' · ' : ''}{placedOrder.customerName ?? ''}
@@ -120,9 +36,9 @@ export function OrderEntryForm() {
         </ul>
         <div className="mt-6">
           <Button type="button" variant="secondary" onClick={() => {
-            stopStreamRef.current?.()
-            stopStreamRef.current = null
-            setPlaced([])
+            h.stopStreamRef.current?.()
+            h.stopStreamRef.current = null
+            h.setPlaced([])
           }}>
             New order
           </Button>
@@ -131,47 +47,47 @@ export function OrderEntryForm() {
     )
   }
 
-  if (order) {
+  if (h.order) {
     return (
       <Card>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-sm text-slate-500">Current order</p>
             <p className="mt-1 text-lg font-semibold text-slate-900">
-              {menu.find((item) => item.itemCode === order.itemCode)?.name ?? order.itemCode}
+              {h.menu.find((item) => item.itemCode === h.order!.itemCode)?.name ?? h.order!.itemCode}
             </p>
-            <p className="mt-0.5 text-sm text-slate-500">Status: {order.status}</p>
-            {(order.tableNumber || order.customerName) && (
+            <p className="mt-0.5 text-sm text-slate-500">Status: {h.order.status}</p>
+            {(h.order.tableNumber || h.order.customerName) && (
               <p className="mt-0.5 text-xs text-slate-400">
-                {order.tableNumber ? `Table ${order.tableNumber}` : ''}{order.tableNumber && order.customerName ? ' · ' : ''}{order.customerName ?? ''}
+                {h.order.tableNumber ? `Table ${h.order.tableNumber}` : ''}{h.order.tableNumber && h.order.customerName ? ' · ' : ''}{h.order.customerName ?? ''}
               </p>
             )}
-            {order.tableName && <p className="mt-0.5 text-xs text-slate-400">Table / customer: {order.tableName}</p>}
+            {h.order.tableName && <p className="mt-0.5 text-xs text-slate-400">Table / customer: {h.order.tableName}</p>}
             <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
               <Spinner className="h-3 w-3 border-slate-300 border-t-indigo-600" />
               <span>Live updates connected</span>
             </div>
           </div>
-          <StatusBadge status={order.status} />
+          <StatusBadge status={h.order.status} />
         </div>
 
         <dl className="mt-6 grid grid-cols-3 gap-4 rounded-xl bg-slate-50 p-4 text-sm">
           <div>
             <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">Item</dt>
-            <dd className="mt-1 font-medium text-slate-900">{order.itemCode}</dd>
+            <dd className="mt-1 font-medium text-slate-900">{h.order.itemCode}</dd>
           </div>
           <div>
             <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">Quantity</dt>
-            <dd className="mt-1 font-medium text-slate-900">{order.quantity}</dd>
+            <dd className="mt-1 font-medium text-slate-900">{h.order.quantity}</dd>
           </div>
           <div>
             <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">Total</dt>
-            <dd className="mt-1 font-medium text-slate-900">{order.totalAmount}</dd>
+            <dd className="mt-1 font-medium text-slate-900">{h.order.totalAmount}</dd>
           </div>
         </dl>
 
         <div className="mt-6">
-          <Button type="button" variant="secondary" onClick={startNewOrder}>
+          <Button type="button" variant="secondary" onClick={h.startNewOrder}>
             New order
           </Button>
         </div>
@@ -186,62 +102,62 @@ export function OrderEntryForm() {
         <p className="mt-1 text-sm text-slate-500">Capture an item and total, then send it into the saga.</p>
       </div>
 
-        {menu.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-baseline justify-between">
-              <h3 className="text-sm font-semibold text-slate-900">Menu (click to fill the order line)</h3>
-              <span className="text-xs text-slate-500">{menu.length} items</span>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {menu.map((item) => {
-                const selected = item.itemCode === itemCode
-                return (
-                  <button
-                    key={item.itemCode}
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      setItemCode(item.itemCode)
-                      setTotalAmount((item.price * (Number(quantity) || 1)).toFixed(2))
-                      setCart((current) => {
-                        const existing = current.find((line) => line.item.itemCode === item.itemCode)
-                        const next = existing
-                          ? current.map((line) =>
-                              line.item.itemCode === item.itemCode
-                                ? { ...line, quantity: line.quantity + 1 }
-                                : line,
-                            )
-                          : [...current, { item, quantity: 1 }]
-                        const total = next.reduce((sum, line) => sum + line.item.price * line.quantity, 0)
-                        setTotalAmount(total.toFixed(2))
-                        return next
-                      })
-                    }}
-                    className={`rounded-xl border px-4 py-3 text-left transition-colors ${
-                      selected
-                        ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
-                        : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">{item.name}</p>
-                        <p className="mt-0.5 text-xs text-slate-500">{item.description}</p>
-                      </div>
-                      <span className="text-xs font-semibold text-indigo-600">{item.price.toFixed(2)}</span>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
+      {h.menu.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-baseline justify-between">
+            <h3 className="text-sm font-semibold text-slate-900">Menu (click to fill the order line)</h3>
+            <span className="text-xs text-slate-500">{h.menu.length} items</span>
           </div>
-        )}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {h.menu.map((item) => {
+              const selected = item.itemCode === h.itemCode
+              return (
+                <button
+                  key={item.itemCode}
+                  type="button"
+                  disabled={h.isSubmitting}
+                  onClick={() => {
+                    h.setItemCode(item.itemCode)
+                    h.setTotalAmount((item.price * (Number(h.quantity) || 1)).toFixed(2))
+                    h.setCart((current) => {
+                      const existing = current.find((line) => line.item.itemCode === item.itemCode)
+                      const next = existing
+                        ? current.map((line) =>
+                            line.item.itemCode === item.itemCode
+                              ? { ...line, quantity: line.quantity + 1 }
+                              : line,
+                          )
+                        : [...current, { item, quantity: 1 }]
+                      const total = next.reduce((sum, line) => sum + line.item.price * line.quantity, 0)
+                      h.setTotalAmount(total.toFixed(2))
+                      return next
+                    })
+                  }}
+                  className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+                    selected
+                      ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500'
+                      : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">{item.name}</p>
+                      <p className="mt-0.5 text-xs text-slate-500">{item.description}</p>
+                    </div>
+                    <span className="text-xs font-semibold text-indigo-600">{item.price.toFixed(2)}</span>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
-      {cart.length > 0 && (
+      {h.cart.length > 0 && (
         <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 text-sm">
-          <p className="mb-2 font-semibold text-slate-900">Cart ({cart.length})</p>
+          <p className="mb-2 font-semibold text-slate-900">Cart ({h.cart.length})</p>
           <ul className="space-y-3">
-            {cart.map((line) => (
+            {h.cart.map((line) => (
               <li key={line.item.itemCode} className="flex items-center justify-between gap-3">
                 <div className="flex-1">
                   <p className="font-medium text-slate-900">{line.item.name}</p>
@@ -252,9 +168,9 @@ export function OrderEntryForm() {
                     type="button"
                     variant="secondary"
                     size="sm"
-                    disabled={isSubmitting}
+                    disabled={h.isSubmitting}
                     onClick={() =>
-                      setCart((current) =>
+                      h.setCart((current) =>
                         current
                           .map((l) =>
                             l.item.itemCode === line.item.itemCode ? { ...l, quantity: Math.max(1, l.quantity - 1) } : l,
@@ -270,14 +186,14 @@ export function OrderEntryForm() {
                     type="button"
                     variant="secondary"
                     size="sm"
-                    disabled={isSubmitting}
+                    disabled={h.isSubmitting}
                     onClick={() =>
-                      setCart((current) => {
+                      h.setCart((current) => {
                         const next = current.map((l) =>
                           l.item.itemCode === line.item.itemCode ? { ...l, quantity: l.quantity + 1 } : l,
                         )
                         const total = next.reduce((sum, l) => sum + l.item.price * l.quantity, 0)
-                        setTotalAmount(total.toFixed(2))
+                        h.setTotalAmount(total.toFixed(2))
                         return next
                       })
                     }
@@ -292,50 +208,31 @@ export function OrderEntryForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {menu.length > 0 && (
+      <form onSubmit={h.handleSubmit} className="space-y-4">
+        {h.menu.length > 0 && (
           <select
             aria-label="Menu item"
-            value={itemCode}
-            disabled={isSubmitting}
+            value={h.itemCode}
+            disabled={h.isSubmitting}
             required
             onChange={(e) => {
               const code = e.target.value
-              setItemCode(code)
-              const selected = menu.find((item) => item.itemCode === code)
-              if (selected) {
-                setTotalAmount((selected.price * (Number(quantity) || 1)).toFixed(2))
-              }
+              h.setItemCode(code)
+              const selected = h.menu.find((item) => item.itemCode === code)
+              if (selected) h.setTotalAmount((selected.price * (Number(h.quantity) || 1)).toFixed(2))
             }}
             className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           >
             <option value="">Choose a menu item…</option>
-            {menu.map((item) => (
+            {h.menu.map((item) => (
               <option key={item.itemCode} value={item.itemCode}>
                 {item.name} — {item.price.toFixed(2)}
               </option>
             ))}
           </select>
         )}
-        <select
-          aria-label="Table number"
-          value={tableNumber}
-          disabled={isSubmitting}
-          onChange={(e) => setTableNumber(e.target.value)}
-          className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-        >
-          <option value="">No table (optional)</option>
-          {Array.from({ length: 10 }, (_, i) => `Table ${i + 1}`).map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
-        <Input
-          type="text"
-          placeholder="Customer name (optional)"
-          disabled={isSubmitting}
-          value={customerName}
-          onChange={(e) => setCustomerName(e.target.value)}
-        />
+        <Input type="text" placeholder="Table number (optional)" disabled={h.isSubmitting} value={h.tableNumber} onChange={(e) => h.setTableNumber(e.target.value)} />
+        <Input type="text" placeholder="Customer name (optional)" disabled={h.isSubmitting} value={h.customerName} onChange={(e) => h.setCustomerName(e.target.value)} />
 
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
@@ -343,9 +240,9 @@ export function OrderEntryForm() {
           </label>
           <select
             aria-label="Payment method"
-            value={paymentMethod}
-            disabled={isSubmitting}
-            onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'CARD')}
+            value={h.paymentMethod}
+            disabled={h.isSubmitting}
+            onChange={(e) => h.setPaymentMethod(e.target.value as 'CASH' | 'CARD')}
             className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           >
             <option value="CASH">Cash</option>
@@ -353,22 +250,10 @@ export function OrderEntryForm() {
           </select>
         </div>
 
-        {paymentMethod === 'CARD' && (
+        {h.paymentMethod === 'CARD' && (
           <div className="space-y-3">
-            <Input
-              type="text"
-              placeholder="Card number"
-              disabled={isSubmitting}
-              value={cardNumber}
-              onChange={(e) => setCardNumber(e.target.value)}
-            />
-            <Input
-              type="text"
-              placeholder="Security code (CVV)"
-              disabled={isSubmitting}
-              value={cardCvv}
-              onChange={(e) => setCardCvv(e.target.value)}
-            />
+            <Input type="text" placeholder="Card number" disabled={h.isSubmitting} value={h.cardNumber} onChange={(e) => h.setCardNumber(e.target.value)} />
+            <Input type="text" placeholder="Security code (CVV)" disabled={h.isSubmitting} value={h.cardCvv} onChange={(e) => h.setCardCvv(e.target.value)} />
           </div>
         )}
 
@@ -381,8 +266,8 @@ export function OrderEntryForm() {
               type="button"
               variant="secondary"
               size="sm"
-              onClick={() => setQuantity((v) => String(Math.max(1, (Number(v) || 1) - 1)))}
-              disabled={Number(quantity) <= 1 || isSubmitting}
+              onClick={() => h.setQuantity((v) => String(Math.max(1, (Number(v) || 1) - 1)))}
+              disabled={Number(h.quantity) <= 1 || h.isSubmitting}
               aria-label="Decrease quantity"
             >
               −
@@ -390,26 +275,24 @@ export function OrderEntryForm() {
             <Input
               type="number"
               min="1"
-              value={quantity}
+              value={h.quantity}
               onChange={(e) => {
-            setQuantity(e.target.value)
-            const selected = menu.find((item) => item.itemCode === itemCode)
-            if (selected) {
-              setTotalAmount((selected.price * (Number(e.target.value) || 1)).toFixed(2))
-            }
-          }}
+                h.setQuantity(e.target.value)
+                const selected = h.menu.find((item) => item.itemCode === h.itemCode)
+                if (selected) h.setTotalAmount((selected.price * (Number(e.target.value) || 1)).toFixed(2))
+              }}
               required
               aria-label="Quantity"
-              disabled={isSubmitting}
+              disabled={h.isSubmitting}
               className="text-center"
             />
             <Button
               type="button"
               variant="secondary"
               size="sm"
-              onClick={() => setQuantity((v) => String((Number(v) || 0) + 1))}
+              onClick={() => h.setQuantity((v) => String((Number(v) || 0) + 1))}
               aria-label="Increase quantity"
-              disabled={isSubmitting}
+              disabled={h.isSubmitting}
             >
               +
             </Button>
@@ -418,17 +301,17 @@ export function OrderEntryForm() {
         <Input
           type="number"
           placeholder="Total amount"
-          disabled={isSubmitting}
+          disabled={h.isSubmitting}
           min="0.01"
           step="0.01"
-          value={totalAmount}
-          onChange={(e) => setTotalAmount(e.target.value)}
+          value={h.totalAmount}
+          onChange={(e) => h.setTotalAmount(e.target.value)}
           required
         />
-        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting && <Spinner className="border-white border-t-transparent" />}
-          {isSubmitting ? 'Placing…' : 'Place order'}
+        {h.error && <p role="alert" className="text-sm text-red-600">{h.error}</p>}
+        <Button type="submit" disabled={h.isSubmitting}>
+          {h.isSubmitting && <Spinner className="border-white border-t-transparent" />}
+          {h.isSubmitting ? 'Placing…' : 'Place order'}
         </Button>
       </form>
     </Card>
