@@ -238,4 +238,59 @@ class LoginResponseTest {
                 LoginResponse.parseFrom(new byte[]{(byte) 0xff}))
                 .isInstanceOf(com.google.protobuf.InvalidProtocolBufferException.class);
     }
+
+
+    @Test
+    void unknownFieldsArePreserved() {
+        com.google.protobuf.UnknownFieldSet unknown =
+                com.google.protobuf.UnknownFieldSet.newBuilder()
+                        .addField(999, com.google.protobuf.UnknownFieldSet.Field.newBuilder().addFixed32(7).build())
+                        .build();
+        LoginResponse withUnknown = LoginResponse.newBuilder()
+                .setUserId("u")
+                .setUnknownFields(unknown)
+                .build();
+        assertThat(withUnknown.getUnknownFields()).isEqualTo(unknown);
+        assertThat(withUnknown.toString()).contains("999");
+    }
+
+    @Test
+    void mergeFromMergesUnknownFields() {
+        com.google.protobuf.UnknownFieldSet unknown =
+                com.google.protobuf.UnknownFieldSet.newBuilder()
+                        .addField(999, com.google.protobuf.UnknownFieldSet.Field.newBuilder().addFixed32(7).build())
+                        .build();
+        LoginResponse merged = LoginResponse.newBuilder()
+                .setUserId("old")
+                .mergeFrom(LoginResponse.newBuilder().setUnknownFields(unknown).build())
+                .build();
+        assertThat(merged.getUnknownFields()).isEqualTo(unknown);
+    }
+
+    @Test
+    void equalsConsidersUnknownFields() {
+        com.google.protobuf.UnknownFieldSet unknown =
+                com.google.protobuf.UnknownFieldSet.newBuilder()
+                        .addField(999, com.google.protobuf.UnknownFieldSet.Field.newBuilder().addFixed32(7).build())
+                        .build();
+        LoginResponse first = LoginResponse.newBuilder().setUserId("u").setUnknownFields(unknown).build();
+        LoginResponse second = LoginResponse.newBuilder().setUserId("u").setUnknownFields(unknown).build();
+        LoginResponse none = LoginResponse.newBuilder().setUserId("u").build();
+        assertThat(first).isEqualTo(second);
+        assertThat(first).isNotEqualTo(none);
+    }
+
+    @Test
+    void parseUnknownFieldRoundTrips() throws Exception {
+        com.google.protobuf.UnknownFieldSet unknown =
+                com.google.protobuf.UnknownFieldSet.newBuilder()
+                        .addField(999, com.google.protobuf.UnknownFieldSet.Field.newBuilder().addFixed32(7).build())
+                        .build();
+        LoginResponse original = LoginResponse.newBuilder()
+                .setUserId("u")
+                .setUnknownFields(unknown)
+                .build();
+        LoginResponse parsed = LoginResponse.parseFrom(original.toByteArray());
+        assertThat(parsed.getUnknownFields()).isEqualTo(unknown);
+    }
 }
