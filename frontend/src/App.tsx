@@ -154,7 +154,7 @@ export default function App() {
               <span className="status-dot" />
               <span>
                 Open today
-                <strong>12:00 — 22:30</strong>
+                <strong>12:00 PM — 10:30 PM</strong>
               </span>
             </div>
           </div>
@@ -277,7 +277,7 @@ export default function App() {
               <span>Opening hours</span>
               Tuesday–Sunday
               <br />
-              12:00–22:30
+              12:00 PM–10:30 PM
             </p>
           </div>
           <button className="primary-button" type="button" onClick={() => setShowReservation(true)}>
