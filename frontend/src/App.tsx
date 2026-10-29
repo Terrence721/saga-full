@@ -1,5 +1,6 @@
 import './landing.css'
 import { useState } from 'react'
+import { apiFetch } from './api/httpClient'
 
 type MenuItem = {
   id: string
@@ -88,7 +89,34 @@ function ArrowIcon() {
 
 export default function App() {
   const [category, setCategory] = useState<(typeof categories)[number]>('All')
+  const [showReservation, setShowReservation] = useState(false)
+  const [reservationStatus, setReservationStatus] = useState<string | null>(null)
+  const [reservationForm, setReservationForm] = useState({
+    customerId: 'guest',
+    tableNumber: 'T-1',
+    partySize: '2',
+    startTime: new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16),
+  })
   const visibleMenu = category === 'All' ? menu : menu.filter((item) => item.category === category)
+
+  async function handleReserveSubmit(event: React.FormEvent) {
+    event.preventDefault()
+    setReservationStatus(null)
+    try {
+      const reservation = await apiFetch<{ id: string; status: string }>('/reservations', {
+        method: 'POST',
+        body: JSON.stringify({
+          customerId: reservationForm.customerId,
+          tableNumber: reservationForm.tableNumber,
+          partySize: Number(reservationForm.partySize),
+          startTime: new Date(reservationForm.startTime).toISOString(),
+        }),
+      })
+      setReservationStatus(`Reservation confirmed (${reservation.id})`)
+    } catch (error) {
+      setReservationStatus(error instanceof Error ? error.message : 'Reservation failed')
+    }
+  }
 
   return (
     <main>
@@ -252,6 +280,9 @@ export default function App() {
               12:00–22:30
             </p>
           </div>
+          <button className="primary-button" type="button" onClick={() => setShowReservation(true)}>
+            Reserve a table <ArrowIcon />
+          </button>
           <a className="primary-button" href="tel:+12481234567">
             Call 248-123-4567 <ArrowIcon />
           </a>
@@ -281,6 +312,72 @@ export default function App() {
           </a>
         </div>
       </footer>
+
+      {showReservation && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(28,27,24,0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            zIndex: 100,
+          }}
+        >
+          <form
+            onSubmit={handleReserveSubmit}
+            style={{
+              background: '#fbf8f1',
+              border: '1px solid rgba(28,27,24,0.18)',
+              padding: '2rem',
+              width: 'min(420px, 100%)',
+              display: 'grid',
+              gap: '0.75rem',
+            }}
+          >
+            <h2 style={{ fontFamily: "'Italiana', serif", fontSize: '2rem', margin: 0 }}>Reserve a table</h2>
+            <input
+              placeholder="Customer ID"
+              value={reservationForm.customerId}
+              onChange={(e) => setReservationForm((f) => ({ ...f, customerId: e.target.value }))}
+              required
+            />
+            <input
+              placeholder="Table number (e.g. T-1)"
+              value={reservationForm.tableNumber}
+              onChange={(e) => setReservationForm((f) => ({ ...f, tableNumber: e.target.value }))}
+              required
+            />
+            <input
+              type="number"
+              min={1}
+              placeholder="Party size"
+              value={reservationForm.partySize}
+              onChange={(e) => setReservationForm((f) => ({ ...f, partySize: e.target.value }))}
+              required
+            />
+            <input
+              type="datetime-local"
+              value={reservationForm.startTime}
+              onChange={(e) => setReservationForm((f) => ({ ...f, startTime: e.target.value }))}
+              required
+            />
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+              <button type="button" onClick={() => setShowReservation(false)}>
+                Cancel
+              </button>
+              <button type="submit" className="primary-button" style={{ margin: 0 }}>
+                Confirm
+              </button>
+            </div>
+            {reservationStatus && <p style={{ marginTop: '0.5rem' }}>{reservationStatus}</p>}
+          </form>
+        </div>
+      )}
     </main>
   )
 }
