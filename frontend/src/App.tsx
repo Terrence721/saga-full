@@ -95,6 +95,9 @@ export default function App() {
   const [showOrder, setShowOrder] = useState(false)
   const [orderCart, setOrderCart] = useState<{ item: (typeof menu)[number]; qty: number }[]>([])
   const [orderStatus, setOrderStatus] = useState<string | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD'>('CASH')
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardCvv, setCardCvv] = useState('')
   const [reservationStatus, setReservationStatus] = useState<string | null>(null)
   const [reservationForm, setReservationForm] = useState({
     customerId: 'guest',
@@ -388,12 +391,50 @@ export default function App() {
                   <span>Total</span>
                   <span>${orderCart.reduce((sum, line) => sum + line.item.price * line.qty, 0).toFixed(2)}</span>
                 </div>
+
+                <div style={{ display: 'grid', gap: '0.5rem', marginTop: '1rem' }}>
+                  <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b6258' }}>Payment method</label>
+                  <select
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'CARD')}
+                    style={{ height: '2.4rem', border: '1px solid rgba(28,27,24,0.18)', padding: '0 0.75rem', background: '#fbf8f1' }}
+                  >
+                    <option value="CASH">Cash on pickup</option>
+                    <option value="CARD">Credit / Debit card</option>
+                  </select>
+                  {paymentMethod === 'CARD' && (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Card number"
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value)}
+                        style={{ height: '2.4rem', border: '1px solid rgba(28,27,24,0.18)', padding: '0 0.75rem', background: '#fbf8f1' }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="Security code (CVV)"
+                        value={cardCvv}
+                        onChange={(e) => setCardCvv(e.target.value)}
+                        style={{ height: '2.4rem', border: '1px solid rgba(28,27,24,0.18)', padding: '0 0.75rem', background: '#fbf8f1' }}
+                      />
+                    </>
+                  )}
+                </div>
+
                 <button
                   type="button"
                   onClick={() => {
                     if (orderCart.length === 0) return
-                    setOrderStatus(`Order placed (${orderCart.length} item${orderCart.length > 1 ? 's' : ''}). We’ll confirm shortly.`)
+                    if (paymentMethod === 'CARD' && (!cardNumber.trim() || !cardCvv.trim())) {
+                      setOrderStatus('Please enter card number and security code.')
+                      return
+                    }
+                    const methodLabel = paymentMethod === 'CARD' ? 'card' : 'cash'
+                    setOrderStatus(`Order placed (${orderCart.length} item${orderCart.length > 1 ? 's' : ''}, ${methodLabel}). We’ll confirm shortly.`)
                     setOrderCart([])
+                    setCardNumber('')
+                    setCardCvv('')
                   }}
                   style={{ width: '100%', marginTop: '1rem', background: '#db3b24', color: '#fff', border: 'none', padding: '0.8rem 1.25rem', fontWeight: 600, cursor: 'pointer' }}
                 >
