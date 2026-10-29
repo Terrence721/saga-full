@@ -2,6 +2,7 @@ package com.example.saga.order.controller;
 
 import com.example.saga.order.domain.Order;
 import com.example.saga.order.dto.CreateOrderRequest;
+import com.example.saga.order.dto.OrderView;
 import com.example.saga.order.exception.OrderNotFoundException;
 import com.example.saga.order.service.OrderService;
 import com.example.saga.order.service.OrderUpdatePublisher;
@@ -38,7 +39,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<Order> createOrder(
+    public ResponseEntity<OrderView> createOrder(
             @Valid @RequestBody CreateOrderRequest request,
             @RequestHeader(value = "X-Perimeter-User-Id", required = false) String perimeterUserId) {
 
@@ -74,11 +75,11 @@ public class OrderController {
                 sanitizeForLog(request.customerId().toString()), request.itemCode().replaceAll("[\r\n]", "_"),
                 request.quantity(), request.totalAmount());
         Order order = orderService.createOrder(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(order);
+        return ResponseEntity.status(HttpStatus.CREATED).body(OrderView.from(order));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrder(
+    public ResponseEntity<OrderView> getOrder(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Perimeter-User-Id", required = false) String perimeterUserId) {
 
@@ -91,13 +92,13 @@ public class OrderController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Authenticated caller does not match customerId");
         }
 
-        return ResponseEntity.ok(order);
+        return ResponseEntity.ok(OrderView.from(order));
     }
 
     @SuppressWarnings("null") // Neither getOrder() nor the Reactive-Streams-compliant sink
     // behind OrderUpdatePublisher.streamUpdates() can ever produce a null Order element.
     @GetMapping(value = "/{id}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<ServerSentEvent<Order>> streamOrder(
+    public Flux<ServerSentEvent<OrderView>> streamOrder(
             @PathVariable UUID id,
             @RequestHeader(value = "X-Perimeter-User-Id", required = false) String perimeterUserId) {
 
@@ -114,7 +115,7 @@ public class OrderController {
         }
 
         return Flux.concat(Flux.just(current), orderUpdatePublisher.streamUpdates(id))
-                .map(order -> ServerSentEvent.builder(order).build());
+                .map(order -> ServerSentEvent.builder(OrderView.from(order)).build());
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
