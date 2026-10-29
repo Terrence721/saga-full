@@ -7,6 +7,9 @@ export interface CreateOrderRequest {
   quantity: number
   tableNumber?: string | null
   customerName?: string | null
+  paymentMethod?: 'CASH' | 'CARD'
+  cardBrand?: string | null
+  cardLast4?: string | null
 }
 
 export type OrderStatus = 'PENDING' | 'SUCCESS' | 'CANCELLED'

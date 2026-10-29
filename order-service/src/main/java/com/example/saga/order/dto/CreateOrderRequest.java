@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import com.example.saga.order.domain.PaymentMethod;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -30,5 +31,26 @@ public record CreateOrderRequest(
         String tableNumber,
 
         @Size(max = 100, message = "Customer name must be at most 100 characters")
-        String customerName
-) {}
+        String customerName,
+
+        PaymentMethod paymentMethod,
+
+        @Size(max = 20, message = "Card brand must be at most 20 characters")
+        String cardBrand,
+
+        @jakarta.validation.constraints.Pattern(regexp = "\\d{4}", message = "Card last4 must be 4 digits")
+        String cardLast4
+) {
+    public CreateOrderRequest(UUID customerId, BigDecimal totalAmount, String itemCode, int quantity,
+            String tableNumber, String customerName) {
+        this(customerId, totalAmount, itemCode, quantity, tableNumber, customerName, PaymentMethod.CASH, null, null);
+    }
+
+    public CreateOrderRequest(UUID customerId, String itemCode, int quantity, BigDecimal totalAmount) {
+        this(customerId, totalAmount, itemCode, quantity, null, null, PaymentMethod.CASH, null, null);
+    }
+
+    public CreateOrderRequest(UUID customerId, String itemCode, BigDecimal totalAmount, int quantity) {
+        this(customerId, totalAmount, itemCode, quantity, null, null, PaymentMethod.CASH, null, null);
+    }
+}

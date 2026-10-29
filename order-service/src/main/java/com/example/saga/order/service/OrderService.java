@@ -3,6 +3,7 @@ package com.example.saga.order.service;
 import com.example.saga.order.domain.Order;
 import com.example.saga.order.domain.OrderStatus;
 import com.example.saga.order.domain.OutboxRecord;
+import com.example.saga.order.domain.PaymentMethod;
 import com.example.saga.order.dto.CreateOrderRequest;
 import com.example.saga.order.dto.OrderCreatedEvent;
 import com.example.saga.order.dto.RestaurantApprovedEvent;
@@ -45,6 +46,9 @@ public class OrderService {
                 .quantity(request.quantity())
                 .tableNumber(request.tableNumber())
                 .customerName(request.customerName())
+                .paymentMethod(request.paymentMethod() == null ? PaymentMethod.CASH : request.paymentMethod())
+                .cardBrand(request.cardBrand())
+                .cardLast4(request.cardLast4())
                 .status(OrderStatus.PENDING)
                 .build();
 
@@ -202,7 +206,10 @@ public class OrderService {
                 order.getItemCode(),
                 order.getQuantity(),
                 order.getTotalAmount(),
-                order.getStatus()
+                order.getStatus(),
+                order.getPaymentMethod(),
+                order.getCardLast4(),
+                order.getCardBrand()
         );
         return outboxRecordFactory.create(order.getId().toString(), "OrderCreatedEvent", event);
     }

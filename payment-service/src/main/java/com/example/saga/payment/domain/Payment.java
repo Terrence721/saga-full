@@ -40,6 +40,17 @@ public class Payment {
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    @lombok.Builder.Default
+    private PaymentMethod paymentMethod = PaymentMethod.CASH;
+
+    @Column(name = "card_brand")
+    private String cardBrand;
+
+    @Column(name = "card_last4")
+    private String cardLast4;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PaymentStatus status;
 }

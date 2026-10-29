@@ -2,6 +2,7 @@ package com.example.saga.payment.service;
 
 import com.example.saga.payment.domain.OutboxRecord;
 import com.example.saga.payment.domain.Payment;
+import com.example.saga.payment.domain.PaymentMethod;
 import com.example.saga.payment.domain.PaymentStatus;
 import com.example.saga.payment.dto.OrderCreatedEvent;
 import com.example.saga.payment.dto.PaymentProcessedEvent;
@@ -46,14 +47,26 @@ public class PaymentService {
             return;
         }
 
-        PaymentStatus status = event.totalAmount().compareTo(maxAmount) > 0
-                ? PaymentStatus.FAILED
-                : PaymentStatus.APPROVED;
+        PaymentMethod paymentMethod = event.paymentMethod() == null
+                ? PaymentMethod.CASH
+                : event.paymentMethod();
+
+        PaymentStatus status;
+        if (paymentMethod == PaymentMethod.CASH) {
+            status = PaymentStatus.APPROVED;
+        } else {
+            status = event.totalAmount().compareTo(maxAmount) > 0
+                    ? PaymentStatus.FAILED
+                    : PaymentStatus.APPROVED;
+        }
 
         Payment payment = Payment.builder()
                 .orderId(event.orderId())
                 .customerId(event.customerId())
                 .amount(event.totalAmount())
+                .paymentMethod(paymentMethod)
+                .cardBrand(event.cardBrand())
+                .cardLast4(event.cardLast4())
                 .status(status)
                 .build();
 
