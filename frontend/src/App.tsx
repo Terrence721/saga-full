@@ -241,9 +241,9 @@ export default function App() {
           <div className="visit-details">
             <p>
               <span>Find us</span>
-              28 Market Lane
+              12345 Market Lane
               <br />
-              Eastside, London
+              Southfield, Michigan
             </p>
             <p>
               <span>Opening hours</span>
@@ -252,8 +252,8 @@ export default function App() {
               12:00–22:30
             </p>
           </div>
-          <a className="primary-button" href="tel:+442055550128">
-            Call 020 5555 0128 <ArrowIcon />
+          <a className="primary-button" href="tel:+12481234567">
+            Call 248-123-4567 <ArrowIcon />
           </a>
         </div>
       </section>
