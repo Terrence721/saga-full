@@ -334,18 +334,24 @@ export default function App() {
           >
             <h2 style={{ fontFamily: "'Italiana', serif", fontSize: '2rem', margin: 0 }}>Reserve a table</h2>
             <input
+              id="reservation-customer-id"
+              name="customerId"
               placeholder="Customer ID"
               value={reservationForm.customerId}
               onChange={(e) => setReservationForm((f) => ({ ...f, customerId: e.target.value }))}
               required
             />
             <input
+              id="reservation-table-number"
+              name="tableNumber"
               placeholder="Table number (e.g. T-1)"
               value={reservationForm.tableNumber}
               onChange={(e) => setReservationForm((f) => ({ ...f, tableNumber: e.target.value }))}
               required
             />
             <input
+              id="reservation-party-size"
+              name="partySize"
               type="number"
               min={1}
               placeholder="Party size"
@@ -354,6 +360,8 @@ export default function App() {
               required
             />
             <input
+              id="reservation-start-time"
+              name="startTime"
               type="datetime-local"
               value={reservationForm.startTime}
               onChange={(e) => setReservationForm((f) => ({ ...f, startTime: e.target.value }))}
