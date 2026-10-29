@@ -2,9 +2,7 @@ package com.example.saga.user.infra.grpc;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import com.example.saga.user.exception.InvalidCredentialsException;
-import com.example.saga.user.exception.UserInactiveException;
-import com.example.saga.user.exception.UserNotFoundException;
+import com.example.saga.user.exception.UserException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Supplier;
@@ -19,7 +17,7 @@ public class GrpcExecutor {
             T response = action.get();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-        } catch (UserNotFoundException | InvalidCredentialsException | UserInactiveException ex) {
+        } catch (UserException ex) {
             // Deliberately collapsed to one status and one generic message: distinguishing
             // "unknown email" / "wrong password" / "inactive account" at the wire level lets
             // a caller enumerate registered emails (and their active status) without ever
