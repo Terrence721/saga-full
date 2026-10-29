@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { LoginForm } from './LoginForm'
+import { LoginForm } from '../components/LoginForm'
 import { AuthProvider } from '../context/AuthProvider'
 import { useAuth } from '../context/useAuth'
 import { login } from '../api/authClient'
