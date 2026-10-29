@@ -303,13 +303,6 @@ export default function App() {
         </div>
         <div className="footer-bottom">
           <p>© 2025 Forno Pizza Co.</p>
-          <a
-            href="https://unsplash.com/s/photos/neapolitan-pizza"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Photography via Unsplash
-          </a>
         </div>
       </footer>
 
