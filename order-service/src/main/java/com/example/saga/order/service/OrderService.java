@@ -39,6 +39,7 @@ public class OrderService {
     @SuppressWarnings("null") // Spring Data's save() never returns null; it throws on failure instead.
     @Transactional
     public Order createOrder(CreateOrderRequest request) {
+        validateCreateOrderRequest(request);
         String cardNumber = request.cardNumber();
         String derivedLast4 = request.cardLast4();
         if (derivedLast4 == null && cardNumber != null && cardNumber.length() >= 4) {
@@ -79,7 +80,28 @@ public class OrderService {
         return savedOrder;
     }
 
+    private void validateCreateOrderRequest(CreateOrderRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("request is required");
+        }
+        if (request.customerId() == null) {
+            throw new IllegalArgumentException("customerId is required");
+        }
+        if (request.itemCode() == null || request.itemCode().isBlank()) {
+            throw new IllegalArgumentException("itemCode is required");
+        }
+        if (request.quantity() <= 0) {
+            throw new IllegalArgumentException("quantity must be > 0");
+        }
+        if (request.totalAmount() == null || request.totalAmount().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("totalAmount must be > 0");
+        }
+    }
+
     public Order getOrder(UUID orderId) {
+        if (orderId == null) {
+            throw new IllegalArgumentException("orderId is required");
+        }
         return findOrder(orderId);
     }
 

@@ -42,6 +42,7 @@ public class PaymentService {
     @SuppressWarnings("null") // orderId() is always a real, non-null UUID from a real event.
     @Transactional
     public void processPaymentSaga(OrderCreatedEvent event) {
+        validate(event);
         if (paymentRepository.existsByOrderId(event.orderId())) {
             log.debug("Payment already exists for order {}; skipping duplicate event", event.orderId());
             return;
@@ -89,6 +90,24 @@ public class PaymentService {
     @Transactional
     public void handleReservationCompensation(ReservationRejectedEvent event) {
         handleCompensation(event.orderId(), event.customerId(), event.reason());
+    }
+
+    private void validate(OrderCreatedEvent event) {
+        if (event == null) {
+            throw new IllegalArgumentException("event is required");
+        }
+        if (event.orderId() == null) {
+            throw new IllegalArgumentException("orderId is required");
+        }
+        if (event.customerId() == null) {
+            throw new IllegalArgumentException("customerId is required");
+        }
+        if (event.totalAmount() == null || event.totalAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("totalAmount must be > 0");
+        }
+        if (event.quantity() <= 0) {
+            throw new IllegalArgumentException("quantity must be > 0");
+        }
     }
 
     private void handleCompensation(UUID orderId, UUID customerId, String reason) {
