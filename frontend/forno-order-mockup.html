@@ -1,0 +1,112 @@
+<title>Forno · Online Order</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Italiana&display=swap');
+
+  :root {
+    --ink: #1c1b18;
+    --cream: #f3efe5;
+    --paper: #fbf8f1;
+    --tomato: #db3b24;
+    --orange: #ed5d28;
+    --acid: #d9ef63;
+    --line: rgba(28, 27, 24, 0.18);
+    --muted: #6b6258;
+  }
+  body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; margin: 0; }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 2rem 4vw; }
+  .grid { display: grid; gap: 2rem; grid-template-columns: 1.4fr 380px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .card { background: var(--cream); border: 1px solid var(--line); padding: 1.25rem; }
+  .btn { background: var(--ink); color: #fff; border: none; padding: 0.8rem 1.25rem; font-weight: 600; cursor: pointer; }
+  .btn.tomato { background: var(--tomato); }
+  .menu-grid { display: grid; gap: 1rem; grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 600px) { .menu-grid { grid-template-columns: 1fr; } }
+  .menu-item { border: 1px solid var(--line); padding: 1rem; display: flex; gap: 1rem; }
+  .menu-item img { width: 90px; height: 90px; object-fit: cover; }
+  .price { font-family: 'Italiana', serif; font-size: 1.2rem; }
+  .badge { background: var(--acid); padding: 0.2rem 0.6rem; font-size: 0.7rem; font-weight: 600; }
+  .cart { background: var(--cream); border: 1px solid var(--line); padding: 1.25rem; position: sticky; top: 1rem; }
+  .totals { display: flex; justify-content: space-between; font-weight: 700; border-top: 1px solid var(--line); padding-top: 1rem; margin-top: 1rem; }
+  h1, h2 { font-family: 'Italiana', serif; font-weight: 400; }
+  h1 { font-size: 3rem; margin: 0; }
+  h2 { font-size: 2rem; margin: 0.5rem 0 1rem; }
+</style>
+
+<div class="wrap">
+  <header style="display:flex;align-items:center;justify-content:space-between;padding:1rem 0">
+    <a href="#" style="font-family:'Italiana',serif;font-size:2rem;text-decoration:none;color:var(--ink)">Forno<span style="color:var(--tomato)">.</span></a>
+    <span style="font-size:0.9rem;color:var(--muted)">Order online — pickup or delivery</span>
+  </header>
+
+  <div class="grid" style="margin-top:2rem">
+    <section>
+      <h2>Choose your order</h2>
+      <div class="menu-grid">
+        <div class="menu-item">
+          <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=400&q=80" alt="" />
+          <div>
+            <div class="item-meta" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Pizza <span class="badge">House favorite</span></div>
+            <strong>Margherita</strong>
+            <p style="font-size:0.85rem;color:var(--muted);margin:0.4rem 0 0.8rem">San Marzano, fior di latte, basil</p>
+            <button class="btn" onclick="addToCart('Margherita',12.50)">Add · $12.50</button>
+          </div>
+        </div>
+        <div class="menu-item">
+          <img src="https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=400&q=80" alt="" />
+          <div>
+            <div class="item-meta" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Pizza <span class="badge">Spicy</span></div>
+            <strong>Diavola</strong>
+            <p style="font-size:0.85rem;color:var(--muted);margin:0.4rem 0 0.8rem">Nduja, soppressata, mozzarella, chilli honey</p>
+            <button class="btn" onclick="addToCart('Diavola',14.00)">Add · $14.00</button>
+          </div>
+        </div>
+        <div class="menu-item">
+          <div>
+            <div class="item-meta" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Sides</div>
+            <strong>Wood-fired Garlic Bread</strong>
+            <p style="font-size:0.85rem;color:var(--muted);margin:0.4rem 0 0.8rem">Confit garlic, rosemary butter, sea salt</p>
+            <button class="btn" onclick="addToCart('Garlic Bread',6.00)">Add · $6.00</button>
+          </div>
+        </div>
+        <div class="menu-item">
+          <div>
+            <div class="item-meta" style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Drinks</div>
+            <strong>House Lemonade</strong>
+            <p style="font-size:0.85rem;color:var(--muted);margin:0.4rem 0 0.8rem">Fresh lemon, rosemary syrup</p>
+            <button class="btn" onclick="addToCart('Lemonade',4.50)">Add · $4.50</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="cart">
+      <h3 style="margin:0 0 1rem;font-size:1.1rem">Your cart</h3>
+      <div id="cart-lines" style="display:grid;gap:0.75rem"></div>
+      <div class="totals"><span>Total</span><span id="cart-total">$0.00</span></div>
+      <button class="btn tomato" style="width:100%;margin-top:1rem" onclick="checkout()">Checkout</button>
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:0.8rem">Taxes & delivery calculated at checkout.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+  const cart = [];
+  const byId = id => cart.find(l => l.name === id);
+  function renderCart() {
+    const lines = document.getElementById('cart-lines');
+    lines.innerHTML = cart.length ? cart.map(l => `<div style="display:flex;justify-content:space-between;font-size:0.9rem"><span>${l.name} × ${l.qty}</span><strong>$${(l.price*l.qty).toFixed(2)}</strong></div>`).join('') : '<p style="color:var(--muted);font-size:0.9rem">Your cart is empty.</p>';
+    document.getElementById('cart-total').textContent = '$' + cart.reduce((s,l)=>s+l.price*l.qty,0).toFixed(2);
+  }
+  function addToCart(name, price) {
+    const line = byId(name);
+    if (line) line.qty += 1; else cart.push({name, price, qty:1});
+    renderCart();
+  }
+  function checkout() {
+    alert('Checkout would create an order (guest flow TBD).');
+  }
+  renderCart();
+</script>
