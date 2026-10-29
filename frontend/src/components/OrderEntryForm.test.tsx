@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, render, screen } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import userEvent from '@testing-library/user-event'
 import { OrderEntryForm } from './OrderEntryForm'
 import { AuthContext, type AuthState } from '../context/AuthContext'
@@ -26,10 +27,13 @@ const loggedInAuth: AuthState = {
 }
 
 function renderForm(auth: AuthState = loggedInAuth) {
+  const queryClient = new QueryClient()
   return render(
-    <AuthContext.Provider value={auth}>
-      <OrderEntryForm />
-    </AuthContext.Provider>,
+    <QueryClientProvider client={queryClient}>
+      <AuthContext.Provider value={auth}>
+        <OrderEntryForm />
+      </AuthContext.Provider>
+    </QueryClientProvider>,
   )
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { createOrder, streamOrder, type Order } from '../api/orderClient'
 import { ApiError } from '../api/httpClient'
 import { useAuth } from '../context/useAuth'
@@ -12,6 +13,11 @@ export interface CartLine {
 
 export function useOrderEntry() {
   const auth = useAuth()
+  const menuQuery = useQuery({
+    queryKey: ['menu', auth.token],
+    queryFn: () => fetchMenu(auth.token as string),
+    enabled: Boolean(auth.token),
+  })
   const [itemCode, setItemCode] = useState('')
   const [quantity, setQuantity] = useState('1')
   const [totalAmount, setTotalAmount] = useState('')
@@ -31,9 +37,8 @@ export function useOrderEntry() {
   useEffect(() => () => stopStreamRef.current?.(), [])
 
   useEffect(() => {
-    if (!auth.token) return
-    fetchMenu(auth.token).then((items) => { if (items.length) setMenu(items) }).catch(() => {})
-  }, [auth.token])
+    if (menuQuery.data && menuQuery.data.length) setMenu(menuQuery.data)
+  }, [menuQuery.data])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
