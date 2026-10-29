@@ -93,4 +93,11 @@ if (project.hasProperty("nullaway")) {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    jvmArgumentProviders.add(object : CommandLineArgumentProvider {
+        override fun asArguments(): Iterable<String> {
+            val jar = project.configurations.testRuntimeClasspath.get()
+                .resolve().firstOrNull { it.name.startsWith("mockito-core") }
+            return if (jar != null) listOf("-javaagent:${jar.absolutePath}") else emptyList()
+        }
+    })
 }
