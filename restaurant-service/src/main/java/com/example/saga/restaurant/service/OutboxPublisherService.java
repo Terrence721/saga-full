@@ -32,6 +32,7 @@ public class OutboxPublisherService {
     private final String rejectedTopic;
     private final int batchSize;
     private final long sendTimeoutMs;
+    private final java.util.Map<String, String> topicByEventType;
 
     public OutboxPublisherService(
             OutboxRepository outboxRepository,
@@ -46,6 +47,9 @@ public class OutboxPublisherService {
         this.rejectedTopic = rejectedTopic;
         this.batchSize = batchSize;
         this.sendTimeoutMs = sendTimeoutMs;
+        this.topicByEventType = java.util.Map.of(
+                EVENT_TYPE_APPROVED, this.approvedTopic,
+                EVENT_TYPE_REJECTED, this.rejectedTopic);
     }
 
     @Transactional
@@ -97,10 +101,10 @@ public class OutboxPublisherService {
     }
 
     private String resolveTopic(String eventType) {
-        return switch (eventType) {
-            case EVENT_TYPE_APPROVED -> approvedTopic;
-            case EVENT_TYPE_REJECTED -> rejectedTopic;
-            default -> throw new IllegalArgumentException("Unknown outbox event type: " + eventType);
-        };
+        String topic = topicByEventType.get(eventType);
+        if (topic == null) {
+            throw new IllegalArgumentException("Unknown outbox event type: " + eventType);
+        }
+        return topic;
     }
 }
