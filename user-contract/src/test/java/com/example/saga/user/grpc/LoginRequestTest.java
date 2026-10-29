@@ -248,7 +248,7 @@ class LoginRequestTest {
         LoginRequest first = LoginRequest.newBuilder().setEmail("u").setPassword("p").build();
         assertThat(first.equals(first)).isTrue();
         assertThat(first.equals(null)).isFalse();
-        assertThat(first.equals("not-a-message")).isFalse();
+        assertThat(first.equals((Object) "not-a-message")).isFalse();
         assertThat(LoginRequest.getDefaultInstance().equals(LoginRequest.getDefaultInstance())).isTrue();
     }
 

@@ -192,7 +192,8 @@ class ValidateTokenRequestTest {
         ValidateTokenRequest first = ValidateTokenRequest.newBuilder().setAccessToken("token").build();
         assertThat(first.equals(first)).isTrue();
         assertThat(first.equals(null)).isFalse();
-        assertThat(first.equals("not-a-message")).isFalse();
+        Object nonMessage = "not-a-message";
+        assertThat(first.equals(nonMessage)).isFalse();
         assertThat(ValidateTokenRequest.getDefaultInstance().equals(ValidateTokenRequest.getDefaultInstance())).isTrue();
     }
 

@@ -223,7 +223,7 @@ class LoginResponseTest {
         LoginResponse first = LoginResponse.newBuilder().setUserId("u").setExpiresInSeconds(1L).build();
         assertThat(first.equals(first)).isTrue();
         assertThat(first.equals(null)).isFalse();
-        assertThat(first.equals("not-a-message")).isFalse();
+        assertThat(first.equals((Object) "not-a-message")).isFalse();
         assertThat(LoginResponse.getDefaultInstance().equals(LoginResponse.getDefaultInstance())).isTrue();
     }
 

@@ -171,6 +171,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void handleRestaurantApproved_publishesRejectionOnAllocationFailure() {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();

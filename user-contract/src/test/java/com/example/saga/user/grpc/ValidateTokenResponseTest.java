@@ -208,9 +208,10 @@ class ValidateTokenResponseTest {
     @Test
     void equalsHandlesMismatchedAndEmpty() {
         ValidateTokenResponse first = ValidateTokenResponse.newBuilder().setValid(true).setUserId("u").build();
+        Object mismatched = "not-a-message";
         assertThat(first.equals(first)).isTrue();
         assertThat(first.equals(null)).isFalse();
-        assertThat(first.equals("not-a-message")).isFalse();
+        assertThat(first.equals(mismatched)).isFalse();
         assertThat(ValidateTokenResponse.getDefaultInstance().equals(ValidateTokenResponse.getDefaultInstance())).isTrue();
     }
 
