@@ -329,7 +329,7 @@
     <td>com.example.saga.order.OrderServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.284s</td>
+    <td>0.173s</td>
     <td></td>
 </tr>
 <tr>
@@ -337,7 +337,7 @@
     <td>com.example.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsBadRequest_whenItemCodeExceedsMaxLength()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -345,7 +345,7 @@
     <td>com.example.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsBadRequest_whenPayloadFailsValidation()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.011s</td>
+    <td>0.012s</td>
     <td></td>
 </tr>
 <tr>
@@ -353,7 +353,7 @@
     <td>com.example.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsBadRequest_whenTotalAmountHasTooManyIntegerDigits()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -361,7 +361,7 @@
     <td>com.example.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsCreated_whenRequestIsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.244s</td>
+    <td>0.231s</td>
     <td></td>
 </tr>
 <tr>
@@ -377,7 +377,7 @@
     <td>com.example.saga.order.controller.OrderControllerTest</td>
     <td>createOrder_returnsForbidden_whenPerimeterHeaderMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -393,7 +393,7 @@
     <td>com.example.saga.order.controller.OrderControllerTest</td>
     <td>getOrder_returnsForbidden_whenPerimeterHeaderMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -409,7 +409,7 @@
     <td>com.example.saga.order.controller.OrderControllerTest</td>
     <td>getOrder_returnsOk_whenPerimeterHeaderMatchesOrderCustomerId()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -417,7 +417,7 @@
     <td>com.example.saga.order.controller.OrderControllerTest</td>
     <td>streamOrder_returnsForbidden_whenPerimeterHeaderDoesNotMatchOrderCustomerId()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -441,7 +441,7 @@
     <td>com.example.saga.order.controller.OrderControllerTest</td>
     <td>streamOrder_streamsCurrentStateThenLiveUpdates_whenPerimeterHeaderMatchesOrderCustomerId()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.294s</td>
+    <td>0.324s</td>
     <td></td>
 </tr>
 <tr>
@@ -449,7 +449,7 @@
     <td>com.example.saga.order.dto.ReservationConfirmedEventTest</td>
     <td>constructorAndAccessors_roundTrip()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.015s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -457,7 +457,7 @@
     <td>com.example.saga.order.dto.ReservationConfirmedEventTest</td>
     <td>equalityAndHashcode_areValueBased()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.102s</td>
+    <td>0.083s</td>
     <td></td>
 </tr>
 <tr>
@@ -465,7 +465,7 @@
     <td>com.example.saga.order.dto.ReservationConfirmedEventTest</td>
     <td>toString_containsAllComponents()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -489,7 +489,7 @@
     <td>com.example.saga.order.dto.ReservationRejectedEventTest</td>
     <td>toString_containsAllComponents()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -513,7 +513,7 @@
     <td>com.example.saga.order.repository.OrderRepositoryTest</td>
     <td>existsByIdAndStatus_returnsTrue_whenStatusMatches()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.146s</td>
+    <td>0.088s</td>
     <td></td>
 </tr>
 <tr>
@@ -521,7 +521,7 @@
     <td>com.example.saga.order.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsEmpty_whenNoRecords()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.011s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -529,7 +529,7 @@
     <td>com.example.saga.order.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsOldestFirst_upToPageSize()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.038s</td>
+    <td>0.032s</td>
     <td></td>
 </tr>
 <tr>
@@ -537,7 +537,7 @@
     <td>com.example.saga.order.service.KafkaErrorHandlerConfigTest</td>
     <td>kafkaErrorHandler_recoversImmediatelyForIllegalArgumentException()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.382s</td>
+    <td>0.289s</td>
     <td></td>
 </tr>
 <tr>
@@ -545,7 +545,7 @@
     <td>com.example.saga.order.service.KafkaErrorHandlerConfigTest</td>
     <td>kafkaErrorHandler_recoversImmediatelyForOrderNotFoundException()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -553,7 +553,7 @@
     <td>com.example.saga.order.service.KafkaErrorHandlerConfigTest</td>
     <td>kafkaErrorHandler_retriesGenericExceptionsBeforeGivingUp()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.105s</td>
+    <td>0.103s</td>
     <td></td>
 </tr>
 <tr>
@@ -561,7 +561,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onReservationConfirmed_deserializesPayloadAndDelegates()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -569,7 +569,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onReservationConfirmed_handlesEmptyTableNumber()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.026s</td>
+    <td>0.011s</td>
     <td></td>
 </tr>
 <tr>
@@ -577,7 +577,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onReservationConfirmed_isBoundToConfirmedTopic()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -585,7 +585,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onReservationConfirmed_rejectsMalformedJson()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.01s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -593,7 +593,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onReservationRejected_deserializesPayloadAndDelegates()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.011s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -601,7 +601,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onReservationRejected_isBoundToReservationRejectedTopic()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.02s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -609,7 +609,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onReservationRejected_rejectsMalformedJson()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -617,7 +617,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantApproved_deserializesPayloadAndDoesNotMutateOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.025s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -625,7 +625,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantApproved_isBoundToApprovedTopic()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -633,7 +633,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantApproved_preservesAllDeserializedFields()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.009s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -641,7 +641,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantApproved_rejectsMalformedJson()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.012s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -649,7 +649,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantApproved_rejectsNullPayload()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -657,7 +657,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantRejected_deserializesPayloadAndDelegatesToCancelOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.012s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -665,7 +665,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantRejected_isBoundToRejectedTopic()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -673,7 +673,7 @@
     <td>com.example.saga.order.service.OrderConsumerConfigTest</td>
     <td>onRestaurantRejected_rejectsMalformedJson()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.068s</td>
+    <td>0.031s</td>
     <td></td>
 </tr>
 <tr>
@@ -697,7 +697,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>cancelOrder_stillCancelsOrder_whenReasonContainsCrLf()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -713,7 +713,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>cancelOrder_throwsIllegalArgumentException_whenEventIsNull()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -721,7 +721,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>cancelOrder_throwsIllegalArgumentException_whenOrderIdIsNull()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -729,7 +729,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>cancelOrder_throwsOrderNotFoundException_whenOrderMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -745,7 +745,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_shortCircuits_whenAlreadySuccess()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -761,7 +761,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_throwsIllegalArgumentException_whenCustomerIdDoesNotMatchOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -785,7 +785,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_throwsIllegalArgumentException_whenTicketIdMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -793,7 +793,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_throwsOrderNotFoundException_whenOrderMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -801,7 +801,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_transitionsToSuccess_afterDoubleCheck()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.28s</td>
+    <td>0.17s</td>
     <td></td>
 </tr>
 <tr>
@@ -809,7 +809,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>confirmOrder_transitionsToSuccess_whenPending()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -817,7 +817,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>createOrder_publishesOrderUpdateOnCreation()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -825,7 +825,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>createOrder_savesOrderAndStagesOutboxWithRealSerializedPayload()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.01s</td>
+    <td>0.014s</td>
     <td></td>
 </tr>
 <tr>
@@ -833,7 +833,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>getOrder_returnsPersistedOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -849,7 +849,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>handleReservationConfirmed_shortCircuits_whenAlreadySuccess()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -857,7 +857,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>handleReservationConfirmed_skips_whenAlreadySuccessAfterLoad()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -889,7 +889,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>handleReservationConfirmed_throwsOrderNotFoundException_whenOrderMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -913,7 +913,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>handleReservationRejected_skips_whenAlreadyCancelledAfterLoad()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -937,7 +937,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>handleReservationRejected_throwsIllegalArgumentException_whenOrderIdIsNull()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -945,7 +945,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>handleReservationRejected_throwsOrderNotFoundException_whenOrderMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -953,7 +953,7 @@
     <td>com.example.saga.order.service.OrderServiceTest</td>
     <td>handleReservationRejected_transitionsToCancelled_whenPending()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -969,7 +969,7 @@
     <td>com.example.saga.order.service.OrderUpdatePublisherTest</td>
     <td>publish_logsWarning_whenSinkHasTerminated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -985,7 +985,7 @@
     <td>com.example.saga.order.service.OrderUpdatePublisherTest</td>
     <td>streamUpdates_receivesAPublishedOrder()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.014s</td>
+    <td>0.016s</td>
     <td></td>
 </tr>
 <tr>
@@ -993,7 +993,7 @@
     <td>com.example.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_continuesBatch_afterOneRecordFails()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.022s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -1001,7 +1001,7 @@
     <td>com.example.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_doesNothing_whenNoRecords()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -1009,7 +1009,7 @@
     <td>com.example.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_leavesRecordForRetryAndRestoresInterruptFlag_onInterrupt()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.298s</td>
+    <td>0.203s</td>
     <td></td>
 </tr>
 <tr>
@@ -1017,7 +1017,7 @@
     <td>com.example.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_leavesRecordForRetry_onFailure()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -1025,7 +1025,7 @@
     <td>com.example.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_leavesRecordForRetry_onTimeout()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.071s</td>
+    <td>0.061s</td>
     <td></td>
 </tr>
 <tr>
@@ -1033,7 +1033,7 @@
     <td>com.example.saga.order.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_publishesRawPayloadAndDeletes_onSuccess()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.161s</td>
+    <td>0.191s</td>
     <td></td>
 </tr>
 <tr>
@@ -1041,7 +1041,7 @@
     <td>com.example.saga.order.service.OutboxRecordFactoryTest</td>
     <td>create_buildsOutboxRecordWithSerializedPayload()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -1049,7 +1049,7 @@
     <td>com.example.saga.order.service.OutboxRecordFactoryTest</td>
     <td>create_throwsIllegalStateException_whenSerializationFails()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
