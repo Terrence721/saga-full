@@ -10,9 +10,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-
 import java.math.BigDecimal;
 
 @Entity
@@ -34,9 +31,8 @@ public class MenuItem {
     @Column(nullable = false)
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MenuCategory category;
+    @Column(nullable = false, length = 50)
+    private String category;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;

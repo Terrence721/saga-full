@@ -54,7 +54,7 @@ export function OrderEntryForm() {
 
     const lines = cart.length > 0
       ? cart
-      : [{ item: { itemCode, name: itemCode, description: '', category: 'Pizza', price: Number(totalAmount) || 0, available: true }, quantity: Number(quantity) || 1 }]
+      : [{ item: { itemCode, name: itemCode, description: '', category: itemCode, price: Number(totalAmount) || 0, available: true }, quantity: Number(quantity) || 1 }]
 
     try {
       const createdOrders: Order[] = []

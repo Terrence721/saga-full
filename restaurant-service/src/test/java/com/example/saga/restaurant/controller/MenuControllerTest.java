@@ -1,7 +1,6 @@
 package com.example.saga.restaurant.controller;
 
 import com.example.saga.restaurant.domain.MenuItem;
-import com.example.saga.restaurant.domain.MenuCategory;
 import com.example.saga.restaurant.service.MenuService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +31,7 @@ class MenuControllerTest {
                 .itemCode("MARGHERITA")
                 .name("Margherita")
                 .description("Tomato, mozzarella, basil")
-                .category(MenuCategory.Pizza)
+                .category("MARGHERITA")
                 .price(new BigDecimal("8.50"))
                 .available(true)
                 .build();
@@ -41,6 +40,6 @@ class MenuControllerTest {
         mockMvc.perform(get("/menu"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].itemCode").value("MARGHERITA"))
-                .andExpect(jsonPath("$[0].category").value("Pizza"));
+                .andExpect(jsonPath("$[0].category").value("MARGHERITA"));
     }
 }

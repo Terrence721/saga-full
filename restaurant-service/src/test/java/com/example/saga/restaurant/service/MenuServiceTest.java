@@ -22,10 +22,10 @@ class MenuServiceTest {
     @Test
     void listAvailable_filtersUnavailable() {
         MenuItem available = com.example.saga.restaurant.domain.MenuItem.builder()
-                .itemCode("P1").name("P1").description("d").category(com.example.saga.restaurant.domain.MenuCategory.Pizza)
+                .itemCode("P1").name("P1").description("d").category("P1")
                 .price(new BigDecimal("1.00")).available(true).build();
         MenuItem unavailable = com.example.saga.restaurant.domain.MenuItem.builder()
-                .itemCode("P2").name("P2").description("d").category(com.example.saga.restaurant.domain.MenuCategory.Pizza)
+                .itemCode("P2").name("P2").description("d").category("P2")
                 .price(new BigDecimal("1.00")).available(false).build();
         when(repository.findAll()).thenReturn(List.of(available, unavailable));
 
