@@ -112,6 +112,22 @@ describe('OrderEntryForm', () => {
     expect(streamOrder).not.toHaveBeenCalled()
   })
 
+  it('updates cart quantities with the steppers', async () => {
+    const user = userEvent.setup()
+    renderForm()
+
+    await screen.findByRole('combobox', { name: 'Menu item' })
+    await user.click(screen.getByRole('button', { name: /Margherita/ }))
+
+    expect(screen.getByText('MARGHERITA')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '+' }))
+    expect(screen.getByText('2')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '-' }))
+    expect(screen.getByText('1')).toBeInTheDocument()
+  })
+
   it('"New order" stops the stream and returns to the empty form', async () => {
     vi.mocked(createOrder).mockResolvedValue(sampleOrder)
     const user = userEvent.setup()

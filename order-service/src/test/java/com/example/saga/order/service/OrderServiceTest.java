@@ -493,4 +493,43 @@ class OrderServiceTest {
                 .hasMessageContaining("orderId is required");
     }
 
+    @Test
+    void createOrder_throwsIllegalArgumentException_whenRequestIsNull() {
+        assertThatThrownBy(() -> orderService.createOrder(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("request is required");
+    }
+
+    @Test
+    void createOrder_throwsIllegalArgumentException_whenCustomerIdIsNull() {
+        CreateOrderRequest request = new CreateOrderRequest(null, "ITEM-1", new BigDecimal("19.99"), 2);
+        assertThatThrownBy(() -> orderService.createOrder(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("customerId is required");
+    }
+
+    @Test
+    void createOrder_throwsIllegalArgumentException_whenItemCodeIsBlank() {
+        CreateOrderRequest request = new CreateOrderRequest(UUID.randomUUID(), "   ", new BigDecimal("19.99"), 2);
+        assertThatThrownBy(() -> orderService.createOrder(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("itemCode is required");
+    }
+
+    @Test
+    void createOrder_throwsIllegalArgumentException_whenQuantityIsZero() {
+        CreateOrderRequest request = new CreateOrderRequest(UUID.randomUUID(), "ITEM-1", new BigDecimal("19.99"), 0);
+        assertThatThrownBy(() -> orderService.createOrder(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("quantity must be > 0");
+    }
+
+    @Test
+    void createOrder_throwsIllegalArgumentException_whenTotalAmountIsZero() {
+        CreateOrderRequest request = new CreateOrderRequest(UUID.randomUUID(), "ITEM-1", new BigDecimal("0.00"), 2);
+        assertThatThrownBy(() -> orderService.createOrder(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("totalAmount must be > 0");
+    }
+
 }
