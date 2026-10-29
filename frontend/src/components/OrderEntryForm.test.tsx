@@ -4,12 +4,19 @@ import userEvent from '@testing-library/user-event'
 import { OrderEntryForm } from './OrderEntryForm'
 import { AuthContext, type AuthState } from '../context/AuthContext'
 import { createOrder, streamOrder, type Order } from '../api/orderClient'
+import { fetchMenu } from '../api/menuClient'
 import { ApiError } from '../api/httpClient'
 
 vi.mock('../api/orderClient', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../api/orderClient')>()
   return { ...actual, createOrder: vi.fn(), streamOrder: vi.fn() }
 })
+
+vi.mock('../api/menuClient', () => ({
+  fetchMenu: vi.fn().mockResolvedValue([
+    { itemCode: 'MARGHERITA', name: 'Margherita', description: 'Tomato, mozzarella, basil', category: 'MARGHERITA', price: 8.5, available: true },
+  ]),
+}))
 
 const loggedInAuth: AuthState = {
   token: 'test-token',
@@ -38,7 +45,8 @@ const sampleOrder: Order = {
 async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>, itemCode = 'MARGHERITA') {
   // Selecting a menu item also auto-fills the total amount from the catalogue;
   // overwrite it with the explicit test value so the expected payload stays 5.
-  await user.selectOptions(screen.getByRole('combobox', { name: 'Menu item' }), itemCode)
+  const menuSelect = screen.queryByRole('combobox', { name: 'Menu item' })
+  if (menuSelect) await user.selectOptions(menuSelect, itemCode)
   await user.clear(screen.getByRole('spinbutton', { name: 'Quantity' }))
   await user.type(screen.getByRole('spinbutton', { name: 'Quantity' }), '1')
   await user.clear(screen.getByPlaceholderText('Total amount'))
@@ -53,6 +61,9 @@ describe('OrderEntryForm', () => {
     vi.mocked(createOrder).mockReset()
     vi.mocked(streamOrder).mockReset().mockReturnValue(stopStream)
     stopStream.mockReset()
+    vi.mocked(fetchMenu).mockReset().mockResolvedValue([
+      { itemCode: 'MARGHERITA', name: 'Margherita', description: 'Tomato, mozzarella, basil', category: 'MARGHERITA', price: 8.5, available: true },
+    ])
   })
 
   it('submits the form, shows the created order, and starts streaming its status', async () => {
