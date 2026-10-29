@@ -35,6 +35,12 @@ public record CreateOrderRequest(
 
         PaymentMethod paymentMethod,
 
+        @jakarta.validation.constraints.Pattern(regexp = "\\d{13,19}", message = "Card number must be 13-19 digits")
+        String cardNumber,
+
+        @jakarta.validation.constraints.Pattern(regexp = "\\d{3,4}", message = "Security code must be 3 or 4 digits")
+        String cardCvv,
+
         @Size(max = 20, message = "Card brand must be at most 20 characters")
         String cardBrand,
 
@@ -43,14 +49,14 @@ public record CreateOrderRequest(
 ) {
     public CreateOrderRequest(UUID customerId, BigDecimal totalAmount, String itemCode, int quantity,
             String tableNumber, String customerName) {
-        this(customerId, totalAmount, itemCode, quantity, tableNumber, customerName, PaymentMethod.CASH, null, null);
+        this(customerId, totalAmount, itemCode, quantity, tableNumber, customerName, PaymentMethod.CASH, null, null, null, null);
     }
 
     public CreateOrderRequest(UUID customerId, String itemCode, int quantity, BigDecimal totalAmount) {
-        this(customerId, totalAmount, itemCode, quantity, null, null, PaymentMethod.CASH, null, null);
+        this(customerId, totalAmount, itemCode, quantity, null, null, PaymentMethod.CASH, null, null, null, null);
     }
 
     public CreateOrderRequest(UUID customerId, String itemCode, BigDecimal totalAmount, int quantity) {
-        this(customerId, totalAmount, itemCode, quantity, null, null, PaymentMethod.CASH, null, null);
+        this(customerId, totalAmount, itemCode, quantity, null, null, PaymentMethod.CASH, null, null, null, null);
     }
 }

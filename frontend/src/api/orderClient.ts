@@ -8,6 +8,8 @@ export interface CreateOrderRequest {
   tableNumber?: string | null
   customerName?: string | null
   paymentMethod?: 'CASH' | 'CARD'
+  cardNumber?: string | null
+  cardCvv?: string | null
   cardBrand?: string | null
   cardLast4?: string | null
 }

@@ -22,8 +22,8 @@ export function OrderEntryForm() {
   const [tableNumber, setTableNumber] = useState('')
   const [customerName, setCustomerName] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD'>('CASH')
-  const [cardBrand, setCardBrand] = useState('')
-  const [cardLast4, setCardLast4] = useState('')
+  const [cardNumber, setCardNumber] = useState('')
+  const [cardCvv, setCardCvv] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [cart, setCart] = useState<CartLine[]>([])
   const [placed, setPlaced] = useState<Order[]>([])
@@ -68,8 +68,8 @@ export function OrderEntryForm() {
             tableNumber: tableNumber || null,
             customerName: customerName || null,
             paymentMethod,
-            cardBrand: paymentMethod === 'CARD' ? (cardBrand || null) : null,
-            cardLast4: paymentMethod === 'CARD' ? (cardLast4 || null) : null,
+            cardNumber: paymentMethod === 'CARD' ? (cardNumber || null) : null,
+            cardCvv: paymentMethod === 'CARD' ? (cardCvv || null) : null,
           },
           auth.token,
         )
@@ -350,24 +350,19 @@ export function OrderEntryForm() {
 
         {paymentMethod === 'CARD' && (
           <div className="space-y-3">
-            <select
-              aria-label="Card brand"
-              value={cardBrand}
-              disabled={isSubmitting}
-              onChange={(e) => setCardBrand(e.target.value)}
-              className="h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-            >
-              <option value="">Choose card brand…</option>
-              <option value="VISA">Visa</option>
-              <option value="MASTERCARD">Mastercard</option>
-              <option value="AMEX">American Express</option>
-            </select>
             <Input
               type="text"
-              placeholder="Last 4 digits of card"
+              placeholder="Card number"
               disabled={isSubmitting}
-              value={cardLast4}
-              onChange={(e) => setCardLast4(e.target.value)}
+              value={cardNumber}
+              onChange={(e) => setCardNumber(e.target.value)}
+            />
+            <Input
+              type="text"
+              placeholder="Security code (CVV)"
+              disabled={isSubmitting}
+              value={cardCvv}
+              onChange={(e) => setCardCvv(e.target.value)}
             />
           </div>
         )}

@@ -39,6 +39,23 @@ public class OrderService {
     @SuppressWarnings("null") // Spring Data's save() never returns null; it throws on failure instead.
     @Transactional
     public Order createOrder(CreateOrderRequest request) {
+        String cardNumber = request.cardNumber();
+        String derivedLast4 = request.cardLast4();
+        if (derivedLast4 == null && cardNumber != null && cardNumber.length() >= 4) {
+            derivedLast4 = cardNumber.substring(cardNumber.length() - 4);
+        }
+        String derivedBrand = request.cardBrand();
+        if (derivedBrand == null && cardNumber != null) {
+            char first = cardNumber.charAt(0);
+            if (first == '4') {
+                derivedBrand = "VISA";
+            } else if (first == '5') {
+                derivedBrand = "MASTERCARD";
+            } else if (first == '3') {
+                derivedBrand = "AMEX";
+            }
+        }
+
         Order order = Order.builder()
                 .customerId(request.customerId())
                 .totalAmount(request.totalAmount())
@@ -47,8 +64,8 @@ public class OrderService {
                 .tableNumber(request.tableNumber())
                 .customerName(request.customerName())
                 .paymentMethod(request.paymentMethod() == null ? PaymentMethod.CASH : request.paymentMethod())
-                .cardBrand(request.cardBrand())
-                .cardLast4(request.cardLast4())
+                .cardBrand(derivedBrand)
+                .cardLast4(derivedLast4)
                 .status(OrderStatus.PENDING)
                 .build();
 
