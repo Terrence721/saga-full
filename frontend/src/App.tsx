@@ -302,7 +302,7 @@ export default function App() {
           <a href="#visit">Visit</a>
         </div>
         <div className="footer-bottom">
-          <p>© 2025 Forno Pizza Co.</p>
+          <p>© 2026 Forno Pizza Co.</p>
         </div>
       </footer>
 
