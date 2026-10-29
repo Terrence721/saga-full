@@ -7,7 +7,6 @@ import { Spinner } from './ui/Spinner'
 
 export function OrderEntryForm() {
   const h = useOrderEntry()
-  const auth = h.auth
 
   if (h.placed.length > 0) {
     return (
