@@ -36,3 +36,7 @@ dist-ssr
 
 # Vitest coverage output
 coverage/
+
+# Playwright artifacts
+playwright-report/
+test-results/
