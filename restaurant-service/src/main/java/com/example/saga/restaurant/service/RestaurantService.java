@@ -40,6 +40,10 @@ public class RestaurantService {
 
     @Transactional
     public void processRestaurantStep(PaymentProcessedEvent event) {
+        if (event == null) {
+            throw new IllegalArgumentException("event is required");
+        }
+
         if (ticketRepository.existsByOrderId(event.orderId())) {
             log.debug("Ticket already exists for order {}; skipping duplicate event", event.orderId());
             return;
@@ -80,6 +84,9 @@ public class RestaurantService {
     }
 
     private void validate(PaymentProcessedEvent event) {
+        if (event == null) {
+            throw new IllegalArgumentException("event is required");
+        }
         if (event.orderId() == null) {
             throw new IllegalArgumentException("orderId is required");
         }
