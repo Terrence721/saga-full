@@ -15,15 +15,6 @@ spring:
     virtual:
       enabled: true
 
-  # --- Spring gRPC Client Configuration ---
-  grpc:
-    client:
-      channels:
-        # Match name exactly to let Spring auto-wire the UserIdentityServiceBlockingStub bean
-        userService:
-          address: 'static://${USER_SERVICE_GRPC_HOST:localhost}:${GRPC_PORT:9090}'
-          negotiation-type: plaintext # No TLS for local development
-
   cloud:
     gateway:
       server:
