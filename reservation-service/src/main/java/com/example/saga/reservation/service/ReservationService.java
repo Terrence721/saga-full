@@ -44,6 +44,12 @@ public class ReservationService {
 
     @Transactional
     public Reservation create(CreateReservationRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("request is required");
+        }
+        if (request.customerId() == null) {
+            throw new IllegalArgumentException("customerId is required");
+        }
         Reservation reservation = Reservation.builder()
                 .customerId(request.customerId())
                 .tableNumber(request.tableNumber())
@@ -59,12 +65,18 @@ public class ReservationService {
     }
 
     public Reservation findById(@NonNull UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("id is required");
+        }
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Reservation not found: " + id));
     }
 
     @Transactional
     public void cancel(@NonNull UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("id is required");
+        }
         Reservation reservation = findById(id);
         reservation.setStatus(ReservationStatus.CANCELLED);
         repository.save(reservation);
@@ -72,6 +84,9 @@ public class ReservationService {
 
     @Transactional
     public void handleRestaurantApproved(RestaurantApprovedEvent event) {
+        if (event == null || event.orderId() == null || event.customerId() == null) {
+            throw new IllegalArgumentException("invalid restaurant approved event");
+        }
         try {
             Reservation reservation = repository.findByOrderId(event.orderId()).orElseGet(() -> {
                 int tableNumber = Math.abs(event.orderId().hashCode()) % 5 + 1;
@@ -101,6 +116,9 @@ public class ReservationService {
 
     @Transactional
     public void handleRestaurantRejected(RestaurantRejectedEvent event) {
+        if (event == null || event.orderId() == null) {
+            throw new IllegalArgumentException("invalid restaurant rejected event");
+        }
         repository.findByOrderId(event.orderId()).ifPresent(reservation -> {
             reservation.setStatus(ReservationStatus.CANCELLED);
             repository.save(reservation);
