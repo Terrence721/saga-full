@@ -1,3 +1,4 @@
+import './landing.css'
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
 type MenuItem = {
