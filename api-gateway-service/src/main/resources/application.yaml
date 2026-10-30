@@ -19,11 +19,9 @@ spring:
     gateway:
       server:
         webflux:
-          # CORS is handled by GlobalCorsConfig's CorsWebFilter bean, not here - this
-          # globalcors block is only wired into RoutePredicateHandlerMapping, the mapping
-          # that resolves the routes below, and has no effect on a path served by a real
-          # local @RestController (AuthenticationController's /auth/login). See
-          # GlobalCorsConfig's own comment for the full story.
+          # Route table for Gateway-routed paths only. CORS is handled globally by
+          # GlobalCorsConfig's CorsWebFilter, which applies to every HandlerMapping,
+          # regardless of whether the path is proxied or served locally.
           routes:
             # Route 1: Guarded Edge Route to Order Microservice (create)
             - id: order-service-route
