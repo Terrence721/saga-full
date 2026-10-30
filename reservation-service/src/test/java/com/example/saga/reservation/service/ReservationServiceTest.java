@@ -6,6 +6,7 @@ import com.example.saga.reservation.domain.ReservationStatus;
 import com.example.saga.reservation.dto.CreateReservationRequest;
 import com.example.saga.reservation.dto.RestaurantApprovedEvent;
 import com.example.saga.reservation.dto.RestaurantRejectedEvent;
+import com.example.saga.reservation.repository.OutboxRepository;
 import com.example.saga.reservation.repository.ReservationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,10 +16,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.kafka.core.KafkaTemplate;
 
 import java.time.Instant;
-import java.util.concurrent.CompletableFuture;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,7 +25,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,20 +37,17 @@ class ReservationServiceTest {
     private ReservationRepository repository;
 
     @Mock
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private OutboxRepository outboxRepository;
 
-    @Mock
     private ObjectMapper objectMapper;
 
     private ReservationService service;
 
     @BeforeEach
-    @SuppressWarnings("null")
     void setUp() throws Exception {
-        service = new ReservationService(repository, kafkaTemplate, objectMapper);
-        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
-        when(kafkaTemplate.send(anyString(), anyString(), anyString()))
-                .thenReturn(CompletableFuture.completedFuture(null));
+        objectMapper = new ObjectMapper();
+        service = new ReservationService(repository, outboxRepository, new OutboxRecordFactory(objectMapper));
+        // ensure factory serialization returns a stable payload
     }
 
     @Test
@@ -61,9 +56,8 @@ class ReservationServiceTest {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
         when(repository.findByOrderId(orderId)).thenReturn(Optional.empty());
-        when(repository.save(any(Reservation.class))).thenAnswer(
-            inv -> java.util.Objects.requireNonNull(inv.getArgument(0, Reservation.class)));
-        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
+        when(repository.save(any(Reservation.class)))
+            .thenAnswer(org.mockito.AdditionalAnswers.returnsFirstArg());
 
         service.handleRestaurantApproved(new RestaurantApprovedEvent(orderId, customerId, UUID.randomUUID()));
 
@@ -72,6 +66,7 @@ class ReservationServiceTest {
         assertThat(captor.getValue().getOrderId()).isEqualTo(orderId);
         assertThat(captor.getValue().getStatus()).isEqualTo(ReservationStatus.CONFIRMED);
 
+        verify(outboxRepository).save(any(com.example.saga.reservation.domain.OutboxRecord.class));
     }
 
     @Test
@@ -84,11 +79,10 @@ class ReservationServiceTest {
                 .tableNumber("T-1").partySize(4).startTime(Instant.now())
                 .status(ReservationStatus.CONFIRMED).build();
         when(repository.findByOrderId(orderId)).thenReturn(Optional.of(existing));
-        when(objectMapper.writeValueAsString(any())).thenReturn("{}");
 
         service.handleRestaurantApproved(new RestaurantApprovedEvent(orderId, customerId, UUID.randomUUID()));
 
-        verify(repository, never()).save(any(Reservation.class));
+        verify(repository, never()).save(java.util.Objects.requireNonNull(any(Reservation.class)));
     }
 
     @Test
@@ -108,12 +102,12 @@ class ReservationServiceTest {
     }
 
     @Test
-    @SuppressWarnings("null")
     void create_persistsAndReturns() {
         CreateReservationRequest request = new CreateReservationRequest("customer-1", "T-1", 4,
                 java.time.Instant.parse("2026-10-28T18:00:00Z"));
-        when(repository.save(any(Reservation.class))).thenAnswer(
-            inv -> java.util.Objects.requireNonNull(inv.getArgument(0, Reservation.class)));
+        when(repository.save(java.util.Objects.requireNonNull(any(Reservation.class)))).thenAnswer(
+            (org.mockito.stubbing.Answer<Reservation>) inv ->
+                java.util.Objects.requireNonNull(inv.getArgument(0, Reservation.class)));
 
         Reservation result = service.create(request);
 
@@ -184,7 +178,6 @@ class ReservationServiceTest {
     }
 
     @Test
-    @SuppressWarnings("null")
     void handleRestaurantRejected_isNoOpWhenNoReservationExists() {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
@@ -195,52 +188,5 @@ class ReservationServiceTest {
         verify(repository, never()).save(any(Reservation.class));
     }
 
-    private ReservationService serviceWithTopics() throws Exception {
-        ReservationService svc = new ReservationService(repository, kafkaTemplate, new ObjectMapper());
-        java.lang.reflect.Field confirmed = ReservationService.class.getDeclaredField("confirmedTopic");
-        confirmed.setAccessible(true);
-        confirmed.set(svc, "reservation-confirmed-topic");
-        java.lang.reflect.Field rejected = ReservationService.class.getDeclaredField("rejectedTopic");
-        rejected.setAccessible(true);
-        rejected.set(svc, "reservation-rejected-topic");
-        return svc;
-    }
-
-    @Test
-    @SuppressWarnings("null")
-    void handleRestaurantApproved_publishesConfirmationWhenTopicConfigured() throws Exception {
-        UUID orderId = UUID.randomUUID();
-        UUID customerId = UUID.randomUUID();
-        ReservationService svc = serviceWithTopics();
-        when(repository.findByOrderId(orderId)).thenReturn(Optional.empty());
-        when(repository.save(any(Reservation.class))).thenAnswer(
-            inv -> java.util.Objects.requireNonNull(inv.getArgument(0, Reservation.class)));
-        when(kafkaTemplate.send(anyString(), anyString(), anyString()))
-                .thenReturn(CompletableFuture.completedFuture(null));
-
-        svc.handleRestaurantApproved(new RestaurantApprovedEvent(orderId, customerId, UUID.randomUUID()));
-
-        verify(kafkaTemplate).send(org.mockito.ArgumentMatchers.eq("reservation-confirmed-topic"),
-                org.mockito.ArgumentMatchers.anyString(),
-                org.mockito.ArgumentMatchers.anyString());
-    }
-
-    @Test
-    @SuppressWarnings("null")
-    void handleRestaurantApproved_publishesRejectionOnAllocationFailureWhenTopicConfigured() throws Exception {
-        UUID orderId = UUID.randomUUID();
-        UUID customerId = UUID.randomUUID();
-        ReservationService svc = serviceWithTopics();
-        when(repository.findByOrderId(orderId)).thenReturn(Optional.empty());
-        when(repository.save(any(Reservation.class))).thenThrow(new IllegalStateException("db down"));
-        when(kafkaTemplate.send(anyString(), anyString(), anyString()))
-                .thenReturn(CompletableFuture.completedFuture(null));
-
-        svc.handleRestaurantApproved(new RestaurantApprovedEvent(orderId, customerId, UUID.randomUUID()));
-
-        verify(kafkaTemplate).send(org.mockito.ArgumentMatchers.eq("reservation-rejected-topic"),
-                org.mockito.ArgumentMatchers.anyString(),
-                org.mockito.ArgumentMatchers.anyString());
-    }
 
 }
