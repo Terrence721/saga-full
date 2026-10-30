@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createOrder, streamOrder, type Order } from './orderClient'
+import { createOrder, streamOrder, type Order } from '../api/orderClient'
 
 const sampleOrder: Order = {
   id: 'order-1',

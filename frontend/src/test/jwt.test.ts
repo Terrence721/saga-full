@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getUserIdFromToken } from './jwt'
+import { getUserIdFromToken } from '../api/jwt'
 
 function fakeToken(claims: object): string {
   const base64 = btoa(JSON.stringify(claims))
