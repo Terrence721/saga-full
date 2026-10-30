@@ -34,23 +34,7 @@ spring:
           # local @RestController (AuthenticationController's /auth/login). See
           # GlobalCorsConfig's own comment for the full story.
           routes:
-            # Route 1: Edge Authentication Endpoint Forwarder
-            - id: auth-token-route
-              uri: forward:/auth/login
-              predicates:
-                - Path=/auth/login
-                # OPTIONS alongside POST: Spring Cloud Gateway's Method predicate matches
-                # the request's own method with no preflight-awareness, so a route without
-                # OPTIONS here never matches a real browser's CORS preflight at all -
-                # getHandlerInternal returns no handler, globalcors's CORS-processing step
-                # (chained onto that result) never runs, and the request falls through
-                # unrouted. Verified for real: a preflight without this got rejected before
-                # any CORS config was even consulted. Adding OPTIONS is safe - a matched
-                # preflight is still short-circuited by Spring's own handler mapping before
-                # any route filter (JwtPerimeterGuard included) runs.
-                - Method=POST,OPTIONS
-
-            # Route 2: Guarded Edge Route to Order Microservice
+            # Route 1: Guarded Edge Route to Order Microservice (create)
             - id: order-service-route
               uri: 'http://${ORDER_SERVICE_HOST:localhost}:${ORDER_SERVICE_PORT:8081}'
               predicates:
