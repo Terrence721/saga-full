@@ -35,8 +35,7 @@ export function OrderEntryForm() {
         </ul>
         <div className="mt-6">
           <Button type="button" variant="secondary" onClick={() => {
-            h.stopStreamRef.current?.()
-            h.stopStreamRef.current = null
+            h.startNewOrder()
             h.setPlaced([])
           }}>
             New order
