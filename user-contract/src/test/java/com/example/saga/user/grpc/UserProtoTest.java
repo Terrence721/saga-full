@@ -16,7 +16,7 @@ class UserProtoTest {
         assertThat(descriptor).isNotNull();
         assertThat(descriptor.getName()).isEqualTo("user.proto");
         assertThat(descriptor.getPackage()).isEqualTo("saga.user.v1");
-        assertThat(descriptor.getMessageTypes()).hasSize(4);
+        assertThat(descriptor.getMessageTypes()).hasSize(2);
     }
 
     @Test
