@@ -1569,7 +1569,7 @@
     <td>com.example.saga.restaurant.RestaurantServiceApplicationConstructorTest</td>
     <td>applicationCanBeInstantiated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.101s</td>
+    <td>0.134s</td>
     <td></td>
 </tr>
 <tr>
@@ -1577,7 +1577,7 @@
     <td>com.example.saga.restaurant.RestaurantServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.235s</td>
+    <td>0.171s</td>
     <td></td>
 </tr>
 <tr>
@@ -1585,7 +1585,7 @@
     <td>com.example.saga.restaurant.RestaurantServiceApplicationTests</td>
     <td>dataSqlSeedsInventory_onARealBoot()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.062s</td>
+    <td>0.091s</td>
     <td></td>
 </tr>
 <tr>
@@ -1593,7 +1593,7 @@
     <td>com.example.saga.restaurant.architecture.ArchitectureRulesTest</td>
     <td>noDeepInheritance</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.826s</td>
+    <td>1.323s</td>
     <td></td>
 </tr>
 <tr>
@@ -1601,7 +1601,7 @@
     <td>com.example.saga.restaurant.architecture.ArchitectureRulesTest</td>
     <td>smallInterfaces</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -1609,7 +1609,7 @@
     <td>com.example.saga.restaurant.controller.MenuControllerTest</td>
     <td>list_returnsAvailableItems()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.272s</td>
+    <td>0.39s</td>
     <td></td>
 </tr>
 <tr>
@@ -1617,7 +1617,7 @@
     <td>com.example.saga.restaurant.integration.RestaurantSagaIntegrationTest</td>
     <td>approvedPathCreatesPreparingTicketAndApprovedOutbox()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.156s</td>
+    <td>0.224s</td>
     <td></td>
 </tr>
 <tr>
@@ -1625,7 +1625,7 @@
     <td>com.example.saga.restaurant.integration.RestaurantSagaIntegrationTest</td>
     <td>insufficientStockCreatesRejectedTicketAndRejectedOutbox()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.024s</td>
+    <td>0.034s</td>
     <td></td>
 </tr>
 <tr>
@@ -1633,7 +1633,7 @@
     <td>com.example.saga.restaurant.repository.InventoryItemRepositoryTest</td>
     <td>findById_returnsEmpty_whenItemCodeUnknown()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.011s</td>
     <td></td>
 </tr>
 <tr>
@@ -1641,7 +1641,7 @@
     <td>com.example.saga.restaurant.repository.InventoryItemRepositoryTest</td>
     <td>findById_returnsItem_whenItExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.009s</td>
+    <td>0.013s</td>
     <td></td>
 </tr>
 <tr>
@@ -1649,7 +1649,7 @@
     <td>com.example.saga.restaurant.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsEmpty_whenNoRecords()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.02s</td>
+    <td>0.01s</td>
     <td></td>
 </tr>
 <tr>
@@ -1657,7 +1657,7 @@
     <td>com.example.saga.restaurant.repository.OutboxRepositoryTest</td>
     <td>findByOrderByCreatedTimeAsc_returnsOldestFirst_upToPageSize()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.039s</td>
+    <td>0.03s</td>
     <td></td>
 </tr>
 <tr>
@@ -1665,7 +1665,7 @@
     <td>com.example.saga.restaurant.repository.RestaurantTicketRepositoryTest</td>
     <td>existsByOrderId_returnsFalse_whenNoTicketExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -1673,7 +1673,7 @@
     <td>com.example.saga.restaurant.repository.RestaurantTicketRepositoryTest</td>
     <td>existsByOrderId_returnsTrue_whenTicketExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.014s</td>
+    <td>0.013s</td>
     <td></td>
 </tr>
 <tr>
@@ -1681,7 +1681,7 @@
     <td>com.example.saga.restaurant.repository.RestaurantTicketRepositoryTest</td>
     <td>save_rejectsDuplicateOrderId()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.023s</td>
+    <td>0.028s</td>
     <td></td>
 </tr>
 <tr>
@@ -1689,7 +1689,7 @@
     <td>com.example.saga.restaurant.service.KafkaErrorHandlerConfigTest</td>
     <td>kafkaErrorHandler_recoversImmediatelyForIllegalArgumentException()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.214s</td>
+    <td>0.281s</td>
     <td></td>
 </tr>
 <tr>
@@ -1697,7 +1697,7 @@
     <td>com.example.saga.restaurant.service.KafkaErrorHandlerConfigTest</td>
     <td>kafkaErrorHandler_retriesGenericExceptionsBeforeGivingUp()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.103s</td>
+    <td>0.104s</td>
     <td></td>
 </tr>
 <tr>
@@ -1705,7 +1705,7 @@
     <td>com.example.saga.restaurant.service.MenuServiceTest</td>
     <td>listAvailable_filtersUnavailable()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.146s</td>
+    <td>0.17s</td>
     <td></td>
 </tr>
 <tr>
@@ -1721,7 +1721,7 @@
     <td>com.example.saga.restaurant.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_leavesRecordForRetryAndRestoresInterruptFlag_onInterrupt()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.174s</td>
+    <td>0.242s</td>
     <td></td>
 </tr>
 <tr>
@@ -1729,7 +1729,7 @@
     <td>com.example.saga.restaurant.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_leavesRecordForRetry_onFailure()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.01s</td>
+    <td>0.011s</td>
     <td></td>
 </tr>
 <tr>
@@ -1737,7 +1737,7 @@
     <td>com.example.saga.restaurant.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_leavesRecordForRetry_onTimeout()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.062s</td>
+    <td>0.064s</td>
     <td></td>
 </tr>
 <tr>
@@ -1745,7 +1745,7 @@
     <td>com.example.saga.restaurant.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_routesToApprovedTopic_forRestaurantApprovedEvent()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.253s</td>
+    <td>0.368s</td>
     <td></td>
 </tr>
 <tr>
@@ -1753,7 +1753,7 @@
     <td>com.example.saga.restaurant.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_routesToRejectedTopic_forRestaurantRejectedEvent()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -1761,7 +1761,7 @@
     <td>com.example.saga.restaurant.service.OutboxPublisherServiceTest</td>
     <td>publishPendingOutboxRecords_throwsIllegalArgumentException_forUnknownEventType()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -1777,7 +1777,7 @@
     <td>com.example.saga.restaurant.service.OutboxRecordFactoryTest</td>
     <td>create_throwsIllegalStateException_whenSerializationFails()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -1785,7 +1785,7 @@
     <td>com.example.saga.restaurant.service.RestaurantConsumerConfigTest</td>
     <td>onPaymentProcessed_deserializesPayloadAndDelegatesToProcessRestaurantStep()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.104s</td>
+    <td>0.121s</td>
     <td></td>
 </tr>
 <tr>
@@ -1793,7 +1793,7 @@
     <td>com.example.saga.restaurant.service.RestaurantInventoryServiceConcurrencyTest</td>
     <td>verifyAndDeductStock_serializesConcurrentRequestsForTheSameItem_soStockNeverOversells()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.037s</td>
+    <td>0.04s</td>
     <td></td>
 </tr>
 <tr>
@@ -1809,7 +1809,7 @@
     <td>com.example.saga.restaurant.service.RestaurantInventoryServiceTest</td>
     <td>verifyAndDeductStock_returnsInsufficientStock_whenNotEnough()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.071s</td>
+    <td>0.093s</td>
     <td></td>
 </tr>
 <tr>
@@ -1841,7 +1841,7 @@
     <td>com.example.saga.restaurant.service.RestaurantServiceTest</td>
     <td>processRestaurantStep_createsPreparingTicketAndApprovedOutbox_whenAllocated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -1849,7 +1849,7 @@
     <td>com.example.saga.restaurant.service.RestaurantServiceTest</td>
     <td>processRestaurantStep_createsRejectedTicketAndRejectedOutbox_whenInsufficientStock()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.123s</td>
+    <td>0.145s</td>
     <td></td>
 </tr>
 <tr>
@@ -1857,7 +1857,7 @@
     <td>com.example.saga.restaurant.service.RestaurantServiceTest</td>
     <td>processRestaurantStep_createsRejectedTicketAndRejectedOutbox_whenItemNotFound()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.007s</td>
     <td></td>
 </tr>
 <tr>
@@ -1865,7 +1865,7 @@
     <td>com.example.saga.restaurant.service.RestaurantServiceTest</td>
     <td>processRestaurantStep_createsRejectedTicketAndRejectedOutbox_whenPaymentFailed()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.013s</td>
+    <td>0.021s</td>
     <td></td>
 </tr>
 <tr>
@@ -1873,7 +1873,7 @@
     <td>com.example.saga.restaurant.service.RestaurantServiceTest</td>
     <td>processRestaurantStep_skipsDuplicate_whenTicketAlreadyExists()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -1881,7 +1881,7 @@
     <td>com.example.saga.restaurant.service.RestaurantServiceTest</td>
     <td>processRestaurantStep_throwsIllegalArgumentException_whenAmountNotPositive()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -1897,7 +1897,7 @@
     <td>com.example.saga.restaurant.service.RestaurantServiceTest</td>
     <td>processRestaurantStep_throwsIllegalArgumentException_whenItemCodeIsNull()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
