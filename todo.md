@@ -1,3 +1,5 @@
+> **Status (Oct 2026):** Login/auth entrypoints and the register/POS login flow were removed (public site is order/reservation). Test totals: 314 backend, 69 Vitest/RTL + 4 Playwright E2E frontend. Historical phase entries below still describe their original state.
+
 # 📝 TODO
 
 **Last Updated:** October 27, 2026 (menu table/customer labels landed; CodeQL alerts resolved; JaCoCo enabled; frontend removal of manual codes + category labels; 0 open issues, 30/30 board items Done)
