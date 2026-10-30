@@ -60,6 +60,10 @@ export function streamOrder(
       for (;;) {
         const { done, value } = await reader.read()
         if (done) {
+          const dataLine = buffer.split('\\n').find((line) => line.startsWith('data:'))
+          if (dataLine) {
+            onUpdate(JSON.parse(dataLine.slice('data:'.length).trim()) as Order)
+          }
           return
         }
 
