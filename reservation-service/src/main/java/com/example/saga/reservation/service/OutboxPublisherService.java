@@ -79,7 +79,7 @@ public class OutboxPublisherService {
         Message<String> message = MessageBuilder.withPayload(payload)
                 .setHeader(KafkaHeaders.TOPIC, topic)
                 .setHeader(KafkaHeaders.KEY, record.getAggregateId())
-                .setHeader("eventType", record.getEventType())
+                .setHeader(HEADER_EVENT_TYPE, record.getEventType())
                 .build();
 
         try {
