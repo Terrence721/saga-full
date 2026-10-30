@@ -38,7 +38,7 @@ spring:
                     name: orderServiceCircuitBreaker
                     fallbackUri: forward:/fallback/orders
 
-            # Route 3: Guarded Edge Route to Order Microservice - point-in-time lookup
+            # Route 2: Guarded Edge Route to Order Microservice - point-in-time lookup
             - id: order-get-route
               uri: 'http://${ORDER_SERVICE_HOST:localhost}:${ORDER_SERVICE_PORT:8081}'
               predicates:
@@ -47,10 +47,10 @@ spring:
               filters:
                 - JwtPerimeterGuard
                 - RemoveRequestHeader=Cookie
-              # No CircuitBreaker filter, unlike Route 2: a read-only status check is
+              # No CircuitBreaker filter, unlike Route 1: a read-only status check is
               # lower-stakes than order creation - a deliberate v1 choice, not an oversight.
 
-            # Route 4: Guarded Edge Route to Order Microservice - live status stream
+            # Route 3: Guarded Edge Route to Order Microservice - live status stream
             - id: order-stream-route
               uri: 'http://${ORDER_SERVICE_HOST:localhost}:${ORDER_SERVICE_PORT:8081}'
               predicates:
@@ -61,7 +61,7 @@ spring:
                 - RemoveRequestHeader=Cookie
 
 
-            # Route 5: Guarded Edge Route to Reservation Microservice
+            # Route 4: Guarded Edge Route to Reservation Microservice
             - id: reservation-service-route
               uri: 'http://${RESERVATION_SERVICE_HOST:localhost}:${RESERVATION_SERVICE_PORT:8084}'
               predicates:
@@ -72,7 +72,7 @@ spring:
                 - RemoveRequestHeader=Cookie
 
 
-            # Route 6: Guarded Edge Route to Restaurant Microservice - menu catalog
+            # Route 5: Guarded Edge Route to Restaurant Microservice - menu catalog
             - id: restaurant-menu-route
               uri: 'http://${RESTAURANT_SERVICE_HOST:localhost}:${RESTAURANT_SERVICE_PORT:8083}'
               predicates:
