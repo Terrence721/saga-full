@@ -42,6 +42,7 @@ public class ReservationService {
         this.objectMapper = objectMapper;
     }
 
+    @Transactional
     public Reservation create(CreateReservationRequest request) {
         Reservation reservation = Reservation.builder()
                 .customerId(request.customerId())
@@ -62,6 +63,7 @@ public class ReservationService {
                 .orElseThrow(() -> new IllegalArgumentException("Reservation not found: " + id));
     }
 
+    @Transactional
     public void cancel(@NonNull UUID id) {
         Reservation reservation = findById(id);
         reservation.setStatus(ReservationStatus.CANCELLED);
