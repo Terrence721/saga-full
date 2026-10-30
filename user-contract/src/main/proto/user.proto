@@ -6,24 +6,10 @@ option java_multiple_files = true;
 option java_package = "com.example.saga.user.grpc";
 option java_outer_classname = "UserProto";
 
-// Identity and access surface for the platform: issuing tokens at login,
-// and letting other services validate a token without each one owning
-// its own auth logic.
+// Identity surface for the platform: validating an access token without each
+// service owning its own verification logic.
 service UserIdentityService {
-  rpc Login (LoginRequest) returns (LoginResponse);
   rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
-}
-
-message LoginRequest {
-  string email = 1;
-  string password = 2;
-}
-
-message LoginResponse {
-  string user_id = 1;
-  string access_token = 2;
-  string token_type = 3;
-  int64 expires_in_seconds = 4;
 }
 
 message ValidateTokenRequest {

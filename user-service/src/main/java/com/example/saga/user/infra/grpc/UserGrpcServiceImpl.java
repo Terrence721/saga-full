@@ -4,8 +4,6 @@ import com.example.saga.user.domain.User;
 import com.example.saga.user.exception.InvalidCredentialsException;
 import com.example.saga.user.exception.UserInactiveException;
 import com.example.saga.user.exception.UserNotFoundException;
-import com.example.saga.user.grpc.LoginRequest;
-import com.example.saga.user.grpc.LoginResponse;
 import com.example.saga.user.grpc.UserIdentityServiceGrpc;
 import com.example.saga.user.grpc.ValidateTokenRequest;
 import com.example.saga.user.grpc.ValidateTokenResponse;
@@ -36,42 +34,6 @@ public class UserGrpcServiceImpl extends UserIdentityServiceGrpc.UserIdentitySer
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtTokenProvider = jwtTokenProvider;
-    }
-
-    @Override
-    @SuppressWarnings("null") // Protobuf string getters never return null; User is never absent when User::getPasswordHash runs, since Optional.map only invokes it when present.
-    public void login(LoginRequest request, StreamObserver<LoginResponse> responseObserver) {
-        GrpcExecutor.execute(responseObserver, () -> {
-            String email = request.getEmail();
-            Optional<User> maybeUser = userRepository.findByEmail(email);
-
-            String password = request.getPassword();
-            // Runs exactly once on every path - found or not, active or not - so none of
-            // them can be told apart by how long the response takes.
-            boolean passwordMatches = passwordEncoder.matches(
-                    password,
-                    maybeUser.map(User::getPasswordHash).orElse(DUMMY_PASSWORD_HASH));
-
-            User user = maybeUser.orElseThrow(
-                    () -> new UserNotFoundException("No user found for email: " + request.getEmail()));
-
-            if (!user.isActive()) {
-                throw new UserInactiveException("User account is inactive: " + request.getEmail());
-            }
-
-            if (!passwordMatches) {
-                throw new InvalidCredentialsException("Invalid credentials for email: " + request.getEmail());
-            }
-
-            JwtTokenProvider.IssuedToken issuedToken = jwtTokenProvider.createToken(user);
-
-            return LoginResponse.newBuilder()
-                    .setUserId(user.getId().toString())
-                    .setAccessToken(issuedToken.token())
-                    .setTokenType("Bearer")
-                    .setExpiresInSeconds(issuedToken.expiresInSeconds())
-                    .build();
-        });
     }
 
     @Override
