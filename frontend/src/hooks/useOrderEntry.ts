@@ -15,6 +15,7 @@ export function useOrderEntry() {
     queryKey: ['menu'],
     queryFn: () => fetchMenu(),
   })
+  const menu: MenuItem[] = menuQuery.data && menuQuery.data.length ? menuQuery.data : MENU.map((item) => ({ ...item, available: true }))
   const [itemCode, setItemCode] = useState('')
   const [quantity, setQuantity] = useState('1')
   const [totalAmount, setTotalAmount] = useState('')
@@ -26,16 +27,11 @@ export function useOrderEntry() {
   const [error, setError] = useState<string | null>(null)
   const [cart, setCart] = useState<CartLine[]>([])
   const [placed, setPlaced] = useState<Order[]>([])
-  const [menu, setMenu] = useState<MenuItem[]>(() => MENU.map((item) => ({ ...item, available: true })))
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [order, setOrder] = useState<Order | null>(null)
   const stopStreamRef = useRef<(() => void) | null>(null)
 
   useEffect(() => () => stopStreamRef.current?.(), [])
-
-  useEffect(() => {
-    if (menuQuery.data && menuQuery.data.length) setMenu(menuQuery.data)
-  }, [menuQuery.data])
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
@@ -95,7 +91,7 @@ export function useOrderEntry() {
     error, setError,
     cart, setCart,
     placed, setPlaced,
-    menu, setMenu,
+    menu,
     isSubmitting,
     order, setOrder,
     handleSubmit,
