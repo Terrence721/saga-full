@@ -30,7 +30,7 @@ public class JwtPerimeterGuardGatewayFilterFactory
         super(Config.class);
 
         // Built once at startup - the same secret/issuer user-service's
-        // JwtTokenProvider signs with, so a token minted by Login() verifies here.
+        // JwtTokenProvider signs/verifies with, so issued tokens verify here.
         Algorithm algorithm = Algorithm.HMAC256(secret);
         this.jwtVerifier = JWT.require(algorithm)
                 .withIssuer(issuer)

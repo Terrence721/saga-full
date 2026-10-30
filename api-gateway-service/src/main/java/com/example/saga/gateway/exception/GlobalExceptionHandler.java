@@ -32,24 +32,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNotFound(UserNotFoundException ex) {
-        log.warn("User not found: {}", ex.getMessage());
-        return buildResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.getMessage());
-    }
-
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
-        log.warn("Invalid credentials: {}", ex.getMessage());
-        return buildResponse(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", ex.getMessage());
-    }
-
-    @ExceptionHandler(UserInactiveException.class)
-    public ResponseEntity<ErrorResponse> handleForbidden(UserInactiveException ex) {
-        log.warn("User is inactive: {}", ex.getMessage());
-        return buildResponse(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.getMessage());
-    }
-
     @ExceptionHandler(DependencyUnavailableException.class)
     public ResponseEntity<ErrorResponse> handleDependencyFailure(DependencyUnavailableException ex) {
         log.error("Downstream service failure", ex);

@@ -10,19 +10,11 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-// Spring Cloud Gateway's own spring.cloud.gateway.server.webflux.globalcors property
-// (no longer used here - see below) only wires into RoutePredicateHandlerMapping, the
-// mapping that resolves this app's YAML-defined routes. It has no effect on a path served
-// by a real local @RestController (AuthenticationController's /auth/login), since Spring
-// dispatches that path to a completely different HandlerMapping with no CORS
-// configuration of its own. Verified for real: a preflight to /auth/login was rejected
-// with 403 while the identical origin worked fine on a Gateway-routed path (/orders) - a
-// diagnostic WebFilter confirmed the gateway's own route was never even consulted for
-// /auth/login, since the controller-dispatch mapping claimed the path first.
+// CORS is handled here by a HandlerMapping-agnostic WebFilter so it applies uniformly
+// to every path, including Gateway-routed ones. (The gateway no longer serves /auth/login;
+// there is no local auth controller anymore — login entrypoints were removed.)
 //
-// This bean is a standard, HandlerMapping-agnostic WebFilter, so it applies uniformly
-// regardless of which mapping ultimately serves a request - replacing globalcors
-// entirely (removed from application.yaml) rather than running alongside it.
+// This bean replaces any RoutePredicateHandlerMapping-scoped globalcors config entirely.
 @Configuration
 public class GlobalCorsConfig {
 
