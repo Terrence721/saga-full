@@ -927,7 +927,7 @@ A real bug surfaced during this step's own verification: Spring Cloud Gateway Se
 - 3 new `GlobalCorsConfigTest` cases (real preflight requests via `WebTestClient`, absolute-URI form) and 2 new `JwtPerimeterGuardIntegrationTest` cases proving the two new GET routes actually enforce `JwtPerimeterGuard`, not just declare it.
 - Verified via deliberate revert: removed `OPTIONS` from one route's method predicate, confirmed the corresponding CORS test genuinely fails, restored it.
 - `./gradlew :api-gateway-service:test` green, 38/38 in this module.
-- Real end-to-end verification against the rebuilt container (a real preflight, a real GET lookup, a real SSE stream connection) was flagged as still in progress at merge time — it's what surfaced Phase 52's bug once real login verification actually happened.
+- Real end-to-end verification against the rebuilt container (a real preflight, a real GET lookup, a real SSE stream connection) was flagged as still in progress at merge time — it's what surfaced Phase 52's bug once real order entry verification actually happened.
 
 ## Architectural audit: DRY/SOLID/composition fixes across `order-service`/`payment-service`/`restaurant-service`
 
@@ -957,7 +957,7 @@ The code-review audit ([#17](https://github.com/Terrence721/saga-full/issues/17)
 
 ### Context: this repo has no frontend at all, and neither does the structural-reference source
 
-The source this repo used as a directory-structure guide is backend-only. The register/POS UI is genuinely new scope, decided 2026-08-31 (React + TypeScript + Vite + Tailwind, calling `api-gateway-service` directly, reusing the existing JWT login flow as-is, SSE for real-time delivery). This step scaffolds the shell only — nothing functional yet.
+The source this repo used as a directory-structure guide is backend-only. The register/POS UI is genuinely new scope, decided 2026-08-31 (React + TypeScript + Vite + Tailwind, calling `api-gateway-service` directly, reusing the existing JWT order entry flow as-is, SSE for real-time delivery). This step scaffolds the shell only — nothing functional yet.
 
 ### Decision: Yarn over npm, a dedicated port, `strict: true` from the start
 
@@ -972,13 +972,13 @@ A real cross-project port collision was found before it caused a confusing failu
 - `./gradlew :api-gateway-service:test` green after the CORS default port change.
 - Deliberately deferred, not silently dropped: `frontend/README.md` and `frontend/public/favicon.svg` are still generic `create-vite` template content — revisit once there's a real UI/brand to describe, per `todo.md`.
 
-## Frontend: the real login flow, and a cross-platform file-casing bug
+## Frontend: the real order entry flow, and a cross-platform file-casing bug
 
 **Status:** Done — Phase 51, step 5 of the frontend plan ([#211](https://github.com/Terrence721/saga-full/issues/211)/[#213](https://github.com/Terrence721/saga-full/issues/213)/[#215](https://github.com/Terrence721/saga-full/issues/215)).
 
 ### Context: the shell exists, nothing calls the gateway yet
 
-Phase 50 scaffolded the shell with no functional code. This step wires up a real login against the actual gateway — the first thing any cashier session needs.
+Phase 50 scaffolded the shell with no functional code. This step wires up a real order entry against the actual gateway — the first thing any cashier session needs.
 
 ### Decision: a shared fetch helper, JWT in React state, a 3-way context split
 
@@ -990,15 +990,15 @@ A real bug surfaced while wiring `App.tsx`: the pre-split files were named `auth
 
 ### Consequences: real, verified login; a process fix for premature issue auto-closure
 
-- Verified against the real running gateway, not mocked: a real login with a real test user, and a real rejected login with wrong credentials, both confirmed in a real browser.
-- Vitest + React Testing Library coverage for the login flow is still outstanding — planned as step 8, covering steps 5-7 together.
+- Verified against the real running gateway, not mocked: a real order entry with a real test user, and a real rejected login with wrong credentials, both confirmed in a real browser.
+- Vitest + React Testing Library coverage for the order entry flow is still outstanding — planned as step 8, covering steps 5-7 together.
 - Issues #211 and #213 both closed prematurely when their respective PRs merged with only partial scope (`httpClient.ts` alone, then `authClient.ts` alone) — each PR's "Closes #N" auto-closed the tracking issue before its stated scope was actually done. Fixed going forward: PR bodies use "Part of #N", never an auto-closing keyword, for incremental work, so the tracking issue (#215, for the remainder of this step) stays open until its full scope actually lands.
 
 ## `api-gateway-service`: `/auth/login`'s CORS bug was a `HandlerMapping` race, not a config error; plus a Dockerfile fix
 
 **Status:** Done — Phase 52 ([PR #219](https://github.com/Terrence721/saga-full/pull/219)).
 
-### Context: real browser verification of Phase 51's login flow failed with a 403 the config didn't explain
+### Context: real browser verification of Phase 51's order entry flow failed with a 403 the config didn't explain
 
 Phase 48's `globalcors` config looked correct — same origin, same methods, same headers as the working `/orders` routes. But a real preflight to `/auth/login` from the real frontend origin was rejected with 403, while the identical origin worked fine on a gateway-routed path (`/orders`). Nothing about `globalcors`'s own YAML looked wrong.
 
@@ -1010,10 +1010,10 @@ Fixed with `GlobalCorsConfig`, a `CorsWebFilter` bean built on a plain `UrlBased
 
 The same PR fixed a real, unrelated inefficiency found while iterating on this bug: none of the 5 service `Dockerfile`s used a BuildKit cache mount for Gradle's dependency cache, so any rebuild that touched a service's own source invalidated the `COPY` layer above it and forced the build to start from a completely empty filesystem — re-downloading the Gradle distribution itself and re-resolving every dependency from Maven Central from scratch, observed costing 10+ minutes per rebuild during this session's own debugging. Fixed by adding `--mount=type=cache,target=/root/.gradle` to each `RUN ./gradlew :<module>:bootJar --no-daemon` line — a cache mount persists independently of layer invalidation, keyed by its target path across builds on this machine's BuildKit instance, unlike a plain layer.
 
-### Consequences: a real regression test, and the frontend's login flow is now genuinely done end-to-end
+### Consequences: a real regression test, and the frontend's order entry flow is now genuinely done end-to-end
 
 - New `GlobalCorsConfigTest` case, `preflightRequest_fromFrontendOrigin_isAllowedOnAuthLoginRoute_realRegressionCase()`, verified via deliberate revert of the `CorsWebFilter` bean — confirmed it genuinely fails without the fix, restored it.
-- Login confirmed working end-to-end against the real running gateway in a real browser — the last real blocker on Phase 51's login flow.
+- Login confirmed working end-to-end against the real running gateway in a real browser — the last real blocker on Phase 51's order entry flow.
 - Full repo suite green, **314/314 tests passing**.
 - An in-flight Docker build started before the Dockerfile edit does not retroactively benefit from the cache mount — noted for anyone timing a rebuild against this change.
 
@@ -1023,11 +1023,11 @@ The same PR fixed a real, unrelated inefficiency found while iterating on this b
 
 ### Context: the frontend can log in, but can't do anything a cashier would actually use it for
 
-Phase 51 proved a real login flow end-to-end. Nothing after that exists yet — no way to actually place an order, the entire point of a register/POS UI. `OrderController.createOrder` (Phase 23) requires the request body's `customerId` to exactly match the `X-Perimeter-User-Id` header the gateway injects from the caller's JWT, fail-closed 403 otherwise — but the login response (`WebTokenResponse`) never returns the user's id directly, only the token itself.
+Phase 51 proved a real order entry flow end-to-end. Nothing after that exists yet — no way to actually place an order, the entire point of a register/POS UI. `OrderController.createOrder` (Phase 23) requires the request body's `customerId` to exactly match the `X-Perimeter-User-Id` header the gateway injects from the caller's JWT, fail-closed 403 otherwise — but the login response (`WebTokenResponse`) never returns the user's id directly, only the token itself.
 
 ### Decision: decode the JWT client-side, don't touch the backend just to hand back an id it already gave the client
 
-The `user-id` claim is already embedded in the JWT payload (`JwtTokenProvider.java`, `.withClaim("user-id", ...)`) — a JWT's payload is signed, not encrypted, so decoding it client-side to read a claim is standard practice, not a security boundary; the signature is still verified server-side on every guarded request regardless. New `jwt.ts` base64url-decodes the payload segment and reads that claim. `AuthContext`/`AuthProvider` were extended to derive `customerId` automatically on login and expose it via `useAuth()`, so no component needs to know anything about JWT internals to get it. This was weighed against adding a `userId` field to `WebTokenResponse` — a backend change that would have meant re-verifying the login flow's existing tests for no real benefit, since the client already has everything it needs.
+The `user-id` claim is already embedded in the JWT payload (`JwtTokenProvider.java`, `.withClaim("user-id", ...)`) — a JWT's payload is signed, not encrypted, so decoding it client-side to read a claim is standard practice, not a security boundary; the signature is still verified server-side on every guarded request regardless. New `jwt.ts` base64url-decodes the payload segment and reads that claim. `AuthContext`/`AuthProvider` were extended to derive `customerId` automatically on login and expose it via `useAuth()`, so no component needs to know anything about JWT internals to get it. This was weighed against adding a `userId` field to `WebTokenResponse` — a backend change that would have meant re-verifying the order entry flow's existing tests for no real benefit, since the client already has everything it needs.
 
 `orderClient.ts` mirrors `authClient.ts`'s shape (`createOrder(request, token)`) and is the first call this frontend makes with an `Authorization` header. `OrderEntryForm` collects itemCode/quantity/totalAmount and shows a static "Order created — status: PENDING" confirmation on success; it deliberately does not show live status — that's step 7's job (the SSE stream from Phase 46), not duplicated here.
 
@@ -1038,9 +1038,9 @@ Fixed in `httpClient.ts` itself, matching its own stated purpose as the owner of
 ### Consequences: verified against the real contract at every layer, not assumed at any of them
 
 - `yarn build`/`yarn lint` clean.
-- Verified against the real running stack, not mocked: a real login through the actual gateway, a real `201 Created` from `POST /orders` whose body matched `orderClient.ts`'s `Order` type exactly (confirmed by decoding a real issued JWT and cross-checking its `user-id` claim against the seeded test row), and a real `400` (a 300-character `itemCode` — over the backend's `@Size(max=255)` cap, and with no client-side length limit on the form to catch it first) confirmed to render "Bad Request" rather than "undefined" or a crash.
+- Verified against the real running stack, not mocked: a real order entry through the actual gateway, a real `201 Created` from `POST /orders` whose body matched `orderClient.ts`'s `Order` type exactly (confirmed by decoding a real issued JWT and cross-checking its `user-id` claim against the seeded test row), and a real `400` (a 300-character `itemCode` — over the backend's `@Size(max=255)` cap, and with no client-side length limit on the form to catch it first) confirmed to render "Bad Request" rather than "undefined" or a crash.
 - Confirmed by the user in a real browser, not just via `curl`: a real order created end-to-end, "Order `<id>` created — status: PENDING" rendered correctly.
-- Vitest + React Testing Library coverage for this and the login flow remains deferred to step 8, which covers steps 5-7 together.
+- Vitest + React Testing Library coverage for this and the order entry flow remains deferred to step 8, which covers steps 5-7 together.
 
 ## Docker: the Phase 52 cache mount's own testing missed a real concurrency bug
 
@@ -1086,7 +1086,7 @@ The browser's native `EventSource` API is the obvious first reach for consuming 
 
 ### Context: three steps' worth of real logic, zero frontend tests
 
-Steps 5-7 (Phases 51, 53, 55) shipped a login flow, order entry, and live status streaming — each verified by hand against the real running stack at the time, but none of it locked in by an automated test. No frontend test tooling existed in this repo at all before this step.
+Steps 5-7 (Phases 51, 53, 55) shipped a order entry flow, order entry, and live status streaming — each verified by hand against the real running stack at the time, but none of it locked in by an automated test. No frontend test tooling existed in this repo at all before this step.
 
 ### Decision: Vitest + RTL, explicit imports over `globals: true`, mock at the network boundary
 

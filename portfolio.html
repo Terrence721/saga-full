@@ -722,7 +722,7 @@
             Even after closing the status-code leak above, unknown-email
             and inactive-account logins skipped the deliberately-slow
             BCrypt comparison entirely, responding measurably faster than
-            a real login attempt. Restructured so every path pays the
+            a real order entry attempt. Restructured so every path pays the
             identical real BCrypt cost, verified by reverting the fix and
             confirming new tests fail against the old code first.
           </div>
@@ -1277,7 +1277,7 @@
       commit history, and CI runs — nothing here is asserted without a link
       to check it against. A separate DRY/SOLID/composition audit closed the
       same week with 0 findings left open. The register/POS frontend is now
-      functionally complete — a login flow, real order entry, live SSE
+      functionally complete — a order entry flow, real order entry, live SSE
       status, and 69 Vitest/React Testing Library tests plus 4 Playwright E2E tests wired into CI, all
       verified end-to-end against the real running stack. A
       <code>reservation-service</code> addition remains open — see
