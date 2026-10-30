@@ -5,11 +5,9 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.example.saga.user.domain.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.Optional;
 
 @Component
@@ -32,20 +30,6 @@ public class JwtTokenProvider {
         this.verifier = JWT.require(algorithm).withIssuer(issuer).build();
     }
 
-    public IssuedToken createToken(User user) {
-        Date now = new Date();
-        String email = user.getEmail();
-        String token = JWT.create()
-                .withIssuer(issuer)
-                .withSubject(email)
-                .withClaim("user-id", user.getId().toString())
-                .withIssuedAt(now)
-                .withExpiresAt(new Date(now.getTime() + expirationMs))
-                .sign(algorithm);
-
-        return new IssuedToken(token, expirationMs / 1000);
-    }
-
     public Optional<DecodedJWT> verifyToken(String token) {
         try {
             return Optional.of(verifier.verify(token));
@@ -54,5 +38,4 @@ public class JwtTokenProvider {
         }
     }
 
-    public record IssuedToken(String token, long expiresInSeconds) {}
 }
