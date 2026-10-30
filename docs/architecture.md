@@ -1,3 +1,4 @@
+<!-- Status (Oct 2026): Login/auth entrypoints and the register/POS login flow were removed; the public site is order/reservation. Test totals: 314 backend, 69 Vitest/RTL + 4 Playwright E2E frontend. Historical sections below may predate these changes. -->
 # Architecture Decisions
 
 Last updated: September 4, 2026 (all six backend modules complete through `api-gateway-service`, Phase 40; a CodeQL-flagged log-injection fix, Phase 41; the code-review audit is complete — all 6 modules, 73/73 files — see [`docs/code-review.md`](code-review.md))

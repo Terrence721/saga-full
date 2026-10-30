@@ -1,3 +1,4 @@
+<!-- Status (Oct 2026): Login/auth entrypoints and the register/POS login flow were removed; the public site is order/reservation. Test totals: 314 backend, 69 Vitest/RTL + 4 Playwright E2E frontend. Historical sections below may predate these changes. -->
 # Case Study: Distributed Saga Microservice Platform
 
 Last updated: September 14, 2026
