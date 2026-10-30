@@ -82,7 +82,7 @@ class ReservationServiceTest {
 
         service.handleRestaurantApproved(new RestaurantApprovedEvent(orderId, customerId, UUID.randomUUID()));
 
-        verify(repository, never()).save(java.util.Objects.requireNonNull(any(Reservation.class)));
+        verify(repository, never()).save(any(Reservation.class));
     }
 
     @Test
@@ -102,12 +102,12 @@ class ReservationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void create_persistsAndReturns() {
         CreateReservationRequest request = new CreateReservationRequest("customer-1", "T-1", 4,
                 java.time.Instant.parse("2026-10-28T18:00:00Z"));
-        when(repository.save(java.util.Objects.requireNonNull(any(Reservation.class)))).thenAnswer(
-            (org.mockito.stubbing.Answer<Reservation>) inv ->
-                java.util.Objects.requireNonNull(inv.getArgument(0, Reservation.class)));
+        when(repository.save(any(Reservation.class)))
+            .thenAnswer(org.mockito.AdditionalAnswers.returnsFirstArg());
 
         Reservation result = service.create(request);
 
@@ -178,6 +178,7 @@ class ReservationServiceTest {
     }
 
     @Test
+    @SuppressWarnings("null")
     void handleRestaurantRejected_isNoOpWhenNoReservationExists() {
         UUID orderId = UUID.randomUUID();
         UUID customerId = UUID.randomUUID();
