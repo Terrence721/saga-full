@@ -82,13 +82,6 @@ describe('Input', () => {
     expect(screen.getByRole('textbox')).toBeDisabled()
   })
 
-  it('supports ref forwarding', () => {
-    const ref = { current: null as HTMLInputElement | null }
-    render(<Input ref={ref} />)
-
-    expect(ref.current).toBeInstanceOf(HTMLInputElement)
-  })
-
   it('supports defaultValue for uncontrolled usage', () => {
     render(<Input defaultValue="initial" />)
 

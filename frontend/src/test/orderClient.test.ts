@@ -15,20 +15,16 @@ afterEach(() => {
 })
 
 describe('createOrder', () => {
-  it('POSTs to /orders with the Authorization header and returns the created order', async () => {
+  it('POSTs to /orders and returns the created order', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 201, json: () => Promise.resolve(sampleOrder) })
     vi.stubGlobal('fetch', fetchMock)
 
-    const result = await createOrder(
-      { customerId: 'customer-1', totalAmount: 9.5, itemCode: 'BURGER', quantity: 1 },
-      'my-token',
-    )
+    const result = await createOrder({ customerId: 'customer-1', totalAmount: 9.5, itemCode: 'BURGER', quantity: 1 })
 
     expect(result).toEqual(sampleOrder)
     const [url, init] = fetchMock.mock.calls[0]
     expect(url).toContain('/orders')
     expect(init.method).toBe('POST')
-    expect(init.headers.Authorization).toBe('Bearer my-token')
     expect(JSON.parse(init.body)).toEqual({
       customerId: 'customer-1',
       totalAmount: 9.5,
@@ -68,7 +64,7 @@ describe('streamOrder', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(fakeSseResponse([body])))
 
     const updates: Order[] = []
-    streamOrder(sampleOrder.id, 'tok', (order) => updates.push(order))
+    streamOrder(sampleOrder.id, (order) => updates.push(order))
 
     await vi.waitFor(() => expect(updates).toHaveLength(2))
     expect(updates[0]).toEqual(sampleOrder)
@@ -84,28 +80,27 @@ describe('streamOrder', () => {
     )
 
     const updates: Order[] = []
-    streamOrder(sampleOrder.id, 'tok', (order) => updates.push(order))
+    streamOrder(sampleOrder.id, (order) => updates.push(order))
 
     await vi.waitFor(() => expect(updates).toHaveLength(1))
     expect(updates[0]).toEqual(sampleOrder)
   })
 
-  it('requests the stream URL with the Authorization header', () => {
+  it('requests the stream URL', () => {
     const fetchMock = vi.fn().mockResolvedValue(fakeSseResponse([]))
     vi.stubGlobal('fetch', fetchMock)
 
-    streamOrder('order-123', 'my-token', () => {})
+    streamOrder('order-123', () => {})
 
-    const [url, init] = fetchMock.mock.calls[0]
+    const [url] = fetchMock.mock.calls[0]
     expect(url).toContain('/orders/order-123/stream')
-    expect(init.headers.Authorization).toBe('Bearer my-token')
   })
 
   it('the returned cleanup function aborts the underlying request', () => {
     const fetchMock = vi.fn().mockResolvedValue(fakeSseResponse([]))
     vi.stubGlobal('fetch', fetchMock)
 
-    const stop = streamOrder('order-123', 'tok', () => {})
+    const stop = streamOrder('order-123', () => {})
     stop()
 
     const [, init] = fetchMock.mock.calls[0]

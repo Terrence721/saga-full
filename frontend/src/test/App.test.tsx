@@ -41,7 +41,7 @@ describe('App (landing page)', () => {
     expect(await screen.findByText(/Reservation confirmed/i)).toBeInTheDocument()
   })
 
-  it('opens the order online modal without a login screen', async () => {
+  it('opens the order online modal', async () => {
     const user = userEvent.setup()
     render(<App />)
 

@@ -24,7 +24,7 @@ describe('apiFetch', () => {
         Promise.resolve({ error: 'Unauthorized', message: 'Invalid credentials', timestamp: '2026-01-01T00:00:00Z' }),
     })
 
-    await expect(apiFetch('/auth/login')).rejects.toMatchObject({ message: 'Invalid credentials', status: 401 })
+    await expect(apiFetch('/example-endpoint')).rejects.toMatchObject({ message: 'Invalid credentials', status: 401 })
   })
 
   it("falls back to the error field when there is no message (order-service's real default Spring Boot error shape)", async () => {

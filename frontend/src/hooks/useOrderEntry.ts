@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { createOrder, streamOrder, type Order } from '../api/orderClient'
 import { ApiError } from '../api/httpClient'
-import { useAuth } from '../context/useAuth'
 import { fetchMenu, type MenuItem } from '../api/menuClient'
 import { MENU } from '../data/menu'
 
@@ -12,11 +11,9 @@ export interface CartLine {
 }
 
 export function useOrderEntry() {
-  const auth = useAuth()
   const menuQuery = useQuery({
-    queryKey: ['menu', auth.token],
-    queryFn: () => fetchMenu(auth.token as string),
-    enabled: Boolean(auth.token),
+    queryKey: ['menu'],
+    queryFn: () => fetchMenu(),
   })
   const [itemCode, setItemCode] = useState('')
   const [quantity, setQuantity] = useState('1')
@@ -45,11 +42,7 @@ export function useOrderEntry() {
     setError(null)
     setIsSubmitting(true)
 
-    if (!auth.token || !auth.customerId) {
-      setError('You must be logged in to place an order')
-      setIsSubmitting(false)
-      return
-    }
+    const customerId = 'guest'
 
     const lines = cart.length > 0
       ? cart
@@ -58,22 +51,19 @@ export function useOrderEntry() {
     try {
       const createdOrders: Order[] = []
       for (const line of lines) {
-        const created = await createOrder(
-          {
-            customerId: auth.customerId,
-            itemCode: line.item.itemCode,
-            quantity: line.quantity,
-            totalAmount: line.item.price * line.quantity,
-            tableNumber: tableNumber || null,
-            customerName: customerName || null,
-            paymentMethod,
-            cardNumber: paymentMethod === 'CARD' ? (cardNumber || null) : null,
-            cardCvv: paymentMethod === 'CARD' ? (cardCvv || null) : null,
-          },
-          auth.token,
-        )
+        const created = await createOrder({
+          customerId,
+          itemCode: line.item.itemCode,
+          quantity: line.quantity,
+          totalAmount: line.item.price * line.quantity,
+          tableNumber: tableNumber || null,
+          customerName: customerName || null,
+          paymentMethod,
+          cardNumber: paymentMethod === 'CARD' ? (cardNumber || null) : null,
+          cardCvv: paymentMethod === 'CARD' ? (cardCvv || null) : null,
+        })
         createdOrders.push(created)
-        stopStreamRef.current = streamOrder(created.id, auth.token, (updated) => {
+        stopStreamRef.current = streamOrder(created.id, (updated) => {
           setPlaced((current) => current.map((row) => (row.id === updated.id ? updated : row)))
         })
       }
@@ -93,7 +83,6 @@ export function useOrderEntry() {
   }
 
   return {
-    auth,
     stopStreamRef,
     itemCode, setItemCode,
     quantity, setQuantity,

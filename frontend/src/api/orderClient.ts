@@ -28,10 +28,9 @@ export interface Order {
   status: OrderStatus
 }
 
-export function createOrder(request: CreateOrderRequest, token: string): Promise<Order> {
+export function createOrder(request: CreateOrderRequest): Promise<Order> {
   return apiFetch<Order>('/orders', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify(request),
   })
 }
@@ -42,13 +41,11 @@ export function createOrder(request: CreateOrderRequest, token: string): Promise
 // events, each a "data: <json>" line) by hand.
 export function streamOrder(
   orderId: string,
-  token: string,
   onUpdate: (order: Order) => void,
 ): () => void {
   const controller = new AbortController()
 
   fetch(`${API_BASE_URL}/orders/${orderId}/stream`, {
-    headers: { Authorization: `Bearer ${token}` },
     signal: controller.signal,
   })
     .then(async (response) => {

@@ -14,10 +14,9 @@ export interface MenuItem {
 export type MenuItemSummary = Pick<MenuItem, 'itemCode' | 'name' | 'price'>
 export type OrderableItem = Pick<MenuItem, 'itemCode' | 'name' | 'description' | 'price' | 'available'>
 
-export function fetchMenu(token: string): Promise<MenuItem[]> {
+export function fetchMenu(): Promise<MenuItem[]> {
   return apiFetch<MenuItem[]>('/menu', {
     method: 'GET',
-    headers: { Authorization: `Bearer ${token}` },
   })
 }
 
