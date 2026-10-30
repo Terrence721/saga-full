@@ -11,7 +11,6 @@ import com.example.saga.reservation.dto.RestaurantApprovedEvent;
 import com.example.saga.reservation.dto.RestaurantRejectedEvent;
 import com.example.saga.reservation.repository.ReservationRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -64,7 +63,7 @@ public class ReservationService {
         return repository.findAll();
     }
 
-    public Reservation findById(@NonNull UUID id) {
+    public Reservation findById(UUID id) {
         if (id == null) {
             throw new IllegalArgumentException("id is required");
         }
@@ -73,7 +72,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public void cancel(@NonNull UUID id) {
+    public void cancel(UUID id) {
         if (id == null) {
             throw new IllegalArgumentException("id is required");
         }
