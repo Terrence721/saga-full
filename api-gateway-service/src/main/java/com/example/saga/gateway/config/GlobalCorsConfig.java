@@ -11,8 +11,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 // CORS is handled here by a HandlerMapping-agnostic WebFilter so it applies uniformly
-// to every path, including Gateway-routed ones. (The gateway no longer serves /auth/login;
-// there is no local auth controller anymore — login entrypoints were removed.)
+// to every path, including Gateway-routed ones. (There is no local auth controller anymore — login entrypoints were removed.)
 //
 // This bean replaces any RoutePredicateHandlerMapping-scoped globalcors config entirely.
 @Configuration
