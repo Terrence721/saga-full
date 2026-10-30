@@ -1014,7 +1014,7 @@ The same PR fixed a real, unrelated inefficiency found while iterating on this b
 
 - New `GlobalCorsConfigTest` case, `preflightRequest_fromFrontendOrigin_isAllowedOnAuthLoginRoute_realRegressionCase()`, verified via deliberate revert of the `CorsWebFilter` bean — confirmed it genuinely fails without the fix, restored it.
 - Login confirmed working end-to-end against the real running gateway in a real browser — the last real blocker on Phase 51's login flow.
-- Full repo suite green, **181/181 tests passing**.
+- Full repo suite green, **314/314 tests passing**.
 - An in-flight Docker build started before the Dockerfile edit does not retroactively benefit from the cache mount — noted for anyone timing a rebuild against this change.
 
 ## Frontend: order entry against `POST /orders`, and an error-handling gap `httpClient.ts` never had to face before
