@@ -84,11 +84,17 @@ public class PaymentService {
 
     @Transactional
     public void handleOrderCompensation(RestaurantRejectedEvent event) {
+        if (event == null || event.orderId() == null || event.customerId() == null) {
+            throw new IllegalArgumentException("invalid restaurant rejected event");
+        }
         handleCompensation(event.orderId(), event.customerId(), event.reason());
     }
 
     @Transactional
     public void handleReservationCompensation(ReservationRejectedEvent event) {
+        if (event == null || event.orderId() == null || event.customerId() == null) {
+            throw new IllegalArgumentException("invalid reservation rejected event");
+        }
         handleCompensation(event.orderId(), event.customerId(), event.reason());
     }
 
@@ -111,6 +117,9 @@ public class PaymentService {
     }
 
     private void handleCompensation(UUID orderId, UUID customerId, String reason) {
+        if (orderId == null || customerId == null) {
+            throw new IllegalArgumentException("orderId and customerId are required");
+        }
         if (paymentRepository.existsByOrderIdAndStatus(orderId, PaymentStatus.REFUNDED)) {
             log.debug("Payment for order {} already REFUNDED; skipping duplicate compensation", orderId);
             return;
