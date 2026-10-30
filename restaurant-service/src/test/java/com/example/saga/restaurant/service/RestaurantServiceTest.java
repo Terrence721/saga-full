@@ -67,7 +67,6 @@ class RestaurantServiceTest {
 
     @Test
     void processRestaurantStep_throwsIllegalArgumentException_whenOrderIdIsNull() {
-        when(ticketRepository.existsByOrderId(null)).thenReturn(false);
         PaymentProcessedEvent event = new PaymentProcessedEvent(
                 null, UUID.randomUUID(), "MARGHERITA", 2, new BigDecimal("19.99"), PaymentStatus.APPROVED);
 
