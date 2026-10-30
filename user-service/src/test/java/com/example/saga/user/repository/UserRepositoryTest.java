@@ -9,7 +9,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
-@SuppressWarnings("null") // test fixtures/mocks here are always real, non-null values.
 class UserRepositoryTest {
 
     @Autowired
