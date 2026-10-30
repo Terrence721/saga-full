@@ -1,83 +1,85 @@
-import './landing.css'
-import { useState } from 'react'
-import { apiFetch } from './api/httpClient'
+import { useEffect, useRef, useState, type ReactNode } from "react"
 
 type MenuItem = {
   id: string
   name: string
   description: string
   price: number
-  category: 'Pizza' | 'Sides' | 'Drinks'
+  category: "Pizza" | "Sides" | "Drinks"
   tag?: string
   image?: string
 }
 
 const menu: MenuItem[] = [
   {
-    id: 'margherita',
-    name: 'Margherita',
-    description: 'San Marzano tomato, fior di latte, basil, extra virgin olive oil',
+    id: "margherita",
+    name: "Margherita",
+    description:
+      "San Marzano tomato, fior di latte, basil, extra virgin olive oil",
     price: 12.5,
-    category: 'Pizza',
-    tag: 'House favorite',
-    image: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85',
+    category: "Pizza",
+    tag: "House favorite",
+    image:
+      "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=900&q=85",
   },
   {
-    id: 'diavola',
-    name: 'Diavola',
-    description: 'Spicy nduja, soppressata, mozzarella, chilli honey',
+    id: "diavola",
+    name: "Diavola",
+    description: "Spicy nduja, soppressata, mozzarella, chilli honey",
     price: 14,
-    category: 'Pizza',
-    tag: 'Spicy',
-    image: 'https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=900&q=85',
+    category: "Pizza",
+    tag: "Spicy",
+    image:
+      "https://images.unsplash.com/photo-1579751626657-72bc17010498?auto=format&fit=crop&w=900&q=85",
   },
   {
-    id: 'truffle',
-    name: 'Wild Truffle',
-    description: 'Roasted mushroom, truffle cream, parmesan, thyme',
+    id: "truffle",
+    name: "Wild Truffle",
+    description: "Roasted mushroom, truffle cream, parmesan, thyme",
     price: 16,
-    category: 'Pizza',
-    image: 'https://images.unsplash.com/photo-1598023696416-0193a0bcd302?auto=format&fit=crop&w=900&q=85',
+    category: "Pizza",
+    image:
+      "https://images.unsplash.com/photo-1598023696416-0193a0bcd302?auto=format&fit=crop&w=900&q=85",
   },
   {
-    id: 'capricciosa',
-    name: 'Capricciosa',
-    description: 'Ham, artichoke, olive, mushroom, fior di latte',
+    id: "capricciosa",
+    name: "Capricciosa",
+    description: "Ham, artichoke, olive, mushroom, fior di latte",
     price: 15,
-    category: 'Pizza',
+    category: "Pizza",
   },
   {
-    id: 'garlic',
-    name: 'Wood-fired Garlic Bread',
-    description: 'Confit garlic, rosemary butter, sea salt',
+    id: "garlic",
+    name: "Wood-fired Garlic Bread",
+    description: "Confit garlic, rosemary butter, sea salt",
     price: 6,
-    category: 'Sides',
-    tag: 'For sharing',
+    category: "Sides",
+    tag: "For sharing",
   },
   {
-    id: 'salad',
-    name: 'Bitter Leaf Salad',
-    description: 'Radicchio, rocket, pear, walnut, aged balsamic',
+    id: "salad",
+    name: "Bitter Leaf Salad",
+    description: "Radicchio, rocket, pear, walnut, aged balsamic",
     price: 8.5,
-    category: 'Sides',
+    category: "Sides",
   },
   {
-    id: 'lemonade',
-    name: 'House Lemonade',
-    description: 'Fresh lemon, rosemary syrup, sparkling water',
+    id: "lemonade",
+    name: "House Lemonade",
+    description: "Fresh lemon, rosemary syrup, sparkling water",
     price: 4.5,
-    category: 'Drinks',
+    category: "Drinks",
   },
   {
-    id: 'cola',
-    name: 'Italian Cola',
-    description: 'Baladin cola, 330 ml',
+    id: "cola",
+    name: "Italian Cola",
+    description: "Baladin cola, 330 ml",
     price: 4,
-    category: 'Drinks',
+    category: "Drinks",
   },
 ]
 
-const categories = ['All', 'Pizza', 'Sides', 'Drinks'] as const
+const categories = ["All", "Pizza", "Sides", "Drinks"] as const
 
 function ArrowIcon() {
   return (
@@ -87,43 +89,147 @@ function ArrowIcon() {
   )
 }
 
-const defaultReservationStart = new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16)
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <path d="m5 5 10 10M15 5 5 15" />
+    </svg>
+  )
+}
+
+function Dialog({
+  children,
+  labelledBy,
+  onClose,
+  size = "wide",
+}: {
+  children: ReactNode
+  labelledBy: string
+  onClose: () => void
+  size?: "wide" | "narrow"
+}) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
+  const onCloseRef = useRef(onClose)
+
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    closeButtonRef.current?.focus()
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onCloseRef.current()
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [])
+
+  return (
+    <div
+      className="dialog-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose()
+      }}
+    >
+      <section
+        className={`dialog-panel dialog-panel--${size}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={labelledBy}
+      >
+        <button
+          className="dialog-close"
+          type="button"
+          onClick={onClose}
+          aria-label="Close dialog"
+          ref={closeButtonRef}
+        >
+          <CloseIcon />
+        </button>
+        {children}
+      </section>
+    </div>
+  )
+}
+
+const formatPrice = (price: number) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(price)
+
+const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
+  .toISOString()
+  .slice(0, 10)
 
 export default function App() {
-  const [category, setCategory] = useState<(typeof categories)[number]>('All')
-  const [showReservation, setShowReservation] = useState(false)
+  const [category, setCategory] = useState<typeof categories[number]>("All")
   const [showOrder, setShowOrder] = useState(false)
-  const [orderCart, setOrderCart] = useState<{ item: (typeof menu)[number]; qty: number }[]>([])
-  const [orderStatus, setOrderStatus] = useState<string | null>(null)
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD'>('CASH')
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardCvv, setCardCvv] = useState('')
-  const [reservationStatus, setReservationStatus] = useState<string | null>(null)
-  const [reservationForm, setReservationForm] = useState({
-    customerId: 'guest',
-    tableNumber: 'T-1',
-    partySize: '2',
-    startTime: defaultReservationStart,
+  const [showReservation, setShowReservation] = useState(false)
+  const [orderComplete, setOrderComplete] = useState(false)
+  const [reservationComplete, setReservationComplete] = useState(false)
+  const [pickupName, setPickupName] = useState("")
+  const [paymentMethod, setPaymentMethod] = useState<"pickup" | "card">(
+    "pickup",
+  )
+  const [cardNumber, setCardNumber] = useState("")
+  const [cardExpiry, setCardExpiry] = useState("")
+  const [cardCvv, setCardCvv] = useState("")
+  const [cart, setCart] = useState<{ item: MenuItem; quantity: number }[]>([])
+  const [reservation, setReservation] = useState({
+    name: "",
+    email: "",
+    guests: "2",
+    date: tomorrow,
+    time: "18:30",
   })
-  const visibleMenu = category === 'All' ? menu : menu.filter((item) => item.category === category)
+  const visibleMenu =
+    category === "All"
+      ? menu
+      : menu.filter((item) => item.category === category)
+  const cartCount = cart.reduce((total, line) => total + line.quantity, 0)
+  const cartTotal = cart.reduce(
+    (total, line) => total + line.item.price * line.quantity,
+    0,
+  )
+  const cardIsComplete =
+    cardNumber.replace(/\s/g, "").length >= 15 &&
+    cardExpiry.length === 5 &&
+    cardCvv.length >= 3
 
-  async function handleReserveSubmit(event: React.FormEvent) {
-    event.preventDefault()
-    setReservationStatus(null)
-    try {
-      const reservation = await apiFetch<{ id: string; status: string }>('/reservations', {
-        method: 'POST',
-        body: JSON.stringify({
-          customerId: reservationForm.customerId,
-          tableNumber: reservationForm.tableNumber,
-          partySize: Number(reservationForm.partySize),
-          startTime: new Date(reservationForm.startTime).toISOString(),
-        }),
-      })
-      setReservationStatus(`Reservation confirmed (${reservation.id})`)
-    } catch (error) {
-      setReservationStatus(error instanceof Error ? error.message : 'Reservation failed')
-    }
+  const addToCart = (item: MenuItem) => {
+    setCart((current) => {
+      const existing = current.find((line) => line.item.id === item.id)
+      if (existing) {
+        return current.map((line) =>
+          line.item.id === item.id
+            ? { ...line, quantity: line.quantity + 1 }
+            : line,
+        )
+      }
+      return [...current, { item, quantity: 1 }]
+    })
+    setOrderComplete(false)
+  }
+
+  const updateQuantity = (itemId: string, difference: number) => {
+    setCart((current) =>
+      current
+        .map((line) =>
+          line.item.id === itemId
+            ? { ...line, quantity: line.quantity + difference }
+            : line,
+        )
+        .filter((line) => line.quantity > 0),
+    )
   }
 
   return (
@@ -137,9 +243,15 @@ export default function App() {
           <a href="#menu">Menu</a>
           <a href="#visit">Visit</a>
         </nav>
-        <a className="header-order" href="#visit">
-          Visit us <ArrowIcon />
-        </a>
+        <button
+          className="header-order"
+          type="button"
+          onClick={() => setShowOrder(true)}
+        >
+          Order online
+          {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+          <ArrowIcon />
+        </button>
       </header>
 
       <section className="hero" id="top">
@@ -158,14 +270,18 @@ export default function App() {
             <a className="primary-button" href="#menu">
               Explore our menu <ArrowIcon />
             </a>
-            <button className="primary-button" type="button" onClick={() => setShowOrder(true)}>
-              Order online <ArrowIcon />
+            <button
+              className="text-button"
+              type="button"
+              onClick={() => setShowOrder(true)}
+            >
+              Order for pickup <ArrowIcon />
             </button>
             <div className="opening-note">
               <span className="status-dot" />
               <span>
                 Open today
-                <strong>12:00 PM — 10:30 PM</strong>
+                <strong>12:00 — 22:30</strong>
               </span>
             </div>
           </div>
@@ -224,13 +340,17 @@ export default function App() {
             <p className="eyebrow">From our oven</p>
             <h2>Choose your favourite.</h2>
           </div>
-          <div className="category-tabs" role="tablist" aria-label="Menu categories">
+          <div
+            className="category-tabs"
+            role="tablist"
+            aria-label="Menu categories"
+          >
             {categories.map((item) => (
               <button
                 key={item}
                 role="tab"
                 aria-selected={category === item}
-                className={category === item ? 'active' : ''}
+                className={category === item ? "active" : ""}
                 onClick={() => setCategory(item)}
               >
                 {item}
@@ -242,7 +362,7 @@ export default function App() {
         <div className="menu-grid landing-menu-grid" role="tabpanel">
           {visibleMenu.map((item, index) => (
             <article
-              className={`menu-card ${item.image ? 'with-image' : ''}`}
+              className={`menu-card ${item.image ? "with-image" : ""}`}
               key={item.id}
               style={{ animationDelay: `${index * 55}ms` }}
             >
@@ -254,9 +374,13 @@ export default function App() {
                 </div>
                 <div className="item-title">
                   <h3>{item.name}</h3>
-                  <strong>${item.price.toFixed(2)}</strong>
+                  <strong>{formatPrice(item.price)}</strong>
                 </div>
                 <p>{item.description}</p>
+                <button type="button" onClick={() => addToCart(item)}>
+                  Add to pickup order
+                  <span aria-hidden="true">+</span>
+                </button>
               </div>
             </article>
           ))}
@@ -291,12 +415,19 @@ export default function App() {
               12:00 PM–10:30 PM
             </p>
           </div>
-          <button className="primary-button" type="button" onClick={() => setShowReservation(true)}>
-            Reserve a table <ArrowIcon />
-          </button>
           <a className="primary-button" href="tel:+12481234567">
             Call 248-123-4567 <ArrowIcon />
           </a>
+          <button
+            className="text-button visit-reserve"
+            type="button"
+            onClick={() => {
+              setReservationComplete(false)
+              setShowReservation(true)
+            }}
+          >
+            Request a table <ArrowIcon />
+          </button>
         </div>
       </section>
 
@@ -314,211 +445,430 @@ export default function App() {
         </div>
         <div className="footer-bottom">
           <p>© 2026 Forno Pizza Co.</p>
+          <a
+            href="https://unsplash.com/s/photos/neapolitan-pizza"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Photography via Unsplash
+          </a>
         </div>
       </footer>
 
       {showOrder && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(28,27,24,0.45)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem',
-            zIndex: 100,
-          }}
-        >
-          <div
-            style={{
-              background: '#fbf8f1',
-              border: '1px solid rgba(28,27,24,0.18)',
-              padding: '2rem',
-              width: 'min(720px, 100%)',
-              maxHeight: '90vh',
-              overflow: 'auto',
-              display: 'grid',
-              gap: '0.75rem',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontFamily: "'Italiana', serif", fontSize: '2rem', margin: 0 }}>Order online</h2>
-              <button type="button" onClick={() => setShowOrder(false)} style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer' }}>×</button>
+        <Dialog labelledBy="order-title" onClose={() => setShowOrder(false)}>
+          {orderComplete ? (
+            <div className="dialog-success" aria-live="polite">
+              <span className="success-mark" aria-hidden="true">
+                ✓
+              </span>
+              <p className="eyebrow">Order received</p>
+              <h2 id="order-title">We’ll start the oven.</h2>
+              <p>
+                Thanks, {pickupName}. Your pickup order will be ready in around
+                20 minutes.{" "}
+                {paymentMethod === "card"
+                  ? "Your demo card details were accepted locally."
+                  : "Payment is due when you collect."}
+              </p>
+              <button
+                className="primary-button"
+                type="button"
+                onClick={() => setShowOrder(false)}
+              >
+                Done
+              </button>
             </div>
-            <div style={{ display: 'grid', gap: '2rem', gridTemplateColumns: '1.4fr 320px' }}>
-              <section>
-                <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
-                  {visibleMenu.map((item) => (
-                    <div key={item.id} style={{ border: '1px solid rgba(28,27,24,0.18)', padding: '1rem', display: 'flex', gap: '1rem', background: '#f3efe5' }}>
-                      {item.image && <img src={item.image} alt="" style={{ width: 90, height: 90, objectFit: 'cover' }} />}
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b6258' }}>{item.category}</div>
-                        <strong>{item.name}</strong>
-                        <p style={{ fontSize: '0.85rem', color: '#6b6258', margin: '0.4rem 0 0.8rem' }}>{item.description}</p>
-                        <button
-                          className="btn"
-                          style={{ background: '#1c1b18', color: '#fff', border: 'none', padding: '0.6rem 1rem', fontWeight: 600, cursor: 'pointer' }}
-                          type="button"
-                          onClick={() =>
-                            setOrderCart((current) => {
-                              const existing = current.find((line) => line.item.id === item.id)
-                              if (existing) return current.map((line) => (line.item.id === item.id ? { ...line, qty: line.qty + 1 } : line))
-                              return [...current, { item, qty: 1 }]
-                            })
-                          }
-                        >
-                          Add · ${item.price.toFixed(2)}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-              <aside style={{ background: '#f3efe5', border: '1px solid rgba(28,27,24,0.18)', padding: '1.25rem', position: 'sticky', top: '1rem', alignSelf: 'start' }}>
-                <h3 style={{ margin: '0 0 1rem', fontSize: '1.1rem', fontFamily: "'Italiana', serif" }}>Your cart</h3>
-                <div style={{ display: 'grid', gap: '0.75rem' }}>
-                  {orderCart.length === 0 ? <p style={{ color: '#6b6258', fontSize: '0.9rem' }}>Your cart is empty.</p> : orderCart.map((line) => (
-                    <div key={line.item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                      <span>{line.item.name} × {line.qty}</span>
-                      <strong>${(line.item.price * line.qty).toFixed(2)}</strong>
-                    </div>
-                  ))}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, borderTop: '1px solid rgba(28,27,24,0.18)', paddingTop: '1rem', marginTop: '1rem' }}>
-                  <span>Total</span>
-                  <span>${orderCart.reduce((sum, line) => sum + line.item.price * line.qty, 0).toFixed(2)}</span>
-                </div>
-
-                <div style={{ display: 'grid', gap: '0.5rem', marginTop: '1rem' }}>
-                  <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#6b6258' }}>Payment method</label>
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value as 'CASH' | 'CARD')}
-                    style={{ height: '2.4rem', border: '1px solid rgba(28,27,24,0.18)', padding: '0 0.75rem', background: '#fbf8f1' }}
-                  >
-                    <option value="CASH">Cash on pickup</option>
-                    <option value="CARD">Credit / Debit card</option>
-                  </select>
-                  {paymentMethod === 'CARD' && (
-                    <>
-                      <input
-                        type="text"
-                        placeholder="Card number"
-                        value={cardNumber}
-                        onChange={(e) => setCardNumber(e.target.value)}
-                        style={{ height: '2.4rem', border: '1px solid rgba(28,27,24,0.18)', padding: '0 0.75rem', background: '#fbf8f1' }}
-                      />
-                      <input
-                        type="text"
-                        placeholder="Security code (CVV)"
-                        value={cardCvv}
-                        onChange={(e) => setCardCvv(e.target.value)}
-                        style={{ height: '2.4rem', border: '1px solid rgba(28,27,24,0.18)', padding: '0 0.75rem', background: '#fbf8f1' }}
-                      />
-                    </>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (orderCart.length === 0) return
-                    if (paymentMethod === 'CARD' && (!cardNumber.trim() || !cardCvv.trim())) {
-                      setOrderStatus('Please enter card number and security code.')
-                      return
-                    }
-                    const methodLabel = paymentMethod === 'CARD' ? 'card' : 'cash'
-                    setOrderStatus(`Order placed (${orderCart.length} item${orderCart.length > 1 ? 's' : ''}, ${methodLabel}). We’ll confirm shortly.`)
-                    setOrderCart([])
-                    setCardNumber('')
-                    setCardCvv('')
-                  }}
-                  style={{ width: '100%', marginTop: '1rem', background: '#db3b24', color: '#fff', border: 'none', padding: '0.8rem 1.25rem', fontWeight: 600, cursor: 'pointer' }}
+          ) : (
+            <>
+              <div className="dialog-heading">
+                <p className="eyebrow">Pickup only · About 20 min</p>
+                <h2 id="order-title">Order online.</h2>
+                <p>Choose your favourites, then pay when you collect.</p>
+              </div>
+              <div className="order-dialog-layout">
+                <div
+                  className="order-menu"
+                  aria-label="Items available to order"
                 >
-                  Checkout
-                </button>
-                {orderStatus && <p style={{ fontSize: '0.85rem', color: '#1c1b18', marginTop: '0.8rem' }}>{orderStatus}</p>}
-              </aside>
-            </div>
-          </div>
-        </div>
+                  {menu.map((item) => {
+                    const quantity =
+                      cart.find((line) => line.item.id === item.id)?.quantity ??
+                      0
+                    return (
+                      <article className="order-menu-item" key={item.id}>
+                        {item.image ? (
+                          <img src={item.image} alt="" />
+                        ) : (
+                          <div
+                            className="order-menu-placeholder"
+                            aria-hidden="true"
+                          >
+                            Forno.
+                          </div>
+                        )}
+                        <div>
+                          <span>{item.category}</span>
+                          <h3>{item.name}</h3>
+                          <p>{item.description}</p>
+                          <strong>{formatPrice(item.price)}</strong>
+                        </div>
+                        {quantity === 0 ? (
+                          <button
+                            className="add-button"
+                            type="button"
+                            onClick={() => addToCart(item)}
+                            aria-label={`Add ${item.name} to order`}
+                          >
+                            Add
+                          </button>
+                        ) : (
+                          <div
+                            className="quantity-control"
+                            aria-label={`${item.name} quantity`}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(item.id, -1)}
+                              aria-label={`Remove one ${item.name}`}
+                            >
+                              −
+                            </button>
+                            <span>{quantity}</span>
+                            <button
+                              type="button"
+                              onClick={() => updateQuantity(item.id, 1)}
+                              aria-label={`Add one ${item.name}`}
+                            >
+                              +
+                            </button>
+                          </div>
+                        )}
+                      </article>
+                    )
+                  })}
+                </div>
+
+                <aside className="cart-summary">
+                  <div className="cart-summary-heading">
+                    <h3>Your pickup</h3>
+                    <span>
+                      {cartCount} {cartCount === 1 ? "item" : "items"}
+                    </span>
+                  </div>
+                  {cart.length === 0 ? (
+                    <div className="empty-cart">
+                      <p>Your cart is empty.</p>
+                      <span>Add an item to get started.</span>
+                    </div>
+                  ) : (
+                    <div className="cart-lines" aria-live="polite">
+                      {cart.map((line) => (
+                        <div className="cart-line" key={line.item.id}>
+                          <span>
+                            {line.quantity} × {line.item.name}
+                          </span>
+                          <strong>
+                            {formatPrice(line.item.price * line.quantity)}
+                          </strong>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="cart-total">
+                    <span>Total</span>
+                    <strong>{formatPrice(cartTotal)}</strong>
+                  </div>
+                  <label className="dialog-field">
+                    <span>Name for pickup</span>
+                    <input
+                      value={pickupName}
+                      onChange={(event) => setPickupName(event.target.value)}
+                      placeholder="Your name"
+                      autoComplete="name"
+                    />
+                  </label>
+                  <fieldset className="payment-options">
+                    <legend>Payment method</legend>
+                    <div className="payment-choice-grid">
+                      <label
+                        className={
+                          paymentMethod === "pickup"
+                            ? "payment-choice payment-choice--active"
+                            : "payment-choice"
+                        }
+                      >
+                        <input
+                          type="radio"
+                          name="payment-method"
+                          checked={paymentMethod === "pickup"}
+                          onChange={() => setPaymentMethod("pickup")}
+                        />
+                        <span>
+                          <strong>Pay at pickup</strong>
+                          <small>Cash or card at the counter</small>
+                        </span>
+                      </label>
+                      <label
+                        className={
+                          paymentMethod === "card"
+                            ? "payment-choice payment-choice--active"
+                            : "payment-choice"
+                        }
+                      >
+                        <input
+                          type="radio"
+                          name="payment-method"
+                          checked={paymentMethod === "card"}
+                          onChange={() => setPaymentMethod("card")}
+                        />
+                        <span>
+                          <strong>Card online</strong>
+                          <small>Demo input only</small>
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+                  {paymentMethod === "card" && (
+                    <div className="card-fields">
+                      <label className="dialog-field">
+                        <span>Card number</span>
+                        <input
+                          inputMode="numeric"
+                          autoComplete="cc-number"
+                          placeholder="1234 5678 9012 3456"
+                          value={cardNumber}
+                          maxLength={19}
+                          onChange={(event) => {
+                            const digits = event.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 16)
+                            setCardNumber(
+                              digits.replace(/(\d{4})(?=\d)/g, "$1 "),
+                            )
+                          }}
+                        />
+                      </label>
+                      <div className="card-field-row">
+                        <label className="dialog-field">
+                          <span>Expiry</span>
+                          <input
+                            inputMode="numeric"
+                            autoComplete="cc-exp"
+                            placeholder="MM/YY"
+                            value={cardExpiry}
+                            maxLength={5}
+                            onChange={(event) => {
+                              const digits = event.target.value
+                                .replace(/\D/g, "")
+                                .slice(0, 4)
+                              setCardExpiry(
+                                digits.length > 2
+                                  ? `${digits.slice(0, 2)}/${digits.slice(2)}`
+                                  : digits,
+                              )
+                            }}
+                          />
+                        </label>
+                        <label className="dialog-field">
+                          <span>Security code</span>
+                          <input
+                            type="password"
+                            inputMode="numeric"
+                            autoComplete="cc-csc"
+                            placeholder="CVV"
+                            value={cardCvv}
+                            maxLength={4}
+                            onChange={(event) =>
+                              setCardCvv(
+                                event.target.value
+                                  .replace(/\D/g, "")
+                                  .slice(0, 4),
+                              )
+                            }
+                          />
+                        </label>
+                      </div>
+                      <p className="card-disclaimer">
+                        Demo only — card details stay in this browser and are
+                        cleared after checkout. No charge will be made.
+                      </p>
+                    </div>
+                  )}
+                  <button
+                    className="checkout-button"
+                    type="button"
+                    disabled={
+                      cart.length === 0 ||
+                      !pickupName.trim() ||
+                      (paymentMethod === "card" && !cardIsComplete)
+                    }
+                    onClick={() => {
+                      setOrderComplete(true)
+                      setCart([])
+                      setCardNumber("")
+                      setCardExpiry("")
+                      setCardCvv("")
+                    }}
+                  >
+                    Place pickup order <ArrowIcon />
+                  </button>
+                  <p className="cart-note">
+                    {paymentMethod === "pickup"
+                      ? "No card needed. Pay at the restaurant when you collect."
+                      : "Your card is not charged in this frontend-only demo."}
+                  </p>
+                </aside>
+              </div>
+            </>
+          )}
+        </Dialog>
       )}
 
       {showReservation && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(28,27,24,0.45)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '1rem',
-            zIndex: 100,
-          }}
+        <Dialog
+          labelledBy="reservation-title"
+          onClose={() => setShowReservation(false)}
+          size="narrow"
         >
-          <form
-            onSubmit={handleReserveSubmit}
-            style={{
-              background: '#fbf8f1',
-              border: '1px solid rgba(28,27,24,0.18)',
-              padding: '2rem',
-              width: 'min(420px, 100%)',
-              display: 'grid',
-              gap: '0.75rem',
-            }}
-          >
-            <h2 style={{ fontFamily: "'Italiana', serif", fontSize: '2rem', margin: 0 }}>Reserve a table</h2>
-            <input
-              id="reservation-customer-id"
-              name="customerId"
-              placeholder="Customer ID"
-              value={reservationForm.customerId}
-              onChange={(e) => setReservationForm((f) => ({ ...f, customerId: e.target.value }))}
-              required
-            />
-            <input
-              id="reservation-table-number"
-              name="tableNumber"
-              placeholder="Table number (e.g. T-1)"
-              value={reservationForm.tableNumber}
-              onChange={(e) => setReservationForm((f) => ({ ...f, tableNumber: e.target.value }))}
-              required
-            />
-            <input
-              id="reservation-party-size"
-              name="partySize"
-              type="number"
-              min={1}
-              placeholder="Party size"
-              value={reservationForm.partySize}
-              onChange={(e) => setReservationForm((f) => ({ ...f, partySize: e.target.value }))}
-              required
-            />
-            <input
-              id="reservation-start-time"
-              name="startTime"
-              type="datetime-local"
-              value={reservationForm.startTime}
-              onChange={(e) => setReservationForm((f) => ({ ...f, startTime: e.target.value }))}
-              required
-            />
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-              <button type="button" onClick={() => setShowReservation(false)}>
-                Cancel
-              </button>
-              <button type="submit" className="primary-button" style={{ margin: 0 }}>
-                Confirm
+          {reservationComplete ? (
+            <div className="dialog-success" aria-live="polite">
+              <span className="success-mark" aria-hidden="true">
+                ✓
+              </span>
+              <p className="eyebrow">Request received</p>
+              <h2 id="reservation-title">We’ll be in touch.</h2>
+              <p>
+                Your table request for {reservation.guests} on{" "}
+                {new Date(`${reservation.date}T12:00`).toLocaleDateString(
+                  "en-US",
+                  { month: "long", day: "numeric" },
+                )}{" "}
+                at {reservation.time} is ready for confirmation.
+              </p>
+              <button
+                className="primary-button"
+                type="button"
+                onClick={() => setShowReservation(false)}
+              >
+                Done
               </button>
             </div>
-            {reservationStatus && <p style={{ marginTop: '0.5rem' }}>{reservationStatus}</p>}
-          </form>
-        </div>
+          ) : (
+            <form
+              className="reservation-form"
+              onSubmit={(event) => {
+                event.preventDefault()
+                setReservationComplete(true)
+              }}
+            >
+              <div className="dialog-heading">
+                <p className="eyebrow">Plan your visit</p>
+                <h2 id="reservation-title">Request a table.</h2>
+                <p>We’ll contact you to confirm availability.</p>
+              </div>
+              <label className="dialog-field">
+                <span>Name</span>
+                <input
+                  required
+                  value={reservation.name}
+                  onChange={(event) =>
+                    setReservation((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                  autoComplete="name"
+                  placeholder="Your full name"
+                />
+              </label>
+              <label className="dialog-field">
+                <span>Email</span>
+                <input
+                  required
+                  type="email"
+                  value={reservation.email}
+                  onChange={(event) =>
+                    setReservation((current) => ({
+                      ...current,
+                      email: event.target.value,
+                    }))
+                  }
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                />
+              </label>
+              <div className="form-row">
+                <label className="dialog-field">
+                  <span>Party size</span>
+                  <select
+                    value={reservation.guests}
+                    onChange={(event) =>
+                      setReservation((current) => ({
+                        ...current,
+                        guests: event.target.value,
+                      }))
+                    }
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((count) => (
+                      <option value={count} key={count}>
+                        {count} {count === 1 ? "guest" : "guests"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="dialog-field">
+                  <span>Time</span>
+                  <select
+                    value={reservation.time}
+                    onChange={(event) =>
+                      setReservation((current) => ({
+                        ...current,
+                        time: event.target.value,
+                      }))
+                    }
+                  >
+                    {[
+                      "17:00",
+                      "17:30",
+                      "18:00",
+                      "18:30",
+                      "19:00",
+                      "19:30",
+                      "20:00",
+                      "20:30",
+                    ].map((time) => (
+                      <option value={time} key={time}>
+                        {time}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <label className="dialog-field">
+                <span>Date</span>
+                <input
+                  required
+                  type="date"
+                  min={tomorrow}
+                  value={reservation.date}
+                  onChange={(event) =>
+                    setReservation((current) => ({
+                      ...current,
+                      date: event.target.value,
+                    }))
+                  }
+                />
+              </label>
+              <button className="checkout-button" type="submit">
+                Send table request <ArrowIcon />
+              </button>
+              <p className="cart-note">
+                This demo keeps requests in your current browser session only.
+              </p>
+            </form>
+          )}
+        </Dialog>
       )}
     </main>
   )
