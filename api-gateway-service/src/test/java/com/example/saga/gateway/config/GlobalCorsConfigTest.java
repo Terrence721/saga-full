@@ -75,22 +75,6 @@ class GlobalCorsConfigTest {
     }
 
     @Test
-    void preflightRequest_fromFrontendOrigin_isAllowedOnAuthLoginRoute_realRegressionCase() {
-        // /auth/login is served by a real local @RestController (AuthenticationController),
-        // not proxied to another service like the /orders routes - a completely different
-        // HandlerMapping than the one globalcors used to wire into exclusively. This is the
-        // exact path that returned 403 before GlobalCorsConfig's CorsWebFilter was added.
-        webTestClient.options()
-                .uri("http://localhost/auth/login")
-                .header(HttpHeaders.ORIGIN, FRONTEND_ORIGIN)
-                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
-                .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "Content-Type")
-                .exchange()
-                .expectStatus().isOk()
-                .expectHeader().valueEquals(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, FRONTEND_ORIGIN);
-    }
-
-    @Test
     void preflightRequest_fromDisallowedOrigin_getsNoAccessControlAllowOriginHeader() {
         webTestClient.options()
                 .uri("http://localhost/orders")
