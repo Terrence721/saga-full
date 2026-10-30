@@ -18,7 +18,6 @@ class JwtTokenProviderTest {
         return User.builder()
                 .id(UUID.randomUUID())
                 .email("user@example.com")
-                .passwordHash("irrelevant-for-this-test")
                 .active(true)
                 .build();
     }

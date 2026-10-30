@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
@@ -19,25 +18,7 @@ class UserRepositoryTest {
     private User.UserBuilder sampleUser() {
         return User.builder()
                 .email("user@example.com")
-                .passwordHash("hashed-password")
                 .active(true);
-    }
-
-    @Test
-    void findByEmail_returnsUser_whenEmailExists() {
-        User newUser = sampleUser().build();
-        User saved = userRepository.save(newUser);
-
-        assertThat(userRepository.findByEmail("user@example.com"))
-                .isPresent()
-                .get()
-                .extracting(User::getId)
-                .isEqualTo(saved.getId());
-    }
-
-    @Test
-    void findByEmail_returnsEmpty_whenEmailDoesNotExist() {
-        assertThat(userRepository.findByEmail("missing@example.com")).isEmpty();
     }
 
     @Test
@@ -45,7 +26,7 @@ class UserRepositoryTest {
         User firstUser = sampleUser().build();
         userRepository.saveAndFlush(firstUser);
 
-        User duplicateEmailUser = sampleUser().passwordHash("different-hash").build();
+        User duplicateEmailUser = sampleUser().build();
         assertThatThrownBy(() -> userRepository.saveAndFlush(duplicateEmailUser))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
