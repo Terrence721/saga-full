@@ -14,17 +14,12 @@ import java.util.Optional;
 public class JwtTokenProvider {
 
     private final Algorithm algorithm;
-    private final String issuer;
-    private final long expirationMs;
     private final JWTVerifier verifier;
 
     public JwtTokenProvider(
             @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.issuer}") String issuer,
-            @Value("${app.jwt.expiration-ms}") long expirationMs) {
+            @Value("${app.jwt.issuer}") String issuer) {
         this.algorithm = Algorithm.HMAC256(secret);
-        this.issuer = issuer;
-        this.expirationMs = expirationMs;
         // Built once, matching api-gateway-service's JwtPerimeterGuardGatewayFilterFactory -
         // algorithm/issuer never change after construction, so there's nothing to rebuild.
         this.verifier = JWT.require(algorithm).withIssuer(issuer).build();

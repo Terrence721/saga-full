@@ -38,7 +38,7 @@ class JwtTokenProviderTest {
         String secret = "test-secret";
         String issuer = "saga-test-issuer";
         long expirationMs = 3_600_000L;
-        JwtTokenProvider provider = new JwtTokenProvider(secret, issuer, expirationMs);
+        JwtTokenProvider provider = new JwtTokenProvider(secret, issuer);
         User user = sampleUser();
 
         String token = mintToken(secret, issuer, expirationMs, user);
@@ -54,7 +54,7 @@ class JwtTokenProviderTest {
     void verifyTokenReturnsEmptyForTamperedSignature() {
         String issuer = "saga-test-issuer";
         long expirationMs = 3_600_000L;
-        JwtTokenProvider verifyingProvider = new JwtTokenProvider("wrong-secret", issuer, expirationMs);
+        JwtTokenProvider verifyingProvider = new JwtTokenProvider("wrong-secret", issuer);
         User user = sampleUser();
 
         String token = mintToken("correct-secret", issuer, expirationMs, user);
@@ -66,7 +66,7 @@ class JwtTokenProviderTest {
     void verifyTokenReturnsEmptyForWrongIssuer() {
         String sharedSecret = "shared-secret";
         long expirationMs = 3_600_000L;
-        JwtTokenProvider verifyingProvider = new JwtTokenProvider(sharedSecret, "issuer-b", expirationMs);
+        JwtTokenProvider verifyingProvider = new JwtTokenProvider(sharedSecret, "issuer-b");
         User user = sampleUser();
 
         String token = mintToken(sharedSecret, "issuer-a", expirationMs, user);
@@ -79,7 +79,7 @@ class JwtTokenProviderTest {
         String secret = "test-secret";
         String issuer = "saga-test-issuer";
         long expirationMs = -60_000L;
-        JwtTokenProvider provider = new JwtTokenProvider(secret, issuer, 3_600_000L);
+        JwtTokenProvider provider = new JwtTokenProvider(secret, issuer);
         User user = sampleUser();
 
         String token = mintToken(secret, issuer, expirationMs, user);
@@ -89,7 +89,7 @@ class JwtTokenProviderTest {
 
     @Test
     void verifyTokenReturnsEmptyForMalformedToken() {
-        JwtTokenProvider provider = new JwtTokenProvider("test-secret", "saga-test-issuer", 3_600_000L);
+        JwtTokenProvider provider = new JwtTokenProvider("test-secret", "saga-test-issuer");
 
         assertThat(provider.verifyToken("not-a-real-jwt")).isEmpty();
     }
