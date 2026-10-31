@@ -377,3 +377,33 @@ Every file across `user-contract`, `user-service`, `order-service`, `payment-ser
 | Backend: reservation piece ([#16](https://github.com/Terrence721/saga-full/issues/16)) — **complete (landed 2026-10-27)** | Module with domain/CRUD (`Reservation`, `ReservationStatus`, repository, service, controller), saga participation (consumes `RestaurantApprovedEvent`/`RestaurantRejectedEvent`, publishes `ReservationConfirmedEvent`/`ReservationRejectedEvent`; order + payment react), WebMvc/service/repository tests, Dockerfile, compose service (host `:8184`), gateway routing, and Postgres profile/schema (`reservation_service_schema`). Verified end-to-end (`PENDING → SUCCESS`)  
 | Observability stack — **local smoke verified (2026-10-27)** | Micrometer Prometheus + OTLP tracing bridge + OTLP exporter across all 6 runtimes; compose exposes `/actuator/prometheus` and OTLP to `otel-collector:4318`; per-service `OTEL_SERVICE_NAME` and resource attributes; metrics endpoints verified against the live stack; `docs/observability.md` runbook + verification notes. Remaining scope: live Kubernetes run-through + end-to-end trace verification in Grafana, dashboards-as-code|
 | Cloud deployment step for CI ([#229](https://github.com/Terrence721/saga-full/issues/229)) — decision final | Manifests-only pass committed (see `manifests/`); runbook in `docs/kubernetes.md`. Decision: **local Minikube is the live deploy target of record** — zero cost, reproducible by any reviewer, no managed-service spend. A hosted cloud deploy (Azure/AWS/GCP) is deliberately not pursued; `docs/cloud-deployment-decision.md` captures the trade-offs |
+
+---
+
+## 🚀 Production Readiness Hardening (Oct 2026)
+
+A post-completion hardening pass focused on security, operations, availability, data ownership, and deployment readiness. This work is tracked below to complement the historical phase-by-phase entries.
+
+### Completed in this pass
+- Secrets made mandatory and moved behind Vault/External Secrets Operator scaffolding
+- Per-service database ownership, roles, and credentials wired into workloads
+- Hibernate auto-DDL replaced with Flyway migrations
+- HA resources added: 3 replicas, HPAs, PDBs, VPA examples, managed service guidance
+- TLS scaffolded with dev certificates, dev-tls profile, production overlays, and validation
+- Gateway hardened with request size limits, codec limits, security headers, rate limiting, and role authorization filter
+- Container security contexts hardened and supply-chain CI checks added
+- SLOs, alerts, runbooks, chaos experiments, and failover validation documented
+- Full production readiness gate added in local/dev mode
+
+### Validation
+- Full backend test suite passes (`./gradlew test`)
+- Production-readiness gate passes in local/dev mode (`GATE_LOCAL_DEV=1`)
+
+### Open external execution steps
+- Live Vault/ESO installation and secret rotation
+- Managed multi-node Postgres/Kafka provisioning
+- End-to-end TLS validation
+- Image signing and admission-policy enforcement in CI/CD
+- Executed failover, node drain, broker loss, and DLQ replay drills
+
+**Scrumboard note:** The GitHub Project board should reflect these completed engineering tasks as `Done`; operational execution remains tied to the external steps above.
