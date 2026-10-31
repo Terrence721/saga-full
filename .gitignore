@@ -40,3 +40,6 @@ Thumbs.db
 
 # Env / secrets
 .env
+
+# Development-only TLS material
+/docker/dev-tls/
