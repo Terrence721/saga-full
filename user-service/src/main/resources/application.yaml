@@ -25,6 +25,7 @@ app:
   jwt:
     secret: ${JWT_SECRET}
     issuer: ${JWT_ISSUER:saga-ecosystem-auth}
+    previous-secrets: ${JWT_PREVIOUS_SECRETS:}
     expiration-ms: ${JWT_EXPIRATION_MS:3600000}
 
 ---

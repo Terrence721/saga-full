@@ -31,7 +31,7 @@ class UserGrpcServiceImplTest {
 
     @Test
     void validateToken_returnsValidWithUserIdForValidToken() {
-        JwtTokenProvider provider = new JwtTokenProvider(SECRET, ISSUER);
+        JwtTokenProvider provider = new JwtTokenProvider(SECRET, ISSUER, "");
         User user = User.builder()
                 .id(UUID.randomUUID())
                 .email("user@example.com")
@@ -52,7 +52,7 @@ class UserGrpcServiceImplTest {
 
     @Test
     void validateToken_returnsInvalidForTamperedToken() {
-        JwtTokenProvider provider = new JwtTokenProvider(SECRET, ISSUER);
+        JwtTokenProvider provider = new JwtTokenProvider(SECRET, ISSUER, "");
 
         RecordingStreamObserver<ValidateTokenResponse> observer = new RecordingStreamObserver<>();
         UserGrpcServiceImpl service = new UserGrpcServiceImpl(provider);

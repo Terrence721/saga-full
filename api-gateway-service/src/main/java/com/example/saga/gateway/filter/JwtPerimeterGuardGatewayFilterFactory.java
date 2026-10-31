@@ -14,6 +14,10 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -21,27 +25,40 @@ import reactor.core.publisher.Mono;
 public class JwtPerimeterGuardGatewayFilterFactory
         extends AbstractGatewayFilterFactory<JwtPerimeterGuardGatewayFilterFactory.Config> {
 
-    private final JWTVerifier jwtVerifier;
+    private final List<JWTVerifier> jwtVerifiers;
 
     public JwtPerimeterGuardGatewayFilterFactory(
             @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.issuer}") String issuer) {
+            @Value("${app.jwt.issuer}") String issuer,
+            @Value("${app.jwt.previous-secrets:}") String previousSecrets) {
 
         super(Config.class);
 
-        if (secret == null || secret.isBlank()
-                || secret.contains("CHANGEME")
-                || secret.equals("local-dev-secret-change-me")) {
-            throw new IllegalStateException("app.jwt.secret must be provided via a real secret store; insecure placeholder/default is not allowed");
+        List<String> secrets = new ArrayList<>();
+        secrets.add(secret);
+        if (previousSecrets != null && !previousSecrets.isBlank()) {
+            Arrays.stream(previousSecrets.split(","))
+                    .map(String::trim)
+                    .filter(v -> !v.isBlank())
+                    .forEach(secrets::add);
         }
 
-        // Built once at startup - the same secret/issuer user-service's
-        // JwtTokenProvider signs/verifies with, so issued tokens verify here.
-        Algorithm algorithm = Algorithm.HMAC256(secret);
-        this.jwtVerifier = JWT.require(algorithm)
-                .withIssuer(issuer)
-                .build();
-        log.info("JwtPerimeterGuardGatewayFilterFactory initialized successfully with issuer: {}", issuer);
+        for (String value : secrets) {
+            if (value == null || value.isBlank()
+                    || value.contains("CHANGEME")
+                    || value.equals("local-dev-secret-change-me")) {
+                throw new IllegalStateException("app.jwt.secret must be provided via a real secret store; insecure placeholder/default is not allowed");
+            }
+        }
+
+        this.jwtVerifiers = new ArrayList<>();
+        for (String value : secrets) {
+            // Built once at startup - the same secret/issuer user-service's
+            // JwtTokenProvider signs/verifies with, so issued tokens verify here.
+            Algorithm algorithm = Algorithm.HMAC256(value);
+            this.jwtVerifiers.add(JWT.require(algorithm).withIssuer(issuer).build());
+        }
+        log.info("JwtPerimeterGuardGatewayFilterFactory initialized successfully with issuer: {} and {} verification key(s)", issuer, jwtVerifiers.size());
     }
 
     @Override
@@ -65,7 +82,25 @@ public class JwtPerimeterGuardGatewayFilterFactory
             String token = authHeader.substring(7);
 
             try {
-                DecodedJWT jwt = this.jwtVerifier.verify(token);
+                DecodedJWT jwt = null;
+                Exception failure = null;
+                for (JWTVerifier verifier : this.jwtVerifiers) {
+                    try {
+                        jwt = verifier.verify(token);
+                        break;
+                    } catch (Exception e) {
+                        if (failure == null) {
+                            failure = e;
+                        }
+                        // Try the next configured key for graceful rotation.
+                    }
+                }
+                if (jwt == null) {
+                    if (failure != null) {
+                        throw failure;
+                    }
+                    throw new JWTVerificationException("Token did not verify against any configured key");
+                }
 
                 // user-service's JwtTokenProvider issues this claim as "user-id",
                 // not the JWT subject, so it's read the same way here.

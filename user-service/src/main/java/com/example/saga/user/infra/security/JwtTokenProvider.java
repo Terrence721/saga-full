@@ -8,34 +8,56 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Component
 public class JwtTokenProvider {
 
-    private final Algorithm algorithm;
-    private final JWTVerifier verifier;
+    private static final List<String> INSECURE_SECRETS = List.of(
+            "CHANGEME", "local-dev-secret-change-me", "");
+
+    private final List<JWTVerifier> verifiers;
 
     public JwtTokenProvider(
             @Value("${app.jwt.secret}") String secret,
-            @Value("${app.jwt.issuer}") String issuer) {
-        if (secret == null || secret.isBlank()
-                || secret.contains("CHANGEME")
-                || secret.equals("local-dev-secret-change-me")) {
-            throw new IllegalStateException("app.jwt.secret must be provided via a real secret store; insecure placeholder/default is not allowed");
+            @Value("${app.jwt.issuer}") String issuer,
+            @Value("${app.jwt.previous-secrets:}") String previousSecrets) {
+
+        List<String> secrets = new ArrayList<>();
+        secrets.add(secret);
+        if (previousSecrets != null && !previousSecrets.isBlank()) {
+            Arrays.stream(previousSecrets.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isBlank())
+                    .forEach(secrets::add);
         }
-        this.algorithm = Algorithm.HMAC256(secret);
-        // Built once, matching api-gateway-service's JwtPerimeterGuardGatewayFilterFactory -
-        // algorithm/issuer never change after construction, so there's nothing to rebuild.
-        this.verifier = JWT.require(algorithm).withIssuer(issuer).build();
+
+        for (String value : secrets) {
+            if (value == null || value.isBlank() || value.contains("CHANGEME")
+                    || value.equals("local-dev-secret-change-me")) {
+                throw new IllegalStateException(
+                        "app.jwt.secret/previous secrets must be provided via a real secret store");
+            }
+        }
+
+        this.verifiers = new ArrayList<>();
+        for (String value : secrets) {
+            Algorithm algorithm = Algorithm.HMAC256(value);
+            this.verifiers.add(JWT.require(algorithm).withIssuer(issuer).build());
+        }
     }
 
     public Optional<DecodedJWT> verifyToken(String token) {
-        try {
-            return Optional.of(verifier.verify(token));
-        } catch (JWTVerificationException ex) {
-            return Optional.empty();
+        for (JWTVerifier verifier : verifiers) {
+            try {
+                return Optional.of(verifier.verify(token));
+            } catch (JWTVerificationException ignored) {
+                // Try the next configured key for graceful rotation.
+            }
         }
+        return Optional.empty();
     }
-
 }

@@ -36,7 +36,7 @@ class JwtPerimeterGuardGatewayFilterFactoryTest {
 
     @BeforeEach
     void setUp() {
-        this.filterFactory = new JwtPerimeterGuardGatewayFilterFactory(testSecret, testIssuer);
+        this.filterFactory = new JwtPerimeterGuardGatewayFilterFactory(testSecret, testIssuer, "");
         this.filterChain = mock(GatewayFilterChain.class);
         this.exchangeCaptor = ArgumentCaptor.forClass(ServerWebExchange.class);
 
