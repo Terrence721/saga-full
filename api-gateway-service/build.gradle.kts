@@ -31,7 +31,7 @@ dependencies {
 
     // Same real conflict user-service hit in Phase 12: spring-grpc's BOM forces
     // protobuf-java down below what user-contract's generated code needs.
-    implementation("com.google.protobuf:protobuf-java:4.28.2")
+    implementation("com.google.protobuf:protobuf-java:4.36.2")
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")

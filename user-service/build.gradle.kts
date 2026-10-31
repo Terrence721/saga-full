@@ -35,7 +35,7 @@ dependencies {
     // RuntimeVersion$RuntimeDomain, added in protobuf-java 4.27+, and crash
     // with NoClassDefFoundError the instant a message class loads. Forced
     // back up to what user-contract actually needs.
-    implementation("com.google.protobuf:protobuf-java:4.28.2")
+    implementation("com.google.protobuf:protobuf-java:4.36.2")
 
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("io.micrometer:micrometer-registry-prometheus")
