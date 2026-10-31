@@ -241,7 +241,7 @@ export function OrderEntryForm() {
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
-        <Input type="text" placeholder="Customer name (optional)" disabled={h.isSubmitting} value={h.customerName} onChange={(e) => h.setCustomerName(e.target.value)} />
+        <Input name="customerName" type="text" placeholder="Customer name (optional)" disabled={h.isSubmitting} value={h.customerName} onChange={(e) => h.setCustomerName(e.target.value)} />
 
         <div>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-500">
@@ -261,8 +261,8 @@ export function OrderEntryForm() {
 
         {h.paymentMethod === 'CARD' && (
           <div className="space-y-3">
-            <Input type="text" placeholder="Card number" disabled={h.isSubmitting} value={h.cardNumber} onChange={(e) => h.setCardNumber(e.target.value)} />
-            <Input type="text" placeholder="Security code (CVV)" disabled={h.isSubmitting} value={h.cardCvv} onChange={(e) => h.setCardCvv(e.target.value)} />
+            <Input name="cardNumber" type="text" placeholder="Card number" disabled={h.isSubmitting} value={h.cardNumber} onChange={(e) => h.setCardNumber(e.target.value)} />
+            <Input name="cardCvv" type="text" placeholder="Security code (CVV)" disabled={h.isSubmitting} value={h.cardCvv} onChange={(e) => h.setCardCvv(e.target.value)} />
           </div>
         )}
 
@@ -282,6 +282,7 @@ export function OrderEntryForm() {
               −
             </Button>
             <Input
+              name="quantity"
               type="number"
               min="1"
               value={h.quantity}
@@ -308,6 +309,7 @@ export function OrderEntryForm() {
           </div>
         </div>
         <Input
+          name="totalAmount"
           type="number"
           placeholder="Total amount"
           disabled={h.isSubmitting}
