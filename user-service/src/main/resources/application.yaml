@@ -61,3 +61,12 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
+
+# Optional application-level TLS (disabled by default).
+# server:
+#   ssl:
+#     enabled: ${TLS_ENABLED:false}
+#     key-store: ${TLS_KEY_STORE:}
+#     key-store-password: ${TLS_KEY_STORE_PASSWORD:}
+#     key-store-type: ${TLS_KEY_STORE_TYPE:PKCS12}
+# # gRPC TLS property names depend on spring-grpc version; configure via prod overlay when enabled.

@@ -1,0 +1,15 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: saga-service-tls
+  namespace: saga-ecosystem
+spec:
+  secretName: saga-service-tls
+  issuerRef:
+    name: saga-cluster-issuer
+    kind: ClusterIssuer
+  dnsNames:
+    - user-service.saga-ecosystem.svc.cluster.local
+    - api-gateway-service.saga-ecosystem.svc.cluster.local
+  duration: 2160h
+  renewBefore: 360h
