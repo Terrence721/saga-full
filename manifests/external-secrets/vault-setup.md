@@ -54,3 +54,15 @@ kubectl apply -f manifests/external-secrets/external-secret-perimeter.yaml
 - Restrict direct access to `perimeter-security-spec` via Kubernetes RBAC; only ESO and cluster operators should read it.
 - Rotate `jwt_secret` using Vault versioning; External Secrets Operator refreshes the Kubernetes Secret every hour by default.
 - Use TLS for Vault, enforce audit logging, and disable root token access in production.
+
+## 7. Install External Secrets Operator
+
+```bash
+./scripts/install-external-secrets.sh
+```
+
+## 8. Validate rotation
+
+```bash
+./scripts/validate-secret-rotation.sh
+```
