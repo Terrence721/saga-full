@@ -33,7 +33,7 @@
     <td>com.example.saga.gateway.ApiGatewayServiceApplicationMainTest</td>
     <td>applicationCanBeInstantiated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.013s</td>
     <td></td>
 </tr>
 <tr>
@@ -41,7 +41,7 @@
     <td>com.example.saga.gateway.ApiGatewayServiceApplicationMainTest</td>
     <td>mainRunsApplication()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>1.355s</td>
+    <td>2.355s</td>
     <td></td>
 </tr>
 <tr>
@@ -49,7 +49,7 @@
     <td>com.example.saga.gateway.ApiGatewayServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.015s</td>
     <td></td>
 </tr>
 <tr>
@@ -57,7 +57,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromDisallowedOrigin_getsNoAccessControlAllowOriginHeader()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.016s</td>
     <td></td>
 </tr>
 <tr>
@@ -65,7 +65,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromFrontendOrigin_getsAllowedOnOrdersRoute()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.078s</td>
+    <td>0.127s</td>
     <td></td>
 </tr>
 <tr>
@@ -73,7 +73,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromFrontendOrigin_isAllowedOnOrderStreamRoute()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.026s</td>
     <td></td>
 </tr>
 <tr>
@@ -81,7 +81,7 @@
     <td>com.example.saga.gateway.controller.GatewayFallbackControllerTest</td>
     <td>orderFallback_ReturnsServiceUnavailableWithErrorBody()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.108s</td>
+    <td>0.136s</td>
     <td></td>
 </tr>
 <tr>
@@ -89,7 +89,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleBadRequest_ReturnsBadRequest()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -97,7 +97,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleDependencyFailure_ReturnsServiceUnavailable()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -105,7 +105,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleGenericException_ReturnsInternalServerError()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.009s</td>
+    <td>0.02s</td>
     <td></td>
 </tr>
 <tr>
@@ -113,7 +113,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleReactiveValidationExceptions_ReturnsBadRequestWithFieldErrors()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.439s</td>
+    <td>0.469s</td>
     <td></td>
 </tr>
 <tr>
@@ -129,7 +129,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldEmitJwtVerificationError_WhenAuthorizationHeaderIsPresentButNotBearerScheme()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.061s</td>
+    <td>0.089s</td>
     <td></td>
 </tr>
 <tr>
@@ -145,7 +145,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldForwardAndMutateHeader_WhenTokenSignatureIsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.096s</td>
+    <td>0.067s</td>
     <td></td>
 </tr>
 <tr>
@@ -161,7 +161,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>orderGetRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.023s</td>
+    <td>0.012s</td>
     <td></td>
 </tr>
 <tr>
@@ -169,7 +169,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>orderStreamRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.032s</td>
+    <td>0.047s</td>
     <td></td>
 </tr>
 <tr>
@@ -177,7 +177,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>ordersRoute_RejectsExpiredToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.017s</td>
+    <td>0.018s</td>
     <td></td>
 </tr>
 <tr>
@@ -185,7 +185,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>ordersRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.01s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -2113,7 +2113,7 @@
     <td>com.example.saga.user.grpc.UserProtoTest</td>
     <td>getDescriptor_isNotNullAndNamedUserProto()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.014s</td>
+    <td>0.017s</td>
     <td></td>
 </tr>
 <tr>
@@ -2137,7 +2137,7 @@
     <td>com.example.saga.user.grpc.UserProtoTest</td>
     <td>userProtoClass_canBeInstantiatedViaReflection()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.268s</td>
+    <td>0.627s</td>
     <td></td>
 </tr>
 <tr>
@@ -2153,7 +2153,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>builderSetBytesField()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2161,7 +2161,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>builderSetsField()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2169,7 +2169,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>defaultInstanceHasEmptyField()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2177,7 +2177,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>descriptorAccessorsWork()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2185,7 +2185,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>equalityAndHashCodeWork()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2193,7 +2193,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>equalsHandlesMismatchedAndEmpty()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2201,7 +2201,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>hashCodeVariesWithField()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -2209,7 +2209,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>invalidParseThrows()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -2217,7 +2217,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>mergeFromCopiesField()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -2225,7 +2225,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>newBuilderFromPrototypeCopiesField()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -2233,7 +2233,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>parseDelimitedFromRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2241,7 +2241,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>parseDelimitedFromWithRegistryRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2249,7 +2249,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>parseFromByteArrayRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2265,7 +2265,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>parseFromCodedInputStreamRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2273,7 +2273,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>parseFromInputStreamRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -2281,7 +2281,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>parseFromInputStreamWithRegistryRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2289,7 +2289,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>parseFromParserRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2297,7 +2297,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>toStringContainsFieldValue()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.033s</td>
     <td></td>
 </tr>
 <tr>
@@ -2305,7 +2305,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>toStringHandlesEmptyInstance()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.009s</td>
+    <td>0.018s</td>
     <td></td>
 </tr>
 <tr>
@@ -2313,7 +2313,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenRequestTest</td>
     <td>writeToAndSerializedSizeMatch()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.011s</td>
     <td></td>
 </tr>
 <tr>
@@ -2321,7 +2321,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>builderBytesSetterWorks()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2329,7 +2329,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>builderClearsFields()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2337,7 +2337,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>builderSetsFields()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -2345,7 +2345,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>defaultInstanceHasEmptyFields()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -2361,7 +2361,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>equalityAndHashCodeWork()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2369,7 +2369,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>equalsHandlesMismatchedAndEmpty()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2377,7 +2377,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>hashCodeVariesWithFields()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2385,7 +2385,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>invalidParseThrows()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -2401,7 +2401,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>newBuilderFromPrototypeCopiesFields()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -2409,7 +2409,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>parseDelimitedFromRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -2417,7 +2417,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>parseDelimitedFromWithRegistryRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -2449,7 +2449,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>parseFromInputStreamRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2457,7 +2457,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>parseFromInputStreamWithRegistryRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2465,7 +2465,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>parseFromParserRoundTrips()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.0s</td>
     <td></td>
 </tr>
 <tr>
@@ -2473,7 +2473,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>toStringContainsFieldValues()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2489,7 +2489,7 @@
     <td>com.example.saga.user.grpc.ValidateTokenResponseTest</td>
     <td>writeToAndSerializedSizeMatch()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.013s</td>
     <td></td>
 </tr>
 <tr>
@@ -2497,7 +2497,7 @@
     <td>com.example.saga.user.UserServiceApplicationConstructorTest</td>
     <td>applicationCanBeInstantiated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.085s</td>
+    <td>0.302s</td>
     <td></td>
 </tr>
 <tr>
@@ -2505,7 +2505,7 @@
     <td>com.example.saga.user.UserServiceApplicationMainTest</td>
     <td>mainRunsApplication()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>3.865s</td>
+    <td>10.337s</td>
     <td></td>
 </tr>
 <tr>
@@ -2513,7 +2513,7 @@
     <td>com.example.saga.user.UserServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.09s</td>
+    <td>0.2s</td>
     <td></td>
 </tr>
 <tr>
@@ -2521,7 +2521,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>constructor_canBeInstantiated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2529,7 +2529,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>execute_MapsAnUnexpectedException_ToInternalStatus()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.014s</td>
+    <td>0.044s</td>
     <td></td>
 </tr>
 <tr>
@@ -2537,7 +2537,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>execute_mapsIllegalArgumentException_toInvalidArgument()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -2553,7 +2553,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
     <td>validateToken_returnsInvalidForTamperedToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -2561,7 +2561,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
     <td>validateToken_returnsValidWithUserIdForValidToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.044s</td>
+    <td>0.079s</td>
     <td></td>
 </tr>
 <tr>
@@ -2569,7 +2569,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>validTokenVerifiesSuccessfullyWithMatchingClaims()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -2593,7 +2593,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForTamperedSignature()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2601,7 +2601,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForWrongIssuer()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -2609,7 +2609,7 @@
     <td>com.example.saga.user.repository.UserRepositoryTest</td>
     <td>save_rejectsADuplicateEmail_becauseTheColumnIsGenuinelyUnique()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.105s</td>
+    <td>0.165s</td>
     <td></td>
 </tr>
             </tbody>
