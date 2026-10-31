@@ -18,7 +18,7 @@ repositories {
 }
 
 val grpcVersion = "1.68.1"
-val protobufVersion = "4.28.2"
+val protobufVersion = "4.36.2"
 
 dependencies {
     api("io.grpc:grpc-protobuf:$grpcVersion")
