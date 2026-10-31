@@ -75,8 +75,8 @@ dependencies {
     // that ByteBuddy only officially supports up to Java 23 and fails
     // mocking on JDK 25 with IllegalArgumentException in OpenedClassReader.
     // 5.16+ bundles ByteBuddy 1.17+ with native JDK 25 support.
-    testImplementation("org.mockito:mockito-core:5.23.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.23.0")
+    testImplementation("org.mockito:mockito-core:5.24.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.24.0")
 
     // Spring Boot's dependency-management BOM still forces byte-buddy back
     // down to 1.15.11 even after bumping mockito-core above, since the BOM's
