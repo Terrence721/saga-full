@@ -10,8 +10,9 @@ server:
 spring:
   application:
     name: api-gateway-service
-  codec:
-    max-in-memory-size: 1MB
+  http:
+    codecs:
+      max-in-memory-size: 1MB
 
   threads:
     virtual:
