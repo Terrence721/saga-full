@@ -33,7 +33,7 @@
     <td>com.example.saga.gateway.ApiGatewayServiceApplicationMainTest</td>
     <td>applicationCanBeInstantiated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -41,7 +41,7 @@
     <td>com.example.saga.gateway.ApiGatewayServiceApplicationMainTest</td>
     <td>mainRunsApplication()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>1.815s</td>
+    <td>2.687s</td>
     <td></td>
 </tr>
 <tr>
@@ -49,7 +49,7 @@
     <td>com.example.saga.gateway.ApiGatewayServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -57,7 +57,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromDisallowedOrigin_getsNoAccessControlAllowOriginHeader()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.013s</td>
+    <td>0.025s</td>
     <td></td>
 </tr>
 <tr>
@@ -65,7 +65,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromFrontendOrigin_getsAllowedOnOrdersRoute()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.127s</td>
+    <td>0.149s</td>
     <td></td>
 </tr>
 <tr>
@@ -73,7 +73,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromFrontendOrigin_isAllowedOnOrderStreamRoute()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.014s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -81,7 +81,7 @@
     <td>com.example.saga.gateway.controller.GatewayFallbackControllerTest</td>
     <td>orderFallback_ReturnsServiceUnavailableWithErrorBody()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.154s</td>
+    <td>0.143s</td>
     <td></td>
 </tr>
 <tr>
@@ -89,7 +89,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleBadRequest_ReturnsBadRequest()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -97,7 +97,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleDependencyFailure_ReturnsServiceUnavailable()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.013s</td>
+    <td>0.012s</td>
     <td></td>
 </tr>
 <tr>
@@ -113,7 +113,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleReactiveValidationExceptions_ReturnsBadRequestWithFieldErrors()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.823s</td>
+    <td>1.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -121,7 +121,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldEmitJwtVerificationError_WhenAuthorizationHeaderIsMissing()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -129,7 +129,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldEmitJwtVerificationError_WhenAuthorizationHeaderIsPresentButNotBearerScheme()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.096s</td>
+    <td>0.228s</td>
     <td></td>
 </tr>
 <tr>
@@ -137,7 +137,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldEmitJwtVerificationError_WhenTokenSignatureIsInvalidOrTampered()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.005s</td>
     <td></td>
 </tr>
 <tr>
@@ -145,7 +145,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldForwardAndMutateHeader_WhenTokenSignatureIsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.088s</td>
+    <td>0.132s</td>
     <td></td>
 </tr>
 <tr>
@@ -153,7 +153,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldStillEmitJwtVerificationError_WhenDecodedPayloadContainsCrLf()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -161,7 +161,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>orderGetRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.016s</td>
+    <td>0.022s</td>
     <td></td>
 </tr>
 <tr>
@@ -169,7 +169,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>orderStreamRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.039s</td>
+    <td>0.077s</td>
     <td></td>
 </tr>
 <tr>
@@ -185,7 +185,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>ordersRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.016s</td>
+    <td>0.026s</td>
     <td></td>
 </tr>
 <tr>
@@ -2497,7 +2497,7 @@
     <td>com.example.saga.user.UserServiceApplicationConstructorTest</td>
     <td>applicationCanBeInstantiated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.331s</td>
+    <td>0.295s</td>
     <td></td>
 </tr>
 <tr>
@@ -2505,7 +2505,7 @@
     <td>com.example.saga.user.UserServiceApplicationMainTest</td>
     <td>mainRunsApplication()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>5.92s</td>
+    <td>11.435s</td>
     <td></td>
 </tr>
 <tr>
@@ -2513,7 +2513,7 @@
     <td>com.example.saga.user.UserServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.093s</td>
+    <td>0.39s</td>
     <td></td>
 </tr>
 <tr>
@@ -2521,7 +2521,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>constructor_canBeInstantiated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.0s</td>
+    <td>0.001s</td>
     <td></td>
 </tr>
 <tr>
@@ -2529,7 +2529,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>execute_MapsAnUnexpectedException_ToInternalStatus()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.022s</td>
+    <td>0.029s</td>
     <td></td>
 </tr>
 <tr>
@@ -2537,7 +2537,7 @@
     <td>com.example.saga.user.infra.grpc.GrpcExecutorTest</td>
     <td>execute_mapsIllegalArgumentException_toInvalidArgument()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -2561,7 +2561,7 @@
     <td>com.example.saga.user.infra.grpc.UserGrpcServiceImplTest</td>
     <td>validateToken_returnsValidWithUserIdForValidToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.085s</td>
+    <td>0.139s</td>
     <td></td>
 </tr>
 <tr>
@@ -2569,7 +2569,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>validTokenVerifiesSuccessfullyWithMatchingClaims()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -2577,7 +2577,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForExpiredToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -2585,7 +2585,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForMalformedToken()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2593,7 +2593,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForTamperedSignature()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.002s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -2601,7 +2601,7 @@
     <td>com.example.saga.user.infra.security.JwtTokenProviderTest</td>
     <td>verifyTokenReturnsEmptyForWrongIssuer()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.006s</td>
     <td></td>
 </tr>
 <tr>
@@ -2609,7 +2609,7 @@
     <td>com.example.saga.user.repository.UserRepositoryTest</td>
     <td>save_rejectsADuplicateEmail_becauseTheColumnIsGenuinelyUnique()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.095s</td>
+    <td>0.193s</td>
     <td></td>
 </tr>
             </tbody>
