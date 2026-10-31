@@ -77,6 +77,14 @@ spec:
             - name: saga-service-tls
               mountPath: /etc/saga/tls
               readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           resources:
             requests:
               cpu: "250m"
@@ -85,6 +93,8 @@ spec:
               cpu: "750m"
               memory: "600Mi"
       volumes:
+        - name: tmp
+          emptyDir: {}
         - name: saga-service-tls
           secret:
             secretName: saga-service-tls

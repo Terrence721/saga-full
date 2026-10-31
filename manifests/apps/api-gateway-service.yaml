@@ -58,6 +58,14 @@ spec:
             - name: saga-service-tls
               mountPath: /etc/saga/tls
               readOnly: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
           resources:
             # TUNED SIZING: Netty reactive gateways need lower memory requests but room to handle traffic spikes
             requests:
@@ -67,6 +75,8 @@ spec:
               cpu: "750m"
               memory: "550Mi"
       volumes:
+        - name: tmp
+          emptyDir: {}
         - name: saga-service-tls
           secret:
             secretName: saga-service-tls
