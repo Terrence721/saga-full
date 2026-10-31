@@ -1,0 +1,46 @@
+# Production/staging overlay for externally managed Postgres and Kafka.
+# Use instead of starting the bundled postgres-db and kafka-broker services.
+#
+# Example:
+#   DATABASE_HOST=postgres.prod DATABASE_PORT=5432 KAFKA_BOOTSTRAP_SERVERS=kafka-1:9092,kafka-2:9092,kafka-3:9092 \
+#   docker compose -f docker-compose.yml -f docker-compose.managed.yml up
+
+services:
+  postgres-db:
+    deploy:
+      replicas: 0
+
+  kafka-broker:
+    deploy:
+      replicas: 0
+
+  user-service:
+    environment:
+      DATABASE_HOST: ${DATABASE_HOST:?}
+      DATABASE_PORT: ${DATABASE_PORT:?}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:?}
+      SPRING_PROFILES_ACTIVE: postgres
+  order-service:
+    environment:
+      DATABASE_HOST: ${DATABASE_HOST:?}
+      DATABASE_PORT: ${DATABASE_PORT:?}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:?}
+      SPRING_PROFILES_ACTIVE: postgres
+  payment-service:
+    environment:
+      DATABASE_HOST: ${DATABASE_HOST:?}
+      DATABASE_PORT: ${DATABASE_PORT:?}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:?}
+      SPRING_PROFILES_ACTIVE: postgres
+  reservation-service:
+    environment:
+      DATABASE_HOST: ${DATABASE_HOST:?}
+      DATABASE_PORT: ${DATABASE_PORT:?}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:?}
+      SPRING_PROFILES_ACTIVE: postgres
+  restaurant-service:
+    environment:
+      DATABASE_HOST: ${DATABASE_HOST:?}
+      DATABASE_PORT: ${DATABASE_PORT:?}
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:?}
+      SPRING_PROFILES_ACTIVE: postgres
