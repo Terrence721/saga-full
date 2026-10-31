@@ -38,7 +38,7 @@ public class JwtPerimeterGuardGatewayFilterFactory
         secrets.add(secret);
         if (previousSecrets != null && !previousSecrets.isBlank()) {
             Arrays.stream(previousSecrets.split(","))
-                    .map(String::trim)
+                    .map(value -> value == null ? "" : value.trim())
                     .filter(v -> !v.isBlank())
                     .forEach(secrets::add);
         }

@@ -47,7 +47,7 @@ public class RoleAuthorizationGatewayFilterFactory
         secrets.add(secret);
         if (previousSecrets != null && !previousSecrets.isBlank()) {
             Arrays.stream(previousSecrets.split(","))
-                    .map(String::trim)
+                    .map(role -> role.trim())
                     .filter(value -> !value.isBlank())
                     .forEach(secrets::add);
         }
@@ -64,7 +64,7 @@ public class RoleAuthorizationGatewayFilterFactory
         List<String> requiredRoles = config.getRoles() == null || config.getRoles().isBlank()
                 ? List.of()
                 : Arrays.stream(config.getRoles().split(","))
-                        .map(String::trim)
+                    .map(role -> role.trim())
                         .filter(role -> !role.isBlank())
                         .toList();
 
@@ -93,14 +93,14 @@ public class RoleAuthorizationGatewayFilterFactory
             String rolesClaim = jwt.getClaim("roles").asString();
             if (rolesClaim != null && !rolesClaim.isBlank()) {
                 Arrays.stream(rolesClaim.split("[,\s]+"))
-                        .map(String::trim)
+                        .map(role -> role.trim())
                         .filter(role -> !role.isBlank())
                         .forEach(granted::add);
             }
             String scopeClaim = jwt.getClaim("scope").asString();
             if (scopeClaim != null && !scopeClaim.isBlank()) {
                 Arrays.stream(scopeClaim.split("[,\s]+"))
-                        .map(String::trim)
+                        .map(role -> role.trim())
                         .filter(role -> !role.isBlank())
                         .forEach(granted::add);
             }

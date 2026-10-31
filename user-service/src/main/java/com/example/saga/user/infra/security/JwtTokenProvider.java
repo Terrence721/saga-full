@@ -30,14 +30,14 @@ public class JwtTokenProvider {
         secrets.add(secret);
         if (previousSecrets != null && !previousSecrets.isBlank()) {
             Arrays.stream(previousSecrets.split(","))
-                    .map(String::trim)
+                    .map(value -> value.trim())
                     .filter(s -> !s.isBlank())
                     .forEach(secrets::add);
         }
 
         for (String value : secrets) {
-            if (value == null || value.isBlank() || value.contains("CHANGEME")
-                    || value.equals("local-dev-secret-change-me")) {
+            if (value == null || value.isBlank() || INSECURE_SECRETS.contains(value)
+                || value.contains("CHANGEME")) {
                 throw new IllegalStateException(
                         "app.jwt.secret/previous secrets must be provided via a real secret store");
             }
