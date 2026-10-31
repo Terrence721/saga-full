@@ -15,4 +15,11 @@ class ApiGatewayServiceApplicationMainTest {
         assertThatCode(() -> new ApiGatewayServiceApplication()).doesNotThrowAnyException();
     }
 
+    @Test
+    void mainRunsApplication() {
+        assertThatCode(() -> ApiGatewayServiceApplication.main(new String[] {
+                "--server.port=0",
+                "--app.jwt.secret=test-only-secret-never-used-outside-this-test"
+        })).doesNotThrowAnyException();
+    }
 }
