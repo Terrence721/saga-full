@@ -10,6 +10,8 @@ server:
 spring:
   application:
     name: api-gateway-service
+  codec:
+    max-in-memory-size: 1MB
 
   threads:
     virtual:
@@ -19,6 +21,10 @@ spring:
     gateway:
       server:
         webflux:
+          default-filters:
+            - name: RequestSize
+              args:
+                maxSize: 1MB
           # Route table for Gateway-routed paths only. CORS is handled globally by
           # GlobalCorsConfig's CorsWebFilter, which applies to every HandlerMapping,
           # regardless of whether the path is proxied or served locally.
