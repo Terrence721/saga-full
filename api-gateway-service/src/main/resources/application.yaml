@@ -148,6 +148,9 @@ app:
     secret: ${JWT_SECRET}
     issuer: ${JWT_ISSUER:saga-ecosystem-auth}
     previous-secrets: ${JWT_PREVIOUS_SECRETS:}
+  gateway:
+    rate-limit:
+      requests-per-minute: ${GATEWAY_RATE_LIMIT_RPM:1000}
 
 # Optional application-level TLS (disabled by default).
 # server:
@@ -157,8 +160,3 @@ app:
 #     key-store-password: ${TLS_KEY_STORE_PASSWORD:}
 #     key-store-type: ${TLS_KEY_STORE_TYPE:PKCS12}
 # # Downstream service calls should set TLS_ENABLED=true consistently and share trust bundles.
-
-app:
-  gateway:
-    rate-limit:
-      requests-per-minute: ${GATEWAY_RATE_LIMIT_RPM:1000}
