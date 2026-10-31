@@ -33,7 +33,7 @@
     <td>com.example.saga.gateway.ApiGatewayServiceApplicationMainTest</td>
     <td>applicationCanBeInstantiated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.007s</td>
+    <td>0.01s</td>
     <td></td>
 </tr>
 <tr>
@@ -41,7 +41,7 @@
     <td>com.example.saga.gateway.ApiGatewayServiceApplicationMainTest</td>
     <td>mainRunsApplication()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>1.78s</td>
+    <td>1.835s</td>
     <td></td>
 </tr>
 <tr>
@@ -57,7 +57,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromDisallowedOrigin_getsNoAccessControlAllowOriginHeader()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.013s</td>
+    <td>0.009s</td>
     <td></td>
 </tr>
 <tr>
@@ -65,7 +65,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromFrontendOrigin_getsAllowedOnOrdersRoute()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.146s</td>
+    <td>0.139s</td>
     <td></td>
 </tr>
 <tr>
@@ -73,7 +73,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromFrontendOrigin_isAllowedOnOrderStreamRoute()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.014s</td>
+    <td>0.01s</td>
     <td></td>
 </tr>
 <tr>
@@ -81,7 +81,7 @@
     <td>com.example.saga.gateway.controller.GatewayFallbackControllerTest</td>
     <td>orderFallback_ReturnsServiceUnavailableWithErrorBody()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.144s</td>
+    <td>0.155s</td>
     <td></td>
 </tr>
 <tr>
@@ -89,7 +89,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleBadRequest_ReturnsBadRequest()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.004s</td>
+    <td>0.002s</td>
     <td></td>
 </tr>
 <tr>
@@ -97,7 +97,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleDependencyFailure_ReturnsServiceUnavailable()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.018s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -113,7 +113,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleReactiveValidationExceptions_ReturnsBadRequestWithFieldErrors()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.65s</td>
+    <td>0.669s</td>
     <td></td>
 </tr>
 <tr>
@@ -129,7 +129,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldEmitJwtVerificationError_WhenAuthorizationHeaderIsPresentButNotBearerScheme()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.113s</td>
+    <td>0.14s</td>
     <td></td>
 </tr>
 <tr>
@@ -137,7 +137,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldEmitJwtVerificationError_WhenTokenSignatureIsInvalidOrTampered()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.003s</td>
+    <td>0.004s</td>
     <td></td>
 </tr>
 <tr>
@@ -145,7 +145,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldForwardAndMutateHeader_WhenTokenSignatureIsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.187s</td>
+    <td>0.137s</td>
     <td></td>
 </tr>
 <tr>
@@ -161,7 +161,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>orderGetRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.025s</td>
+    <td>0.016s</td>
     <td></td>
 </tr>
 <tr>
@@ -169,7 +169,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>orderStreamRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.041s</td>
+    <td>0.042s</td>
     <td></td>
 </tr>
 <tr>
@@ -177,7 +177,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>ordersRoute_RejectsExpiredToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.023s</td>
+    <td>0.039s</td>
     <td></td>
 </tr>
 <tr>
@@ -185,7 +185,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>ordersRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.014s</td>
+    <td>0.015s</td>
     <td></td>
 </tr>
 <tr>
