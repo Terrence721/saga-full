@@ -167,6 +167,7 @@ export function OrderEntryForm() {
                     variant="secondary"
                     size="sm"
                     disabled={h.isSubmitting}
+                    aria-label="Decrease quantity"
                     onClick={() =>
                       h.setCart((current) =>
                         current
@@ -185,6 +186,7 @@ export function OrderEntryForm() {
                     variant="secondary"
                     size="sm"
                     disabled={h.isSubmitting}
+                    aria-label="Increase quantity"
                     onClick={() =>
                       h.setCart((current) => {
                         const next = current.map((l) =>
