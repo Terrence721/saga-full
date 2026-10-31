@@ -54,6 +54,13 @@ spec:
                 name: cluster-config
             - secretRef:
                 name: perimeter-security-spec
+          env:
+            - name: TLS_ENABLED
+              value: "true"
+            - name: SERVER_SSL_CERTIFICATE
+              value: "/etc/saga/tls/tls.crt"
+            - name: SERVER_SSL_CERTIFICATE_PRIVATE_KEY
+              value: "/etc/saga/tls/tls.key"
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness
@@ -66,6 +73,10 @@ spec:
               port: http-web
             initialDelaySeconds: 35
             periodSeconds: 5
+          volumeMounts:
+            - name: saga-service-tls
+              mountPath: /etc/saga/tls
+              readOnly: true
           resources:
             requests:
               cpu: "250m"
@@ -73,6 +84,10 @@ spec:
             limits:
               cpu: "750m"
               memory: "600Mi"
+      volumes:
+        - name: saga-service-tls
+          secret:
+            secretName: saga-service-tls
 
 ---
 apiVersion: v1
