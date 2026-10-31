@@ -50,6 +50,16 @@ spec:
             - secretRef:
                 name: perimeter-security-spec
           env:
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: perimeter-security-spec
+                  key: ORDER_SERVICE_DATABASE_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: perimeter-security-spec
+                  key: ORDER_SERVICE_DATABASE_PASSWORD
             - name: TLS_ENABLED
               value: "true"
             - name: SERVER_SSL_CERTIFICATE
