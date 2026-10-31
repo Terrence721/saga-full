@@ -67,6 +67,8 @@ services:
       MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://otel-collector:4318/v1/traces"
       DATABASE_HOST: postgres-db
       DATABASE_PORT: "5432"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set externally (use a secret store or environment file)}
     depends_on:
@@ -89,6 +91,8 @@ services:
       MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://otel-collector:4318/v1/traces"
       DATABASE_HOST: postgres-db
       DATABASE_PORT: "5432"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
     depends_on:
       postgres-db:
@@ -110,6 +114,8 @@ services:
       MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://otel-collector:4318/v1/traces"
       DATABASE_HOST: postgres-db
       DATABASE_PORT: "5432"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
     depends_on:
       postgres-db:
@@ -131,6 +137,8 @@ services:
       MANAGEMENT_OTLP_TRACING_ENDPOINT: "http://otel-collector:4318/v1/traces"
       DATABASE_HOST: postgres-db
       DATABASE_PORT: "5432"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
     depends_on:
       postgres-db:
@@ -184,6 +192,8 @@ services:
       SERVER_PORT: "8084"
       DATABASE_HOST: postgres-db
       DATABASE_PORT: "5432"
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set externally (use a secret store or environment file)}
     depends_on:
