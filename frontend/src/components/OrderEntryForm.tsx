@@ -209,6 +209,7 @@ export function OrderEntryForm() {
       <form onSubmit={h.handleSubmit} className="space-y-4">
         {h.menu.length > 0 && (
           <select
+            name="menuItem"
             aria-label="Menu item"
             value={h.itemCode}
             disabled={h.isSubmitting}
@@ -230,6 +231,7 @@ export function OrderEntryForm() {
           </select>
         )}
         <select
+          name="tableNumber"
           aria-label="Table number"
           value={h.tableNumber}
           disabled={h.isSubmitting}
@@ -248,6 +250,7 @@ export function OrderEntryForm() {
             Payment method
           </label>
           <select
+            name="paymentMethod"
             aria-label="Payment method"
             value={h.paymentMethod}
             disabled={h.isSubmitting}

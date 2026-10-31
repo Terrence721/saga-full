@@ -803,6 +803,7 @@ export default function App() {
                 <label className="dialog-field">
                   <span>Party size</span>
                   <select
+                    name="partySize"
                     value={reservation.guests}
                     onChange={(event) =>
                       setReservation((current) => ({
@@ -821,6 +822,7 @@ export default function App() {
                 <label className="dialog-field">
                   <span>Time</span>
                   <select
+                    name="reservationTime"
                     value={reservation.time}
                     onChange={(event) =>
                       setReservation((current) => ({
