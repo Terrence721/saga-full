@@ -3,6 +3,7 @@ set -euo pipefail
 
 NS="${SAGA_NAMESPACE:-saga-ecosystem}"
 kubectl create namespace "$NS" 2>/dev/null || true
+kubectl create configmap cluster-config -n "$NS" --from-literal=dummy=true 2>/dev/null || true
 
 cat <<YAML | kubectl apply -n "$NS" -f -
 apiVersion: apps/v1
@@ -59,28 +60,32 @@ spec:
     spec:
       containers:
         - name: kafka
-          image: confluentinc/cp-kafka:7.8.0
+          image: bitnami/kafka:3.7
           env:
-            - name: KAFKA_NODE_ID
-              value: "1"
-            - name: KAFKA_PROCESS_ROLES
-              value: broker,controller
-            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
-              value: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-            - name: KAFKA_LISTENERS
+            - name: ALLOW_PLAINTEXT_LISTENER
+              value: "yes"
+            - name: KAFKA_CFG_NODE_ID
+              value: "0"
+            - name: KAFKA_CFG_PROCESS_ROLES
+              value: controller,broker
+            - name: KAFKA_CFG_CONTROLLER_QUORUM_VOTERS
+              value: 0@kafka-broker:9093
+            - name: KAFKA_CFG_LISTENERS
               value: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-            - name: KAFKA_ADVERTISED_LISTENERS
+            - name: KAFKA_CFG_ADVERTISED_LISTENERS
               value: PLAINTEXT://kafka-broker:9092
-            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+            - name: KAFKA_CFG_CONTROLLER_LISTENER_NAMES
               value: CONTROLLER
-            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
-              value: 1@kafka-broker:9093
-            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+            - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+              value: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+            - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+            - name: KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
-            - name: CLUSTER_ID
-              value: MkU3OEVBNTcwNTJENDM2Qk
-            - name: KAFKA_LOG_DIRS
-              value: /var/lib/kafka/data
+            - name: KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
           ports:
             - containerPort: 9092
 ---
@@ -105,16 +110,7 @@ kubectl apply -n "$NS" -f manifests/apps/
 
 services=(api-gateway-service user-service order-service payment-service reservation-service restaurant-service)
 for svc in "${services[@]}"; do
-  kubectl -n "$NS" set env "deployment/$svc" \
-    SPRING_PROFILES_ACTIVE=default \
-    DATABASE_HOST=postgres-db \
-    DATABASE_PORT=5432 \
-    KAFKA_BOOTSTRAP_SERVERS=kafka-broker:9092 \
-    JWT_SECRET=local-dev-smoke-secret \
-    JWT_PREVIOUS_SECRETS= \
-    SPRING_DATASOURCE_USERNAME=postgres \
-    SPRING_DATASOURCE_PASSWORD=postgres \
-    TLS_ENABLED=false 2>/dev/null || true
+  kubectl -n "$NS" set env "deployment/$svc"     SPRING_PROFILES_ACTIVE=default     DATABASE_HOST=postgres-db     DATABASE_PORT=5432     KAFKA_BOOTSTRAP_SERVERS=kafka-broker:9092     JWT_SECRET=local-dev-smoke-secret     JWT_PREVIOUS_SECRETS=     TLS_ENABLED=false     SPRING_DATASOURCE_USERNAME=postgres     SPRING_DATASOURCE_PASSWORD=postgres 2>/dev/null || true
 done
 
 echo "Waiting for applications..."
