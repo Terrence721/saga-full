@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_DB: saga_db
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set externally (use a secret store or environment file)}
     volumes:
       - ./docker/init-schemas.sql:/docker-entrypoint-initdb.d/init-schemas.sql
     healthcheck:
@@ -68,7 +68,7 @@ services:
       DATABASE_HOST: postgres-db
       DATABASE_PORT: "5432"
       KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
-      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set externally (use a secret store or environment file)}
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -151,7 +151,7 @@ services:
       # compose network still reach it at api-gateway-service:8080.
       - "8090:8080"
     environment:
-      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set externally (use a secret store or environment file)}
       USER_SERVICE_GRPC_HOST: user-service
       GRPC_PORT: "9090"
       ORDER_SERVICE_HOST: order-service
@@ -185,7 +185,7 @@ services:
       DATABASE_HOST: postgres-db
       DATABASE_PORT: "5432"
       KAFKA_BOOTSTRAP_SERVERS: kafka-broker:29092
-      JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set externally (use a secret store or environment file)}
     depends_on:
       postgres-db:
         condition: service_healthy

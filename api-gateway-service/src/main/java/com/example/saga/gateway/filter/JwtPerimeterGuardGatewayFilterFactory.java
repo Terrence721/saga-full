@@ -29,6 +29,12 @@ public class JwtPerimeterGuardGatewayFilterFactory
 
         super(Config.class);
 
+        if (secret == null || secret.isBlank()
+                || secret.contains("CHANGEME")
+                || secret.equals("local-dev-secret-change-me")) {
+            throw new IllegalStateException("app.jwt.secret must be provided via a real secret store; insecure placeholder/default is not allowed");
+        }
+
         // Built once at startup - the same secret/issuer user-service's
         // JwtTokenProvider signs/verifies with, so issued tokens verify here.
         Algorithm algorithm = Algorithm.HMAC256(secret);

@@ -33,6 +33,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: cluster-config
+            - secretRef:
+                name: perimeter-security-spec
           livenessProbe:
             httpGet:
               path: /actuator/health/liveness

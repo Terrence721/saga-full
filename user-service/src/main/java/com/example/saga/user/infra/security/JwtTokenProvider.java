@@ -19,6 +19,11 @@ public class JwtTokenProvider {
     public JwtTokenProvider(
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.issuer}") String issuer) {
+        if (secret == null || secret.isBlank()
+                || secret.contains("CHANGEME")
+                || secret.equals("local-dev-secret-change-me")) {
+            throw new IllegalStateException("app.jwt.secret must be provided via a real secret store; insecure placeholder/default is not allowed");
+        }
         this.algorithm = Algorithm.HMAC256(secret);
         // Built once, matching api-gateway-service's JwtPerimeterGuardGatewayFilterFactory -
         // algorithm/issuer never change after construction, so there's nothing to rebuild.
