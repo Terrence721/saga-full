@@ -80,11 +80,6 @@ tasks.withType<Test> {
 }
 
 tasks.jacocoTestReport {
-    classDirectories.setFrom(
-        files(classDirectories.files.map { dir ->
-            fileTree(dir) { exclude("com/example/saga/user/grpc/**") }
-        })
-    )
     reports {
         xml.required.set(true)
         html.required.set(true)
