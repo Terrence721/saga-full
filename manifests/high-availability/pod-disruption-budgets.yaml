@@ -1,0 +1,65 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: api-gateway-service-pdb
+  namespace: saga-ecosystem
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: api-gateway-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: user-service-pdb
+  namespace: saga-ecosystem
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: user-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: order-service-pdb
+  namespace: saga-ecosystem
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: order-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: payment-service-pdb
+  namespace: saga-ecosystem
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: payment-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: reservation-service-pdb
+  namespace: saga-ecosystem
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: reservation-service
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: restaurant-service-pdb
+  namespace: saga-ecosystem
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: restaurant-service

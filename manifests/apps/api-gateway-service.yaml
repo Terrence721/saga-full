@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/component: gateway
     app.kubernetes.io/part-of: saga-platform
 spec:
-  replicas: 1 
+  replicas: 3
   selector:
     matchLabels:
       app: api-gateway-service
