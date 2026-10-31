@@ -43,6 +43,7 @@ dependencies {
     implementation("io.opentelemetry:opentelemetry-exporter-otlp")
     implementation("org.jspecify:jspecify:1.0.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.flywaydb:flyway-core")
     implementation("org.springframework.grpc:spring-grpc-server-spring-boot-starter")
 
     // Spring Security's crypto module for password hashing, instead of the
@@ -54,6 +55,7 @@ dependencies {
 
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("org.flywaydb:flyway-database-postgresql")
 
     // Pinned above Spring Boot 3.4.1's managed 1.18.36: that version predates
     // JDK 25 javac-internals support and fails annotation processing with

@@ -3,7 +3,7 @@ spring:
     name: reservation-service
   sql:
     init:
-      mode: always
+      mode: never
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
@@ -42,7 +42,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
 
 ---
 spring:
@@ -56,8 +56,8 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
   sql:
     init:
-      mode: always
+      mode: never
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
