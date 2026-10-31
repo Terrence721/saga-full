@@ -583,6 +583,7 @@ export default function App() {
                   <label className="dialog-field">
                     <span>Name for pickup</span>
                     <input
+                      name="pickupName"
                       value={pickupName}
                       onChange={(event) => setPickupName(event.target.value)}
                       placeholder="Your name"
@@ -654,6 +655,7 @@ export default function App() {
                         <label className="dialog-field">
                           <span>Expiry</span>
                           <input
+                            name="cardExpiry"
                             inputMode="numeric"
                             autoComplete="cc-exp"
                             placeholder="MM/YY"
@@ -674,6 +676,7 @@ export default function App() {
                         <label className="dialog-field">
                           <span>Security code</span>
                           <input
+                            name="cardCvv"
                             type="password"
                             inputMode="numeric"
                             autoComplete="cc-csc"
@@ -771,6 +774,7 @@ export default function App() {
               <label className="dialog-field">
                 <span>Name</span>
                 <input
+                  name="reservationName"
                   required
                   value={reservation.name}
                   onChange={(event) =>
@@ -786,6 +790,7 @@ export default function App() {
               <label className="dialog-field">
                 <span>Email</span>
                 <input
+                  name="reservationEmail"
                   required
                   type="email"
                   value={reservation.email}
@@ -851,6 +856,7 @@ export default function App() {
               <label className="dialog-field">
                 <span>Date</span>
                 <input
+                  name="reservationDate"
                   required
                   type="date"
                   min={tomorrow}
