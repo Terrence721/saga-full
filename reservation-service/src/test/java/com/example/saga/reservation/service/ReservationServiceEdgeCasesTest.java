@@ -1,6 +1,5 @@
 package com.example.saga.reservation.service;
 
-import com.example.saga.reservation.domain.ReservationStatus;
 import com.example.saga.reservation.dto.CreateReservationRequest;
 import com.example.saga.reservation.dto.RestaurantApprovedEvent;
 import com.example.saga.reservation.dto.RestaurantRejectedEvent;

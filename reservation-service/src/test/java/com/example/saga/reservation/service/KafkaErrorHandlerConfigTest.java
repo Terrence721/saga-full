@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.listener.MessageListenerContainer;
 
+import java.util.Objects;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
@@ -19,8 +21,8 @@ class KafkaErrorHandlerConfigTest {
         assertThat(handler).isNotNull();
 
         ConsumerRecord<String, String> record = new ConsumerRecord<>("topic", 0, 0L, "key", "value");
-        Consumer<String, String> consumer = mock(Consumer.class);
-        MessageListenerContainer container = mock(MessageListenerContainer.class);
+        Consumer<?, ?> consumer = Objects.requireNonNull(mock(Consumer.class));
+        MessageListenerContainer container = Objects.requireNonNull(mock(MessageListenerContainer.class));
 
         assertThatCode(() -> handler.handleOne(
                 new IllegalArgumentException("bad payload"), record, consumer, container))
