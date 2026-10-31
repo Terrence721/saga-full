@@ -1,0 +1,10 @@
+spring:
+  config:
+    activate:
+      on-profile: dev-tls
+
+server:
+  ssl:
+    enabled: true
+    certificate: ${TLS_CERT:file:./docker/dev-tls/tls.crt}
+    certificate-private-key: ${TLS_KEY:file:./docker/dev-tls/tls.key}
