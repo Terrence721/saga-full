@@ -32,3 +32,6 @@ Validate the availability and failover behavior declared by the 3-replica Deploy
 - availability: 99.9% during failover
 - error rate: below 5% for 5 minutes
 - p99 latency: under 2 seconds
+
+## Automated staging provision
+Run `./scripts/provision-staging.sh` for an ordered apply of ESO, Vault, network policies, availability resources, and application workloads. Manual Vault initialization/unsealing and managed Postgres/Kafka provisioning are still required.
