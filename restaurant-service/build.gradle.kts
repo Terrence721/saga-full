@@ -41,7 +41,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.42")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.5.1")
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
