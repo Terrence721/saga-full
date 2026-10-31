@@ -1,0 +1,36 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: saga-ecosystem-slo
+  namespace: saga-ecosystem
+  labels:
+    app: saga-ecosystem
+    role: alert-rules
+spec:
+  groups:
+    - name: saga.availability
+      rules:
+        - alert: SagaServiceDown
+          expr: up{job=~".*-service"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Saga service is down"
+            runbook: "docs/runbooks/service-down.md"
+        - alert: SagaHighErrorRate
+          expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) by (job) / sum(rate(http_server_requests_seconds_count[5m])) by (job) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "HTTP 5xx rate above 5%"
+            runbook: "docs/runbooks/high-error-rate.md"
+        - alert: SagaHighLatency
+          expr: histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, job)) > 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "p99 request latency above 2 seconds"
+            runbook: "docs/runbooks/high-latency.md"
