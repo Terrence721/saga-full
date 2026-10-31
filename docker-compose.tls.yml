@@ -1,0 +1,23 @@
+# Optional TLS overlay for local HTTPS validation.
+#
+# Requires ./scripts/generate-dev-tls.sh first.
+# Example:
+#   ./scripts/generate-dev-tls.sh
+#   docker compose -f docker-compose.yml -f docker-compose.tls.yml --profile dev-tls up
+
+services:
+  api-gateway-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: "postgres,dev-tls"
+      TLS_CERT: "file:/certs/tls.crt"
+      TLS_KEY: "file:/certs/tls.key"
+    volumes:
+      - ./docker/dev-tls:/certs:ro
+
+  user-service:
+    environment:
+      SPRING_PROFILES_ACTIVE: "postgres,dev-tls"
+      TLS_CERT: "file:/certs/tls.crt"
+      TLS_KEY: "file:/certs/tls.key"
+    volumes:
+      - ./docker/dev-tls:/certs:ro
