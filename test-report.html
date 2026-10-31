@@ -18,8 +18,8 @@
         <body>
         <h1>saga-full - Aggregated Test Report</h1>
         <div class="summary">
-            <span><strong>Total:</strong> 305</span>
-            <span style="color:#1a7f37"><strong>Passed:</strong> 305</span>
+            <span><strong>Total:</strong> 306</span>
+            <span style="color:#1a7f37"><strong>Passed:</strong> 306</span>
             <span style="color:#cf222e"><strong>Failed:</strong> 0</span>
             <span style="color:#9a6700"><strong>Skipped:</strong> 0</span>
         </div>
@@ -33,7 +33,15 @@
     <td>com.example.saga.gateway.ApiGatewayServiceApplicationMainTest</td>
     <td>applicationCanBeInstantiated()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.375s</td>
+    <td>0.009s</td>
+    <td></td>
+</tr>
+<tr>
+    <td>api-gateway-service</td>
+    <td>com.example.saga.gateway.ApiGatewayServiceApplicationMainTest</td>
+    <td>mainRunsApplication()</td>
+    <td style="color:#1a7f37;font-weight:600">PASSED</td>
+    <td>1.969s</td>
     <td></td>
 </tr>
 <tr>
@@ -41,7 +49,7 @@
     <td>com.example.saga.gateway.ApiGatewayServiceApplicationTests</td>
     <td>contextLoads()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.008s</td>
     <td></td>
 </tr>
 <tr>
@@ -49,7 +57,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromDisallowedOrigin_getsNoAccessControlAllowOriginHeader()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.011s</td>
     <td></td>
 </tr>
 <tr>
@@ -57,7 +65,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromFrontendOrigin_getsAllowedOnOrdersRoute()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.109s</td>
+    <td>0.133s</td>
     <td></td>
 </tr>
 <tr>
@@ -65,7 +73,7 @@
     <td>com.example.saga.gateway.config.GlobalCorsConfigTest</td>
     <td>preflightRequest_fromFrontendOrigin_isAllowedOnOrderStreamRoute()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.008s</td>
+    <td>0.011s</td>
     <td></td>
 </tr>
 <tr>
@@ -73,7 +81,7 @@
     <td>com.example.saga.gateway.controller.GatewayFallbackControllerTest</td>
     <td>orderFallback_ReturnsServiceUnavailableWithErrorBody()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.106s</td>
+    <td>0.156s</td>
     <td></td>
 </tr>
 <tr>
@@ -81,7 +89,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleBadRequest_ReturnsBadRequest()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.001s</td>
+    <td>0.003s</td>
     <td></td>
 </tr>
 <tr>
@@ -89,7 +97,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleDependencyFailure_ReturnsServiceUnavailable()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.01s</td>
     <td></td>
 </tr>
 <tr>
@@ -97,7 +105,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleGenericException_ReturnsInternalServerError()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.017s</td>
+    <td>0.016s</td>
     <td></td>
 </tr>
 <tr>
@@ -105,7 +113,7 @@
     <td>com.example.saga.gateway.exception.GlobalExceptionHandlerTest</td>
     <td>handleReactiveValidationExceptions_ReturnsBadRequestWithFieldErrors()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.393s</td>
+    <td>0.651s</td>
     <td></td>
 </tr>
 <tr>
@@ -121,7 +129,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldEmitJwtVerificationError_WhenAuthorizationHeaderIsPresentButNotBearerScheme()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.076s</td>
+    <td>0.096s</td>
     <td></td>
 </tr>
 <tr>
@@ -129,7 +137,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldEmitJwtVerificationError_WhenTokenSignatureIsInvalidOrTampered()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.005s</td>
+    <td>0.01s</td>
     <td></td>
 </tr>
 <tr>
@@ -137,7 +145,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldForwardAndMutateHeader_WhenTokenSignatureIsValid()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.113s</td>
+    <td>0.137s</td>
     <td></td>
 </tr>
 <tr>
@@ -145,7 +153,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardGatewayFilterFactoryTest</td>
     <td>apply_ShouldStillEmitJwtVerificationError_WhenDecodedPayloadContainsCrLf()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.006s</td>
+    <td>0.014s</td>
     <td></td>
 </tr>
 <tr>
@@ -153,7 +161,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>orderGetRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.012s</td>
+    <td>0.018s</td>
     <td></td>
 </tr>
 <tr>
@@ -161,7 +169,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>orderStreamRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.031s</td>
+    <td>0.044s</td>
     <td></td>
 </tr>
 <tr>
@@ -169,7 +177,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>ordersRoute_RejectsExpiredToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.02s</td>
+    <td>0.024s</td>
     <td></td>
 </tr>
 <tr>
@@ -177,7 +185,7 @@
     <td>com.example.saga.gateway.filter.JwtPerimeterGuardIntegrationTest</td>
     <td>ordersRoute_RejectsMissingToken_WithDocumentedErrorShape()</td>
     <td style="color:#1a7f37;font-weight:600">PASSED</td>
-    <td>0.013s</td>
+    <td>0.016s</td>
     <td></td>
 </tr>
 <tr>
