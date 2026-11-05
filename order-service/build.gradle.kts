@@ -71,7 +71,7 @@ if (project.hasProperty("nullaway")) {
     }
     dependencies {
         annotationProcessor("com.google.errorprone:error_prone_core:2.43.0")
-        annotationProcessor("com.uber.nullaway:nullaway:0.13.1")
+        annotationProcessor("com.uber.nullaway:nullaway:0.14.3")
     }
     tasks.withType<JavaCompile> {
         options.isFork = true
