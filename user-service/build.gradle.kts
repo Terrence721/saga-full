@@ -82,8 +82,8 @@ dependencies {
     // down to 1.15.11 even after bumping mockito-core above, since the BOM's
     // constraint outranks the version mockito-core itself asks for. Pinned
     // explicitly to what mockito-core:5.23.0 actually requires.
-    testImplementation("net.bytebuddy:byte-buddy:1.17.7")
-    testImplementation("net.bytebuddy:byte-buddy-agent:1.17.7")
+    testImplementation("net.bytebuddy:byte-buddy:1.18.17")
+    testImplementation("net.bytebuddy:byte-buddy-agent:1.18.17")
 
     // spring-boot-starter-test doesn't pull this in on its own; without it,
     // Gradle's useJUnitPlatform() has nothing to actually launch tests with.
